@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "create_mobile_packages:block/drone_port" }
+  }
+}
