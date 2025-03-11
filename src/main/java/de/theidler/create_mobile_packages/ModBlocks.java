@@ -14,7 +14,4 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> DRONE_PORT_BLOCK = BLOCKS.register("drone_port",
             () -> new DronePortBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)));
-
-    public static final RegistryObject<Block> EXAMPLE_BLOCK = BLOCKS.register("example_block",
-            () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)));
 }
