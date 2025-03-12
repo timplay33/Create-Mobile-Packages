@@ -1,5 +1,8 @@
 package de.theidler.create_mobile_packages;
 
+import de.theidler.create_mobile_packages.index.CMPBlocks;
+import de.theidler.create_mobile_packages.index.CMPItems;
+import de.theidler.create_mobile_packages.index.CMPCreativeModeTabs;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -14,9 +17,9 @@ public class CreateMobilePackages
     {
         IEventBus modEventBus = context.getModEventBus();
 
-        ModBlocks.BLOCKS.register(modEventBus);
-        ModItems.ITEMS.register(modEventBus);
-        ModTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        CMPBlocks.BLOCKS.register(modEventBus);
+        CMPItems.ITEMS.register(modEventBus);
+        CMPCreativeModeTabs.CREATIVE_MODE_TABS.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
     }
