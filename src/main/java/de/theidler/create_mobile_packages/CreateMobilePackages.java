@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages;
 
+import com.simibubi.create.foundation.data.CreateRegistrate;
 import de.theidler.create_mobile_packages.index.CMPBlocks;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPCreativeModeTabs;
@@ -13,14 +14,17 @@ public class CreateMobilePackages
 {
     public static final String MODID = "create_mobile_packages";
 
+    public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(CreateMobilePackages.MODID);
+
     public CreateMobilePackages(FMLJavaModLoadingContext context)
     {
         IEventBus modEventBus = context.getModEventBus();
 
-        CMPBlocks.BLOCKS.register(modEventBus);
-        CMPItems.ITEMS.register(modEventBus);
-        CMPCreativeModeTabs.CREATIVE_MODE_TABS.register(modEventBus);
-
         MinecraftForge.EVENT_BUS.register(this);
+
+        CMPCreativeModeTabs.register(modEventBus);
+        REGISTRATE.registerEventListeners(modEventBus);
+        CMPBlocks.register();
+        CMPItems.register();
     }
 }
