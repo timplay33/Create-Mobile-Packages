@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.blocks;
 
 import com.mojang.logging.LogUtils;
+import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
@@ -33,7 +34,11 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
             if (level != null && !level.isClientSide) {
                 ItemStack stack = getStackInSlot(slot);
                 if (!stack.isEmpty()) {
-                    LOGGER.info("Item inserted: {} x{}", stack.getItem(), stack.getCount());
+                    if (PackageItem.isPackage(stack)){
+                        LOGGER.info("Item inserted: {} x{} -> {}", stack.getItem(), stack.getCount(), PackageItem.getAddress(stack));
+                    } else {
+                        LOGGER.info("Item inserted: {} x{} ->x no Package", stack.getItem(), stack.getCount());
+                    }
                 }
             }
         }
