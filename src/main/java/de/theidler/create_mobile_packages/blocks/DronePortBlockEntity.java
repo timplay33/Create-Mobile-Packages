@@ -34,8 +34,16 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
             if (level != null && !level.isClientSide) {
                 ItemStack stack = getStackInSlot(slot);
                 if (!stack.isEmpty()) {
-                    if (PackageItem.isPackage(stack)){
+                    if (PackageItem.isPackage(stack)) {
                         LOGGER.info("Item inserted: {} x{} -> {}", stack.getItem(), stack.getCount(), PackageItem.getAddress(stack));
+                        level.players().forEach(player -> {
+                            if (player.getDisplayName().getString().equals(PackageItem.getAddress(stack))) {
+                                player.drop(stack, false);
+                                player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
+                                stack.copyAndClear();
+
+                            }
+                        });
                     } else {
                         LOGGER.info("Item inserted: {} x{} ->x no Package", stack.getItem(), stack.getCount());
                     }
