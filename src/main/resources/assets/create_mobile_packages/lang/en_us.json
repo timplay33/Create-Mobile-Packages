@@ -1,5 +1,7 @@
 {
   "block.create_mobile_packages.drone_port": "Drone Port",
   "item.create_mobile_packages.drone_port": "Drone Port",
-  "itemGroup.create_mobile_packages": "Create: Mobile Packages"
+  "itemGroup.create_mobile_packages": "Create: Mobile Packages",
+  "item.create_mobile_packages.drone_controller": "Drone Controller",
+  "create_mobile_packages.drone_port.send_items": "Send Items to Player"
 }
