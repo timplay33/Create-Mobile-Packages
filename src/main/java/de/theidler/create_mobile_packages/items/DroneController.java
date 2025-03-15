@@ -1,18 +1,13 @@
 package de.theidler.create_mobile_packages.items;
 
 import com.mojang.logging.LogUtils;
-import com.simibubi.create.AllMenuTypes;
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
+import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
-import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -49,24 +44,55 @@ public class DroneController extends Item {
         BlockPos pos = pContext.getClickedPos();
         Level level = pContext.getLevel();
         Player player = pContext.getPlayer();
+/*
+        if (stockTickerBlockEntity != null){
+            LOGGER.info("{}", stockTickerBlockEntity);
+            if (player != null){
+                if (player instanceof ServerPlayer sp) {
+                    boolean showLockOption =
+                            stockTickerBlockEntity.behaviour.mayAdministrate(player) && Create.LOGISTICS.isLockable(stockTickerBlockEntity.behaviour.freqId);
+                    boolean isCurrentlyLocked = Create.LOGISTICS.isLocked(stockTickerBlockEntity.behaviour.freqId);
 
-        LOGGER.info("{} {} {}",level.getBlockEntity(pos), level.getBlockEntity(pos).getClass() == StockTickerBlockEntity.class, !level.isClientSide);
+                    NetworkHooks.openScreen(sp, stockTickerBlockEntity.new RequestMenuProvider(), buf -> {
+                        buf.writeBoolean(showLockOption);
+                        buf.writeBoolean(isCurrentlyLocked);
+                        buf.writeBlockPos(stockTickerBlockEntity.getBlockPos());
+                    });
+                    stockTickerBlockEntity.getRecentSummary()
+                            .divideAndSendTo(sp, stockTickerBlockEntity.getBlockPos());
+                }
+            }
+        }*/
 
         if (level.getBlockEntity(pos) != null){
             if (level.getBlockEntity(pos).getClass() == StockTickerBlockEntity.class) {
                 stockTickerBlockEntity = (StockTickerBlockEntity) level.getBlockEntity(pos);
-                if (!level.isClientSide) {
-                    // Open the menu
-                    player.openMenu(new SimpleMenuProvider(
-                            (id, inventory, p) -> new StockKeeperRequestMenu(AllMenuTypes.STOCK_KEEPER_REQUEST.get(), id, inventory,stockTickerBlockEntity),
-                            Component.literal("item.create_mobile_packages.drone_controller")
-                    ));
-                }
             }
         }
         return super.useOn(pContext);
     }
-/*
+
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
+        if (stockTickerBlockEntity != null){
+            // from StockTickerInteractionHandler.interactWithLogisticsManagerAt
+            if (pPlayer instanceof ServerPlayer sp) {
+                boolean showLockOption =
+                        stockTickerBlockEntity.behaviour.mayAdministrate(pPlayer) && Create.LOGISTICS.isLockable(stockTickerBlockEntity.behaviour.freqId);
+                boolean isCurrentlyLocked = Create.LOGISTICS.isLocked(stockTickerBlockEntity.behaviour.freqId);
+
+                NetworkHooks.openScreen(sp, stockTickerBlockEntity.new RequestMenuProvider(), buf -> {
+                    buf.writeBoolean(showLockOption);
+                    buf.writeBoolean(isCurrentlyLocked);
+                    buf.writeBlockPos(stockTickerBlockEntity.getBlockPos());
+                });
+                stockTickerBlockEntity.getRecentSummary()
+                        .divideAndSendTo(sp, sp.getOnPos());//stockTickerBlockEntity.getBlockPos());
+            }
+        }
+        return super.use(pLevel, pPlayer, pUsedHand);
+    }
+    /*
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
         ItemStack itemStack = pPlayer.getItemInHand(pUsedHand);
