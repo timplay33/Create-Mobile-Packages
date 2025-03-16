@@ -58,10 +58,17 @@ public class StockCheckingItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        if(!isTuned(stack)) {
+            player.displayClientMessage(Component.literal("Not linked to Network"), true);
+            return super.use(level, player, hand);
+        }
 
         if (!level.isClientSide) {
             InventorySummary summary = getAccurateSummary(stack);
-            player.displayClientMessage(Component.literal("Stock Info: " + summary.toString()), true);
+            if (!summary.getStacks().isEmpty()) {
+            summary.getStacks().forEach(bigItemStack -> {player.sendSystemMessage(Component.literal(bigItemStack.toString()));});
+            }
+            player.displayClientMessage(Component.literal("Stock Info: " + summary.getStacks().get(0).toString()), true);
         }
         return super.use(level, player, hand);
     }
