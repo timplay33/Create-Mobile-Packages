@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.index;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.items.DroneController;
+import de.theidler.create_mobile_packages.items.StockCheckingItem;
 
 
 public class CMPItems {
@@ -14,6 +15,11 @@ public class CMPItems {
     public static final ItemEntry<DroneController> DRONE_CONTROLLER =
             CreateMobilePackages.REGISTRATE.item("drone_controller", DroneController::new)
                     .register();
+
+    public static final ItemEntry<StockCheckingItem> STOCK_CHECKING_ITEM =
+            CreateMobilePackages.REGISTRATE.item("stock_checking_item", StockCheckingItem::new)
+                    .register();
+
     public static void register() {
     }
 }
