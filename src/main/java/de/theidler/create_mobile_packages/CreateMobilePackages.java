@@ -25,5 +25,6 @@ public class CreateMobilePackages
         CMPBlocks.register();
         CMPItems.register();
         CMPBlockEntities.register();
+        CMPMenuTypes.register();
     }
 }
