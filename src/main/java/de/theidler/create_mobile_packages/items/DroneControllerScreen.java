@@ -167,7 +167,186 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         this.initialized = true;
     }
 
+    private void refreshSearchResults(boolean scrollBackUp) {
+        displayedItems = Collections.emptyList();
+        if (scrollBackUp)
+            itemScroll.startWithValue(0);
 
+        if (currentItemSource == null) {
+            //clampScrollBar();
+            return;
+        }
+/*
+        if (isSchematicListMode()) {
+            clampScrollBar();
+            requestSchematicList();
+            return;
+        }*/
+
+        categories = new ArrayList<>();
+        for (int i = 0; i < blockEntity.categories.size(); i++) {
+            ItemStack stack = blockEntity.categories.get(i);
+            DroneControllerScreen.CategoryEntry entry = new DroneControllerScreen.CategoryEntry(i, stack.isEmpty() ? ""
+                    : stack.getHoverName()
+                    .getString(),
+                    0);
+            entry.hidden = hiddenCategories.contains(i);
+            categories.add(entry);
+        }
+
+        DroneControllerScreen.CategoryEntry unsorted = new DroneControllerScreen.CategoryEntry(-1, CreateLang.translate("gui.stock_keeper.unsorted_category")
+                .string(), 0);
+        unsorted.hidden = hiddenCategories.contains(-1);
+        categories.add(unsorted);
+
+        String valueWithPrefix = searchBox.getValue();
+        boolean anyItemsInCategory = false;
+
+        // Nothing is being filtered out
+        if (valueWithPrefix.isBlank()) {
+            displayedItems = new ArrayList<>(currentItemSource);
+
+            int categoryY = 0;
+            for (int categoryIndex = 0; categoryIndex < currentItemSource.size(); categoryIndex++) {
+                categories.get(categoryIndex).y = categoryY;
+                List<BigItemStack> displayedItemsInCategory = displayedItems.get(categoryIndex);
+                if (displayedItemsInCategory.isEmpty())
+                    continue;
+                if (categoryIndex < currentItemSource.size() - 1)
+                    anyItemsInCategory = true;
+
+                categoryY += rowHeight;
+                if (!categories.get(categoryIndex).hidden)
+                    categoryY += Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight;
+            }
+
+            if (!anyItemsInCategory)
+                categories.clear();
+
+            //clampScrollBar();
+            //updateCraftableAmounts();
+            return;
+        }
+
+        // Filter by search string
+        boolean modSearch = false;
+        boolean tagSearch = false;
+        if ((modSearch = valueWithPrefix.startsWith("@")) || (tagSearch = valueWithPrefix.startsWith("#")))
+            valueWithPrefix = valueWithPrefix.substring(1);
+        final String value = valueWithPrefix.toLowerCase(Locale.ROOT);
+
+        displayedItems = new ArrayList<>();
+        currentItemSource.forEach($ -> displayedItems.add(new ArrayList<>()));
+
+        int categoryY = 0;
+        for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
+            List<BigItemStack> category = currentItemSource.get(categoryIndex);
+            categories.get(categoryIndex).y = categoryY;
+
+            if (displayedItems.size() <= categoryIndex)
+                break;
+
+            List<BigItemStack> displayedItemsInCategory = displayedItems.get(categoryIndex);
+            for (BigItemStack entry : category) {
+                ItemStack stack = entry.stack;
+
+                if (modSearch) {
+                    if (ForgeRegistries.ITEMS.getKey(stack.getItem())
+                            .getNamespace()
+                            .contains(value)) {
+                        displayedItemsInCategory.add(entry);
+                    }
+                    continue;
+                }
+
+                if (tagSearch) {
+                    if (stack.getTags()
+                            .anyMatch(key -> key.location()
+                                    .toString()
+                                    .contains(value)))
+                        displayedItemsInCategory.add(entry);
+                    continue;
+                }
+
+                if (stack.getHoverName()
+                        .getString()
+                        .toLowerCase(Locale.ROOT)
+                        .contains(value)
+                        || ForgeRegistries.ITEMS.getKey(stack.getItem())
+                        .getPath()
+                        .contains(value)) {
+                    displayedItemsInCategory.add(entry);
+                    continue;
+                }
+            }
+
+            if (displayedItemsInCategory.isEmpty())
+                continue;
+            if (categoryIndex < currentItemSource.size() - 1)
+                anyItemsInCategory = true;
+
+            categoryY += rowHeight;
+
+            if (!categories.get(categoryIndex).hidden)
+                categoryY += Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight;
+        }
+
+        if (!anyItemsInCategory)
+            categories.clear();
+
+        //clampScrollBar();
+        //updateCraftableAmounts();
+    }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        addressBox.tick();
+
+       /* if (!forcedEntries.isEmpty()) {
+            InventorySummary summary = blockEntity.getLastClientsideStockSnapshotAsSummary();
+            for (BigItemStack stack : forcedEntries.getStacks()) {
+                int limitedAmount = -stack.count - 1;
+                int actualAmount = summary.getCountOf(stack.stack);
+                if (actualAmount <= limitedAmount)
+                    forcedEntries.erase(stack.stack);
+            }
+        }*/
+
+        boolean allEmpty = true;
+        for (List<BigItemStack> list : displayedItems)
+            allEmpty &= list.isEmpty();
+        if (allEmpty)
+            emptyTicks++;
+        else
+            emptyTicks = 0;
+
+        if (successTicks > 0 && itemsToOrder.isEmpty())
+            successTicks++;
+        else
+            successTicks = 0;
+
+        List<List<BigItemStack>> clientStockSnapshot = blockEntity.getClientStockSnapshot();
+        if (clientStockSnapshot != currentItemSource) {
+            currentItemSource = clientStockSnapshot;
+            refreshSearchResults(false);
+            //revalidateOrders();
+        }
+
+        if (refreshSearchNextTick) {
+            refreshSearchNextTick = false;
+            refreshSearchResults(moveToTopNextTick);
+        }
+
+        itemScroll.tickChaser();
+
+        if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
+            itemScroll.setValue(itemScroll.getChaseTarget());
+
+        if (blockEntity.ticksSinceLastUpdate > 15){
+            //blockEntity.refreshClientStockSnapshot();
+            }
+    }
 
 
 

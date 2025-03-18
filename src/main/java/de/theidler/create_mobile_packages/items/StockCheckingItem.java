@@ -24,13 +24,12 @@ import net.minecraft.world.level.Level;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem.*;
 
 public class StockCheckingItem extends Item {
+    protected static UUID Freq;
     protected List<List<BigItemStack>> lastClientsideStockSnapshot;
     protected InventorySummary lastClientsideStockSnapshotAsSummary;
     protected List<BigItemStack> newlyReceivedStockSnapshot;
@@ -46,13 +45,13 @@ public class StockCheckingItem extends Item {
 
     // Retrieve the recent summary of the network
     public static InventorySummary getRecentSummary(ItemStack stack) {
-        UUID Freq = networkFromStack(stack);
+        Freq = networkFromStack(stack);
         return LogisticsManager.getSummaryOfNetwork(Freq, false);
     }
 
     // Retrieve an accurate summary of the network
     public static InventorySummary getAccurateSummary(ItemStack stack) {
-        UUID Freq = networkFromStack(stack);
+        Freq = networkFromStack(stack);
         return LogisticsManager.getSummaryOfNetwork(Freq, true);
     }
 
@@ -132,4 +131,11 @@ public class StockCheckingItem extends Item {
                 .addTo(pTooltip);
     }
 
+    public InventorySummary getLastClientsideStockSnapshotAsSummary() {
+        return LogisticsManager.getSummaryOfNetwork(Freq, true);
+    }
+
+    public List<List<BigItemStack>> getClientStockSnapshot() {
+        return LogisticsManager.getSummaryOfNetwork(Freq, true).getStacks().stream().map(Arrays::asList).toList();
+    }
 }
