@@ -62,13 +62,12 @@ public class StockCheckingItem extends Item {
             player.displayClientMessage(Component.literal("Not linked to Network"), true);
             return super.use(level, player, hand);
         }
-
+// dev
         if (!level.isClientSide) {
             InventorySummary summary = getAccurateSummary(stack);
             if (!summary.getStacks().isEmpty()) {
             summary.getStacks().forEach(bigItemStack -> {player.sendSystemMessage(Component.literal(bigItemStack.toString()));});
             }
-            player.displayClientMessage(Component.literal("Stock Info: " + summary.getStacks().get(0).toString()), true);
         }
         return super.use(level, player, hand);
     }
@@ -83,13 +82,8 @@ public class StockCheckingItem extends Item {
 
         if (player == null)
             return InteractionResult.FAIL;
-        /*
-        if (player.isShiftKeyDown())
-            return super.useOn(pContext);
-        */
 
         LogisticallyLinkedBehaviour link = BlockEntityBehaviour.get(level, pos, LogisticallyLinkedBehaviour.TYPE);
-        boolean tuned = isTuned(stack);
 
         if (link != null) {
             if (level.isClientSide)
@@ -104,18 +98,12 @@ public class StockCheckingItem extends Item {
         InteractionResult useOn = super.useOn(pContext);
         if (level.isClientSide || useOn == InteractionResult.FAIL)
             return useOn;
-
-        player.displayClientMessage(tuned ? CreateLang.translateDirect("logistically_linked.connected")
-                : CreateLang.translateDirect("logistically_linked.new_network_started"), true);
         return useOn;
     }
 
     @Override
     public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
-        UUID Freq = networkFromStack(pStack);
-        pTooltip.add(Component.literal("Logistics Network ID: " + Freq));
-
         if (!isTuned(pStack))
             return;
 
