@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.items;
 
+import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
@@ -24,11 +25,21 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBeha
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem.*;
 
 public class StockCheckingItem extends Item {
+    protected List<List<BigItemStack>> lastClientsideStockSnapshot;
+    protected InventorySummary lastClientsideStockSnapshotAsSummary;
+    protected List<BigItemStack> newlyReceivedStockSnapshot;
+    protected String previouslyUsedAddress;
+    protected int activeLinks;
+    protected int ticksSinceLastUpdate;
+    protected List<ItemStack> categories;
+    protected Map<UUID, List<Integer>> hiddenCategoriesByPlayer;
+
     public StockCheckingItem(Properties pProperties) {
         super(pProperties);
     }
