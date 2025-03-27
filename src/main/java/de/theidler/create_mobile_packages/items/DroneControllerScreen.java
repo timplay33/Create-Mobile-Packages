@@ -89,14 +89,17 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     private InventorySummary forcedEntries;
     private boolean canRequestCraftingPackage;
     private boolean initialized;
+    DroneControllerMenu controllerMenu;
 
     public DroneControllerScreen(DroneControllerMenu container, Inventory playerInventory, Component title) {
         super(container, playerInventory, title);
-        init(); // don't know why it isn't run automatically??
+        this.controllerMenu = container;
+        //init(); // don't know why it isn't run automatically??
         displayedItems = new ArrayList<>();
         itemsToOrder = new ArrayList<>();
         recipesToOrder = new ArrayList<>();
-        categories = new ArrayList<>();/*
+        categories = new ArrayList<>();
+        /*
         blockEntity.lastClientsideStockSnapshot = null;
         blockEntity.ticksSinceLastUpdate = 15;
         emptyTicks = 0;
@@ -108,14 +111,15 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         refreshSearchNextTick = false;
         moveToTopNextTick = false;
         canRequestCraftingPackage = false;
-
+*/
+        /*hiddenCategories =
+                new HashSet<>(blockEntity.hiddenCategoriesByPlayer.getOrDefault(menu.player.getUUID(), List.of()));*/
         forcedEntries = new InventorySummary();
-        encodeRequester =
-                AllTags.AllItemTags.TABLE_CLOTHS.matches(itemToProgram) || AllBlocks.REDSTONE_REQUESTER.isIn(itemToProgram);*/
     }
 
     @Override
     protected void init() {
+        blockEntity = this.controllerMenu.droneController;
         int appropriateHeight = Minecraft.getInstance()
                 .getWindow()
                 .getGuiScaledHeight() - 10;
@@ -170,7 +174,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     private void refreshSearchResults(boolean scrollBackUp) {
         displayedItems = Collections.emptyList();
         if (scrollBackUp)
-            itemScroll.startWithValue(0);
+            //itemScroll.startWithValue(0);
 
         if (currentItemSource == null) {
             //clampScrollBar();
@@ -182,7 +186,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             requestSchematicList();
             return;
         }*/
-
+/*
         categories = new ArrayList<>();
         for (int i = 0; i < blockEntity.categories.size(); i++) {
             ItemStack stack = blockEntity.categories.get(i);
@@ -192,12 +196,12 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                     0);
             entry.hidden = hiddenCategories.contains(i);
             categories.add(entry);
-        }
-
+        }*/
+/*
         DroneControllerScreen.CategoryEntry unsorted = new DroneControllerScreen.CategoryEntry(-1, CreateLang.translate("gui.stock_keeper.unsorted_category")
                 .string(), 0);
         unsorted.hidden = hiddenCategories.contains(-1);
-        categories.add(unsorted);
+        categories.add(unsorted);*/
 
         String valueWithPrefix = searchBox.getValue();
         boolean anyItemsInCategory = false;
@@ -205,7 +209,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         // Nothing is being filtered out
         if (valueWithPrefix.isBlank()) {
             displayedItems = new ArrayList<>(currentItemSource);
-
+/*
             int categoryY = 0;
             for (int categoryIndex = 0; categoryIndex < currentItemSource.size(); categoryIndex++) {
                 categories.get(categoryIndex).y = categoryY;
@@ -222,7 +226,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
             if (!anyItemsInCategory)
                 categories.clear();
-
+*/
             //clampScrollBar();
             //updateCraftableAmounts();
             return;
@@ -237,7 +241,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
         displayedItems = new ArrayList<>();
         currentItemSource.forEach($ -> displayedItems.add(new ArrayList<>()));
-
+/*
         int categoryY = 0;
         for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
             List<BigItemStack> category = currentItemSource.get(categoryIndex);
@@ -293,7 +297,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
         if (!anyItemsInCategory)
             categories.clear();
-
+*/
         //clampScrollBar();
         //updateCraftableAmounts();
     }
@@ -303,7 +307,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         super.containerTick();
         addressBox.tick();
 
-       /* if (!forcedEntries.isEmpty()) {
+       if (!forcedEntries.isEmpty()) {
             InventorySummary summary = blockEntity.getLastClientsideStockSnapshotAsSummary();
             for (BigItemStack stack : forcedEntries.getStacks()) {
                 int limitedAmount = -stack.count - 1;
@@ -311,7 +315,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                 if (actualAmount <= limitedAmount)
                     forcedEntries.erase(stack.stack);
             }
-        }*/
+        }
 
         boolean allEmpty = true;
         for (List<BigItemStack> list : displayedItems)
@@ -338,11 +342,11 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             refreshSearchResults(moveToTopNextTick);
         }
 
-        itemScroll.tickChaser();
-
+        //itemScroll.tickChaser();
+/*
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
             itemScroll.setValue(itemScroll.getChaseTarget());
-
+*/
         if (blockEntity.ticksSinceLastUpdate > 15){
             //blockEntity.refreshClientStockSnapshot();
             }

@@ -41,6 +41,7 @@ public class StockCheckingItem extends Item {
 
     public StockCheckingItem(Properties pProperties) {
         super(pProperties);
+        categories = new ArrayList<>();
     }
 
     // Retrieve the recent summary of the network

@@ -10,7 +10,7 @@ public class CMPMenuTypes {
     public static final MenuEntry<DroneControllerMenu> DRONE_CONTROLLER_MENU =
             CreateMobilePackages.REGISTRATE.menu(
                     "drone_controller_menu",
-                    DroneControllerMenu::new,
+                    (droneControllerMenuMenuType, containerId, playerInventory) -> new DroneControllerMenu(containerId, playerInventory),
                     () -> DroneControllerScreen::new
             ).register();
 
