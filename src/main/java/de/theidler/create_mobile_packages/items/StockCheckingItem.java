@@ -38,6 +38,8 @@ public class StockCheckingItem extends Item {
     protected int ticksSinceLastUpdate;
     protected List<ItemStack> categories;
     protected Map<UUID, List<Integer>> hiddenCategoriesByPlayer;
+    @Nullable
+    protected Level level;
 
     public StockCheckingItem(Properties pProperties) {
         super(pProperties);
@@ -138,5 +140,16 @@ public class StockCheckingItem extends Item {
 
     public List<List<BigItemStack>> getClientStockSnapshot() {
         return LogisticsManager.getSummaryOfNetwork(Freq, true).getStacks().stream().map(Arrays::asList).toList();
+    }
+
+    public @Nullable Level getLevel() {
+        return this.level;
+    }
+
+    public void setLevel(Level pLevel) {
+        this.level = pLevel;
+    }
+    public boolean hasLevel() {
+        return this.level != null;
     }
 }

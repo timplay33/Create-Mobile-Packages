@@ -11,8 +11,6 @@ import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderRequestPacket;
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
-import com.simibubi.create.content.processing.burner.BlazeBurnerBlockEntity;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.ScreenWithStencils;
@@ -21,6 +19,7 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
+import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.theme.Color;
@@ -34,18 +33,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.function.Function;
 
 public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneControllerMenu> implements MenuAccess<DroneControllerMenu>, ScreenWithStencils {
 
@@ -188,7 +186,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             itemScroll.startWithValue(0);
 
         if (currentItemSource == null) {
-            //clampScrollBar();
+            clampScrollBar();
             return;
         }
 /*
@@ -237,8 +235,8 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             if (!anyItemsInCategory)
                 categories.clear();
 
-            //clampScrollBar();
-            //updateCraftableAmounts();
+            clampScrollBar();
+            updateCraftableAmounts();
             return;
         }
 
@@ -308,8 +306,159 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         if (!anyItemsInCategory)
             categories.clear();
 
-        //clampScrollBar();
-        //updateCraftableAmounts();
+        clampScrollBar();
+        updateCraftableAmounts();
+    }
+
+    private void removeLeastEssentialItemStack(List<List<BigItemStack>> validIngredients) {
+        List<BigItemStack> longest = null;
+        int most = 0;
+        for (List<BigItemStack> list : validIngredients) {
+            int count = (int) list.stream()
+                    .filter(entry -> getOrderForItem(entry.stack) == null)
+                    .count();
+            if (longest != null && count <= most)
+                continue;
+            longest = list;
+            most = count;
+        }
+
+        if (longest.isEmpty())
+            return;
+
+        BigItemStack chosen = null;
+        for (int i = 0; i < longest.size(); i++) {
+            BigItemStack entry = longest.get(longest.size() - 1 - i);
+            if (getOrderForItem(entry.stack) != null)
+                continue;
+            chosen = entry;
+            break;
+        }
+
+        for (List<BigItemStack> list : validIngredients)
+            list.remove(chosen);
+    }
+
+
+    private Pair<Integer, List<List<BigItemStack>>> maxCraftable(CraftableBigItemStack cbis, InventorySummary summary,
+                                                                 Function<ItemStack, Integer> countModifier, int newTypeLimit) {
+        List<Ingredient> ingredients = cbis.getIngredients();
+        List<List<BigItemStack>> validEntriesByIngredient = new ArrayList<>();
+        List<ItemStack> visited = new ArrayList<>();
+
+        for (Ingredient ingredient : ingredients) {
+            if (ingredient.isEmpty())
+                continue;
+            List<BigItemStack> valid = new ArrayList<>();
+            for (List<BigItemStack> list : summary.getItemMap()
+                    .values())
+                Entries: for (BigItemStack entry : list) {
+                    if (!ingredient.test(entry.stack))
+                        continue;
+                    BigItemStack asBis = new BigItemStack(entry.stack,
+                            summary.getCountOf(entry.stack) + countModifier.apply(entry.stack));
+                    if (asBis.count > 0)
+                        valid.add(asBis);
+                    for (ItemStack visitedStack : visited) {
+                        if (!ItemHandlerHelper.canItemStacksStack(visitedStack, entry.stack))
+                            continue;
+                        visitedStack.grow(1);
+                        continue Entries;
+                    }
+                    visited.add(entry.stack.copyWithCount(1));
+                }
+
+            if (valid.isEmpty())
+                return Pair.of(0, List.of());
+
+            Collections.sort(valid,
+                    (bis1, bis2) -> -Integer.compare(summary.getCountOf(bis1.stack), summary.getCountOf(bis2.stack)));
+            validEntriesByIngredient.add(valid);
+        }
+
+        // Used new items may have to be trimmed
+        if (newTypeLimit != -1) {
+            int toRemove = (int) validEntriesByIngredient.stream()
+                    .flatMap(l -> l.stream())
+                    .filter(entry -> getOrderForItem(entry.stack) == null)
+                    .distinct()
+                    .count() - newTypeLimit;
+
+            for (int i = 0; i < toRemove; i++)
+                removeLeastEssentialItemStack(validEntriesByIngredient);
+        }
+
+        // Ingredients with shared items must divide counts
+        for (ItemStack visitedItem : visited) {
+            for (List<BigItemStack> list : validEntriesByIngredient) {
+                for (BigItemStack entry : list) {
+                    if (!ItemHandlerHelper.canItemStacksStack(entry.stack, visitedItem))
+                        continue;
+                    entry.count = entry.count / visitedItem.getCount();
+                }
+            }
+        }
+
+        // Determine the bottlenecking ingredient
+        int minCount = Integer.MAX_VALUE;
+        for (List<BigItemStack> list : validEntriesByIngredient) {
+            int sum = 0;
+            for (BigItemStack entry : list)
+                sum += entry.count;
+            minCount = Math.min(sum, minCount);
+        }
+
+        if (minCount == 0)
+            return Pair.of(0, List.of());
+
+        int outputCount = cbis.getOutputCount(blockEntity.getLevel());
+        return Pair.of(minCount * outputCount, validEntriesByIngredient);
+    }
+
+    private void updateCraftableAmounts() {
+        InventorySummary usedItems = new InventorySummary();
+        InventorySummary availableItems = new InventorySummary();
+
+        for (BigItemStack ordered : itemsToOrder)
+            availableItems.add(ordered.stack, ordered.count);
+
+        for (CraftableBigItemStack cbis : recipesToOrder) {
+            Pair<Integer, List<List<BigItemStack>>> craftingResult =
+                    maxCraftable(cbis, availableItems, stack -> -usedItems.getCountOf(stack), -1);
+            int maxCraftable = craftingResult.getFirst();
+            List<List<BigItemStack>> validEntriesByIngredient = craftingResult.getSecond();
+            int outputCount = cbis.getOutputCount(blockEntity.getLevel());
+
+            // Only tweak amounts downward
+            cbis.count = Math.min(cbis.count, maxCraftable);
+
+            // Use ingredients up before checking next recipe
+            for (List<BigItemStack> list : validEntriesByIngredient) {
+                int remaining = cbis.count / outputCount;
+                for (BigItemStack entry : list) {
+                    if (remaining <= 0)
+                        break;
+                    usedItems.add(entry.stack, Math.min(remaining, entry.count));
+                    remaining -= entry.count;
+                }
+            }
+        }
+
+        canRequestCraftingPackage = false;
+        if (recipesToOrder.size() != 1)
+            return;
+        for (BigItemStack ordered : itemsToOrder)
+            if (usedItems.getCountOf(ordered.stack) != ordered.count)
+                return;
+        canRequestCraftingPackage = true;
+    }
+
+    private void clampScrollBar() {
+        int maxScroll = getMaxScroll();
+        float prevTarget = itemScroll.getChaseTarget();
+        float newTarget = Mth.clamp(prevTarget, 0, maxScroll);
+        if (prevTarget != newTarget)
+            itemScroll.startWithValue(newTarget);
     }
 
     @Override
@@ -602,14 +751,14 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                     continue;
                 if (cullY > y + windowHeight - 72)
                     break;
-
+/*
                 boolean isStackHovered = index == hoveredSlot.getSecond() && categoryIndex == hoveredSlot.getFirst();
                 BigItemStack entry = category.get(index);
 
                 ms.pushPose();
                 ms.translate(itemsX + (index % cols) * colWidth, pY, 0);
                 renderItemEntry(guiGraphics, 1, entry, isStackHovered, false);
-                ms.popPose();
+                ms.popPose();*/
             }
         }
 
