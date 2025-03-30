@@ -11,10 +11,12 @@ import java.util.List;
 
 public class DroneControllerMenu extends AbstractContainerMenu {
     private final List<BigItemStack> bigItemStacks;
+    public String previouslyUsedAddress;
 
     public DroneControllerMenu(int id, Inventory playerInventory, List<BigItemStack> inventorySummary) {
         super(CMPMenuTypes.DRONE_CONTROLLER_MENU.get(), id);
         this.bigItemStacks = inventorySummary;
+        previouslyUsedAddress = "";
     }
 
     public List<BigItemStack> getBigItemStacks() {
