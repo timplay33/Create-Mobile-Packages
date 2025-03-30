@@ -1,6 +1,5 @@
-package de.theidler.create_mobile_packages.items;
+package de.theidler.create_mobile_packages.items.drone_controller;
 
-import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
@@ -30,20 +29,9 @@ import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLin
 
 public class StockCheckingItem extends Item {
     protected static UUID Freq;
-    protected List<List<BigItemStack>> lastClientsideStockSnapshot;
-    protected InventorySummary lastClientsideStockSnapshotAsSummary;
-    protected List<BigItemStack> newlyReceivedStockSnapshot;
-    protected String previouslyUsedAddress;
-    protected int activeLinks;
-    protected int ticksSinceLastUpdate;
-    protected List<ItemStack> categories;
-    protected Map<UUID, List<Integer>> hiddenCategoriesByPlayer;
-    @Nullable
-    protected Level level;
 
     public StockCheckingItem(Properties pProperties) {
         super(pProperties);
-        categories = new ArrayList<>();
     }
 
     // Retrieve the recent summary of the network
@@ -64,7 +52,7 @@ public class StockCheckingItem extends Item {
     }
 
     public static boolean broadcastPackageRequest(ItemStack stack, RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler, String address, @Nullable PackageOrder orderContext) {
-        UUID Freq = networkFromStack(stack);
+        Freq = networkFromStack(stack);
         return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address, orderContext);
     }
 
@@ -132,24 +120,5 @@ public class StockCheckingItem extends Item {
         CreateLang.translate("logistically_linked.tooltip_clear")
                 .style(ChatFormatting.GRAY)
                 .addTo(pTooltip);
-    }
-
-    public InventorySummary getLastClientsideStockSnapshotAsSummary() {
-        return LogisticsManager.getSummaryOfNetwork(Freq, true);
-    }
-
-    public List<List<BigItemStack>> getClientStockSnapshot() {
-        return LogisticsManager.getSummaryOfNetwork(Freq, true).getStacks().stream().map(Arrays::asList).toList();
-    }
-
-    public @Nullable Level getLevel() {
-        return this.level;
-    }
-
-    public void setLevel(Level pLevel) {
-        this.level = pLevel;
-    }
-    public boolean hasLevel() {
-        return this.level != null;
     }
 }
