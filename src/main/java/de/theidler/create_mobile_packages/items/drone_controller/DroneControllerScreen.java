@@ -3,20 +3,19 @@ package de.theidler.create_mobile_packages.items.drone_controller;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.logistics.BigItemStack;
-import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
-import com.simibubi.create.content.logistics.stockTicker.*;
+import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.ScreenWithStencils;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
-import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.gui.UIRenderHelper;
@@ -26,23 +25,17 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.network.simple.SimpleChannel;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -89,6 +82,28 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     protected void containerTick() {
         super.containerTick();
         addressBox.tick();
+
+        if (forcedEntries != null) {
+            if (!forcedEntries.isEmpty()) {
+                for (BigItemStack stack : forcedEntries.getStacks()) {
+                    int limitedAmount = -stack.count - 1;
+                    int actualAmount = countOf(stack);
+                    if (actualAmount <= limitedAmount)
+                        forcedEntries.erase(stack.stack);
+                }
+            }
+        }
+
+        boolean allEmpty = menu.getBigItemStacks().isEmpty();
+        if (allEmpty)
+            emptyTicks++;
+        else
+            emptyTicks = 0;
+
+        if (successTicks > 0 && itemsToOrder.isEmpty())
+            successTicks++;
+        else
+            successTicks = 0;
 
         itemScroll.tickChaser();
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
@@ -331,7 +346,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         List<BigItemStack> list = menu.getBigItemStacks();
         totalRows++;
         totalRows += (int) Math.ceil(list.size() / (float) cols);
-        return (int) Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
+        return Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
     }
 
     private void renderItemEntry(GuiGraphics graphics, float scale, BigItemStack entry, boolean isStackHovered,
@@ -471,9 +486,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
         if (mouseX < confirmX || mouseX >= confirmX + confirmW)
             return false;
-        if (mouseY < confirmY || mouseY >= confirmY + confirmH)
-            return false;
-        return true;
+        return mouseY >= confirmY && mouseY < confirmY + confirmH;
     }
 
     @Override
@@ -525,6 +538,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             return super.mouseClicked(pMouseX, pMouseY, pButton);
 
         // Items
+        try {
         boolean orderClicked = hoveredSlot.getFirst() == -1;
         if (hoveredSlot.getSecond() > menu.getBigItemStacks().size()) {return false;}
         BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
@@ -557,6 +571,9 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
         existingOrder.count = current + Math.min(transfer, entry.count - current);
         return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     @Override
@@ -585,7 +602,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             itemScroll.chase(newTarget, 0.5, LerpedFloat.Chaser.EXP);
             return true;
         }
-
+        try {
         boolean orderClicked = hoveredSlot.getFirst() == -1;
         BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
                 : menu.getBigItemStacks()
@@ -622,6 +639,9 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
 
         return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private int countOf(BigItemStack entry){
@@ -723,13 +743,18 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             if (recipesToOrder.get(0).recipe instanceof CraftingRecipe cr)
                 craftingRequest = new PackageOrder(FactoryPanelScreen.convertRecipeToPackageOrderContext(cr, itemsToOrder));*/
 
-        AllPackets.getChannel()
-                .sendToServer(new PackageOrderRequestPacket(playerInventory.player.getOnPos(), new PackageOrder(itemsToOrder),
+        CMPPackets.getChannel()
+                .sendToServer(new SendPackage(new PackageOrder(itemsToOrder),
                         addressBox.getValue(), false, craftingRequest));
+
+
+        //menu.droneController.broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, new PackageOrder(itemsToOrder), null, addressBox.getValue(),  null );
 
         itemsToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;
         successTicks = 1;
+
     }
+
 
 }
