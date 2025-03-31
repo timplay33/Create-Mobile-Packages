@@ -211,6 +211,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         }
 
         // Render DroneController Item
+        ms.clear(); // fixes Error
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
