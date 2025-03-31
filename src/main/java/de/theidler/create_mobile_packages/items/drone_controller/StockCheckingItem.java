@@ -69,14 +69,6 @@ public class StockCheckingItem extends Item {
             player.displayClientMessage(Component.literal("Not linked to Network"), true);
             return super.use(level, player, hand);
         }
-// dev
-/*
-        if (!level.isClientSide) {
-            InventorySummary summary = getAccurateSummary(stack);
-            if (!summary.getStacks().isEmpty()) {
-            summary.getStacks().forEach(bigItemStack -> {player.sendSystemMessage(Component.literal(bigItemStack.toString()));});
-            }
-        }*/
         return super.use(level, player, hand);
     }
 
