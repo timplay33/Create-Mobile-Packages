@@ -15,10 +15,6 @@ public class CMPItems {
             CreateMobilePackages.REGISTRATE.item("drone_controller", DroneController::new)
                     .register();
 
-    /*public static final ItemEntry<StockCheckingItem> STOCK_CHECKING_ITEM =
-            CreateMobilePackages.REGISTRATE.item("stock_checking_item", StockCheckingItem::new)
-                    .register();*/
-
     public static void register() {
     }
 }

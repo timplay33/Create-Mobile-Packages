@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.items.drone_controller;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -20,10 +21,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem.*;
 
@@ -51,6 +52,11 @@ public class StockCheckingItem extends Item {
         return broadcastPackageRequest(stack, type, order, ignoredHandler, address, null);
     }
 
+    public boolean broadcastPackageRequest(RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler,
+                                           String address, @Nullable PackageOrder orderContext) {
+        return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address, orderContext);
+    }
+
     public static boolean broadcastPackageRequest(ItemStack stack, RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler, String address, @Nullable PackageOrder orderContext) {
         Freq = networkFromStack(stack);
         return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address, orderContext);
@@ -63,16 +69,9 @@ public class StockCheckingItem extends Item {
             player.displayClientMessage(Component.literal("Not linked to Network"), true);
             return super.use(level, player, hand);
         }
-// dev
-/*
-        if (!level.isClientSide) {
-            InventorySummary summary = getAccurateSummary(stack);
-            if (!summary.getStacks().isEmpty()) {
-            summary.getStacks().forEach(bigItemStack -> {player.sendSystemMessage(Component.literal(bigItemStack.toString()));});
-            }
-        }*/
         return super.use(level, player, hand);
     }
+
 
     @Override
     public InteractionResult useOn(UseOnContext pContext) {
