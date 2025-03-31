@@ -7,6 +7,8 @@ modId = "${mod_id}"
 version = "${mod_version}"
 displayName = "${mod_name}"
 authors = "${mod_authors}"
+logoFile = "${mod_logo}"
+displayURL = "${mod_display_url}"
 
 description='''${mod_description}'''
 [[dependencies.${ mod_id }]]
