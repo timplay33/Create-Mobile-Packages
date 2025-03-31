@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "create_mobile_packages:drone_controller"
+    }
+  ],
+  "result": {
+    "item": "create_mobile_packages:drone_controller"
+  }
+}

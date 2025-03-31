@@ -1,19 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    " A ",
-    " B ",
-    " C "
+    "   ",
+    " T ",
+    "BBB"
   ],
   "key": {
-    "A": {
-      "item": "minecraft:diamond"
+    "T": {
+      "item": "create:transmitter"
     },
     "B": {
-      "item": "minecraft:stick"
-    },
-    "C": {
-      "item": "minecraft:iron_ingot"
+      "item": "create:brass_casing"
     }
   },
   "result": {

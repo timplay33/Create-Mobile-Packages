@@ -149,7 +149,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
     private Couple<Integer> getHoveredSlot(int x, int y) {
         x += 1;
-        if (x < itemsX || x >= itemsX + cols * colWidth)// || isSchematicListMode())
+        if (x < itemsX || x >= itemsX + cols * colWidth)
             return noneHovered;
 
         // Ordered item is hovered
@@ -159,14 +159,6 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                 return noneHovered;
             return Couple.create(-1, col);
         }
-
-        /*// Ordered recipe is hovered
-        if (y >= orderY - 31 && y < orderY - 31 + rowHeight) {
-            int jeiX = getGuiLeft() + (windowWidth - colWidth * recipesToOrder.size()) / 2 + 1;
-            int col = Mth.floorDiv(x - jeiX, colWidth);
-            if (recipesToOrder.size() > col && col >= 0)
-                return Couple.create(-2, col);
-        }*/
 
         if (y < getGuiTop() + 16 || y > getGuiTop() + windowHeight - 80)
             return noneHovered;
@@ -185,9 +177,6 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
             if (slot < 0)
                 return noneHovered;
-            /*if (menu.getBigItemStacks().get(categoryIndex)
-                    .size() <= slot)
-                continue;*/
 
             return Couple.create(categoryIndex, slot);
         }
@@ -222,6 +211,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         }
 
         // Render DroneController Item
+        ms.clear(); // fixes Error
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
@@ -353,18 +343,6 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                                  boolean isRenderingOrders) {
 
         int customCount = entry.count;
-        /*if (!isRenderingOrders) {
-            BigItemStack order = getOrderForItem(entry.stack);
-            if (entry.count < BigItemStack.INF) {
-                int forcedCount = forcedEntries.getCountOf(entry.stack);
-                if (forcedCount != 0)
-                    customCount = Math.min(customCount, -forcedCount - 1);
-                if (order != null)
-                    customCount -= order.count;
-                customCount = Math.max(0, customCount);
-            }
-            AllGuiTextures.STOCK_KEEPER_REQUEST_SLOT.render(graphics, 0, 0);
-        }*/
 
         boolean craftable = entry instanceof CraftableBigItemStack;
         PoseStack ms = graphics.pose();
@@ -707,7 +685,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         }
 
         if (pKeyCode == GLFW.GLFW_KEY_ENTER && hasShiftDown()) {
-            //sendIt();
+            sendIt();
             return true;
         }
 
@@ -738,17 +716,9 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             forcedEntries.add(toOrder.stack.copy(), -1 - Math.max(0, countOf(toOrder) - toOrder.count));
         }
 
-        PackageOrder craftingRequest = PackageOrder.empty();
-        /*if (canRequestCraftingPackage && !itemsToOrder.isEmpty() && !recipesToOrder.isEmpty())
-            if (recipesToOrder.get(0).recipe instanceof CraftingRecipe cr)
-                craftingRequest = new PackageOrder(FactoryPanelScreen.convertRecipeToPackageOrderContext(cr, itemsToOrder));*/
-
         CMPPackets.getChannel()
                 .sendToServer(new SendPackage(new PackageOrder(itemsToOrder),
-                        addressBox.getValue(), false, craftingRequest));
-
-
-        //menu.droneController.broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, new PackageOrder(itemsToOrder), null, addressBox.getValue(),  null );
+                        addressBox.getValue(), false, PackageOrder.empty()));
 
         itemsToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;

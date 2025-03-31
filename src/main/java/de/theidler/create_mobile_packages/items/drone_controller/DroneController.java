@@ -40,7 +40,6 @@ public class DroneController extends StockCheckingItem {
                                            String address, @Nullable PackageOrder orderContext) {
         boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address, orderContext);
         previouslyUsedAddress = address;
-        //notifyUpdate();
         return result;
     }
     @Override
@@ -67,6 +66,6 @@ public class DroneController extends StockCheckingItem {
                 ), buf -> {});
             }
         }
-        return super.use(pLevel,pPlayer,pUsedHand); //InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
+        return super.use(pLevel, pPlayer, pUsedHand);
     }
 }
