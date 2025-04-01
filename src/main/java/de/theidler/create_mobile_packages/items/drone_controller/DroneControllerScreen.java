@@ -28,6 +28,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -186,9 +187,13 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
     @Override
     protected void renderBg(GuiGraphics pGuiGraphics, float partialTicks, int mouseX, int mouseY) {
+        if (this != minecraft.screen)
+            return; // stencil buffer does not cooperate with ponders gui fade out
+
         PoseStack ms = pGuiGraphics.pose();
         float currentScroll = itemScroll.getValue(partialTicks);
         Couple<Integer> hoveredSlot = getHoveredSlot(mouseX, mouseY);
+
         int x = getGuiLeft();
         int y = getGuiTop();
 
@@ -211,7 +216,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         }
 
         // Render DroneController Item
-        ms.clear(); // fixes Error
+        //ms.clear(); // fixes Error
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
@@ -285,6 +290,50 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             }
         }
 
+        int itemWindowX = x + 21;
+        int itemWindowX2 = itemWindowX + 184;
+        int itemWindowY = y + 17;
+        int itemWindowY2 = y + windowHeight - 80;
+
+        UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
+        startStencil(pGuiGraphics, itemWindowX - 5, itemWindowY, itemWindowX2 - itemWindowX + 10,
+                itemWindowY2 - itemWindowY);
+
+        ms.pushPose();
+        ms.translate(0, -currentScroll * rowHeight, 0);
+
+        // BG
+        for (int sliceY = -2; sliceY < getMaxScroll() * rowHeight + windowHeight - 72; sliceY +=
+                AllGuiTextures.STOCK_KEEPER_REQUEST_BG.getHeight()) {
+            if (sliceY - currentScroll * rowHeight < -20)
+                continue;
+            if (sliceY - currentScroll * rowHeight > windowHeight - 72)
+                continue;
+            AllGuiTextures.STOCK_KEEPER_REQUEST_BG.render(pGuiGraphics, x + 22, y + sliceY + 18);
+        }
+
+        // Something isnt right
+        boolean allEmpty = menu.getBigItemStacks().isEmpty();
+        if (allEmpty) {
+            Component msg = getTroubleshootingMessage();
+            float alpha = Mth.clamp((emptyTicks - 10f) / 5f, 0f, 1f);
+            if (alpha > 0) {
+                List<FormattedCharSequence> split = font.split(msg, 160);
+                for (int i = 0; i < split.size(); i++) {
+                    FormattedCharSequence sequence = split.get(i);
+                    int lineWidth = font.width(sequence);
+                    pGuiGraphics.drawString(font, sequence, x + windowWidth / 2 - lineWidth / 2 + 1,
+                            itemsY + 20 + 1 + i * (font.lineHeight + 1), new Color(0x4A2D31).setAlpha(alpha)
+                                    .getRGB(),
+                            false);
+                    pGuiGraphics.drawString(font, sequence, x + windowWidth / 2 - lineWidth / 2,
+                            itemsY + 20 + i * (font.lineHeight + 1), new Color(0xF8F8EC).setAlpha(alpha)
+                                    .getRGB(),
+                            false);
+                }
+            }
+        }
+
         // Items
         List<BigItemStack> category = menu.getBigItemStacks();
         int categoryY = 0;
@@ -328,6 +377,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_BOT.render(pGuiGraphics, barX, barY + barSize - 5);
             ms.popPose();
         }
+        UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
     }
 
     private int getMaxScroll() {
@@ -708,13 +758,13 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         if (itemsToOrder.isEmpty())
             return;
 
-        forcedEntries = new InventorySummary();
+        /*forcedEntries = new InventorySummary();
         for (BigItemStack toOrder : itemsToOrder) {
             // momentarily cut the displayed stack size until the stock updates come in
             if (countOf(toOrder) == BigItemStack.INF)
                 continue;
             forcedEntries.add(toOrder.stack.copy(), -1 - Math.max(0, countOf(toOrder) - toOrder.count));
-        }
+        }*/
 
         CMPPackets.getChannel()
                 .sendToServer(new SendPackage(new PackageOrder(itemsToOrder),
@@ -724,6 +774,20 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         //blockEntity.ticksSinceLastUpdate = 10;
         successTicks = 1;
 
+    }
+
+    private Component getTroubleshootingMessage() {
+        if (menu.getBigItemStacks() == null)
+            return CreateLang.translate("gui.stock_keeper.checking_stocks")
+                    .component();
+        /*if (blockEntity.activeLinks == 0)
+            return CreateLang.translate("gui.stock_keeper.no_packagers_linked")
+                    .component();*/
+        if (menu.getBigItemStacks().isEmpty())
+            return CreateLang.translate("gui.stock_keeper.inventories_empty")
+                    .component();
+        return CreateLang.translate("gui.stock_keeper.no_search_results")
+                .component();
     }
 
 
