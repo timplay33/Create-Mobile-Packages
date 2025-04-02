@@ -64,7 +64,7 @@ public class SendPackage extends SimplePacketBase {
         }
 
         if (player.getMainHandItem().getItem() instanceof DroneController) {
-            ((DroneController) player.getMainHandItem().getItem()).broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address, craftingRequest.isEmpty() ? null : craftingRequest);
+            ((DroneController) player.getMainHandItem().getItem()).broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address);
         }
     }
 }
