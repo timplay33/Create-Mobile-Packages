@@ -16,7 +16,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkHooks;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -37,8 +36,8 @@ public class DroneController extends StockCheckingItem {
 
     @Override
     public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrder order, IdentifiedInventory ignoredHandler,
-                                           String address, @Nullable PackageOrder orderContext) {
-        boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address, orderContext);
+                                           String address) {
+        boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address);
         previouslyUsedAddress = address;
         return result;
     }
