@@ -6,6 +6,7 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBeha
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.minecraft.ChatFormatting;
@@ -23,6 +24,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,19 +49,15 @@ public class StockCheckingItem extends Item {
         return LogisticsManager.getSummaryOfNetwork(Freq, true);
     }
 
-    // Send a package request
     public static boolean broadcastPackageRequest(ItemStack stack, RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler, String address) {
-        return broadcastPackageRequest(stack, type, order, ignoredHandler, address, null);
-    }
-
-    public boolean broadcastPackageRequest(RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler,
-                                           String address, @Nullable PackageOrder orderContext) {
-        return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address, orderContext);
-    }
-
-    public static boolean broadcastPackageRequest(ItemStack stack, RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler, String address, @Nullable PackageOrder orderContext) {
         Freq = networkFromStack(stack);
-        return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address, orderContext);
+        return LogisticsManager.broadcastPackageRequest(Freq, type, new PackageOrderWithCrafts(order, new ArrayList<PackageOrderWithCrafts.CraftingEntry>()), ignoredHandler, address);
+    }
+
+    // Send a package request
+    public boolean broadcastPackageRequest(RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler,
+                                           String address) {
+        return LogisticsManager.broadcastPackageRequest(Freq, type, new PackageOrderWithCrafts(order, new ArrayList<PackageOrderWithCrafts.CraftingEntry>()), ignoredHandler, address);
     }
 
     @Override
