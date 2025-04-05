@@ -5,6 +5,8 @@ import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -14,8 +16,10 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -66,5 +70,25 @@ public class DroneController extends StockCheckingItem {
             }
         }
         return super.use(pLevel, pPlayer, pUsedHand);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
+        super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
+        if (Screen.hasShiftDown()) {
+            pTooltip.add(Component.literal(""));
+            pTooltip.add(Component.literal("A Mobile Stock Keeper").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.literal(""));
+            pTooltip.add(Component.literal("When sneak clicked on a Stock Link or Stock Ticker").withStyle(ChatFormatting.GRAY));
+            pTooltip.add(Component.literal(" Controller will bind to the Network").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.literal("When used").withStyle(ChatFormatting.GRAY));
+            pTooltip.add(Component.literal(" Controller will open a mobile Stock Keeper menu").withStyle(ChatFormatting.YELLOW));
+        } else {
+            pTooltip.add(Component.literal("Hold [").withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal("Shift").withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal("] for Summary").withStyle(ChatFormatting.GRAY)));
+        }
+
+
     }
 }

@@ -140,7 +140,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         addWidget(searchBox);
 
         boolean initial = addressBox == null;
-        String previouslyUsedAddress = initial ? menu.previouslyUsedAddress : addressBox.getValue();
+        String previouslyUsedAddress = initial ? menu.droneController.previouslyUsedAddress : addressBox.getValue();
         addressBox =
                 new AddressEditBox(this, new NoShadowFontWrapper(font), x + 27, y + windowHeight - 36, 92, 10, true);
         addressBox.setTextColor(0x714A40);
