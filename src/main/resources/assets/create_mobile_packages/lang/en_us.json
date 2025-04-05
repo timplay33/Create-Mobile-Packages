@@ -3,5 +3,9 @@
   "item.create_mobile_packages.drone_port": "Drone Port",
   "itemGroup.create_mobile_packages": "Create: Mobile Packages",
   "item.create_mobile_packages.drone_controller": "Drone Controller",
-  "create_mobile_packages.drone_port.send_items": "Send Items to Player"
+  "create_mobile_packages.drone_port.send_items": "Send Items to Player",
+  "create_mobile_packages.ponder.drone_port.header": "Drone Port",
+  "create_mobile_packages.ponder.drone_port.text_1": "The Drone Port can send a Package to a Player",
+  "create_mobile_packages.ponder.drone_port.text_2": "Set the Package address to the Player name",
+  "create_mobile_packages.ponder.drone_port.text_3": "The Package will now be send to the Player"
 }
