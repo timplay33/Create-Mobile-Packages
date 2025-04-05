@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import de.theidler.create_mobile_packages.index.*;
+import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.index.ponder.CMPPonderPlugin;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.resources.ResourceLocation;
@@ -34,6 +35,7 @@ public class CreateMobilePackages
         CMPBlockEntities.register();
         CMPMenuTypes.register();
         CMPPackets.registerPackets();
+        CMPConfigs.register(context);
         PonderIndex.addPlugin(new CMPPonderPlugin());
     }
 

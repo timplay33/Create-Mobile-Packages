@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -23,29 +24,50 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvider {
     private static final Logger LOGGER = LogUtils.getLogger();
     private final ItemStackHandler inventory = new ItemStackHandler(1){
         @Override
         protected void onContentsChanged(int slot) {
-            super.onContentsChanged(slot);
-
             if (level != null && !level.isClientSide) {
-                ItemStack stack = getStackInSlot(slot);
-                if (!stack.isEmpty()) {
-                    if (PackageItem.isPackage(stack)) {
-                        LOGGER.info("Item inserted: {} x{} -> {}", stack.getItem(), stack.getCount(), PackageItem.getAddress(stack));
+                if (!getStackInSlot(slot).isEmpty()) {
+                    if (PackageItem.isPackage(getStackInSlot(slot))) {
+                        LOGGER.info("Item inserted: {} x{} -> {}", getStackInSlot(slot).getItem(), getStackInSlot(slot).getCount(), PackageItem.getAddress(getStackInSlot(slot)));
                         level.players().forEach(player -> {
-                            if (player.getDisplayName().getString().equals(PackageItem.getAddress(stack))) {
-                                player.drop(stack, false);
-                                player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
-                                stack.copyAndClear();
+                            if (player.getDisplayName().getString().equals(PackageItem.getAddress(getStackInSlot(slot)))) {
+                                LOGGER.info("waiting {}s", CMPConfigs.server().dronePortDeliveryDelay.get());
+                                int delay = CMPConfigs.server().dronePortDeliveryDelay.get();
 
+                                if (delay == 0) {
+                                    // Direkt ausführen, wenn keine Verzögerung eingestellt ist
+                                    player.drop(getStackInSlot(slot), false);
+                                    player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
+                                    setStackInSlot(slot, ItemStack.EMPTY);
+
+                                } else {
+                                    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+                                    player.displayClientMessage(Component.literal("Package will arrive in " + (delay) + "s"), true);
+                                    for (int i = 0; i < delay; i++) {
+                                    final int countdown = i;
+                                    scheduler.schedule(() -> {
+                                        player.displayClientMessage(Component.literal("Package will arrive in " + (delay - countdown-1) + "s"), true);
+                                        if (countdown == delay - 1) {
+                                            player.drop(getStackInSlot(slot), false);
+                                            player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
+                                            setStackInSlot(slot, ItemStack.EMPTY);
+                                        }
+                                        scheduler.shutdown();
+                                        }, countdown + 1, TimeUnit.SECONDS);
+                                    }
+                                }
                             }
                         });
                     } else {
-                        LOGGER.info("Item inserted: {} x{} ->x no Package", stack.getItem(), stack.getCount());
+                        LOGGER.info("Item inserted: {} x{} ->x no Package", getStackInSlot(slot).getItem(), getStackInSlot(slot).getCount());
                     }
                 }
             }
