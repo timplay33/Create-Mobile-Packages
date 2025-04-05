@@ -9,12 +9,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -44,7 +46,7 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
 
                                 if (delay == 0) {
                                     // Direkt ausführen, wenn keine Verzögerung eingestellt ist
-                                    player.drop(getStackInSlot(slot), false);
+                                    sendPackageToPlayer(player, getStackInSlot(slot));
                                     player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
                                     setStackInSlot(slot, ItemStack.EMPTY);
 
@@ -56,7 +58,7 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
                                     scheduler.schedule(() -> {
                                         player.displayClientMessage(Component.literal("Package will arrive in " + (delay - countdown-1) + "s"), true);
                                         if (countdown == delay - 1) {
-                                            player.drop(getStackInSlot(slot), false);
+                                            sendPackageToPlayer(player, getStackInSlot(slot));
                                             player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
                                             setStackInSlot(slot, ItemStack.EMPTY);
                                         }
@@ -79,6 +81,50 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
         super(pType, pPos, pBlockState);
 
     }
+
+    public static BlockPos getBlockPosInFront(Player player) {
+        Vec3 eyePosition = player.getEyePosition(1.0F);
+        Vec3 lookDirection = player.getLookAngle();
+        Vec3 blockPosition = eyePosition.add(lookDirection);
+        return new BlockPos(
+                (int) (lookDirection.x > 0 ? Math.ceil(blockPosition.x) : Math.floor(blockPosition.x)),
+                (int) (Math.floor(player.position().y) + 2),
+                (int) (lookDirection.z > 0 ? Math.ceil(blockPosition.z) : Math.floor(blockPosition.z))
+        );
+    }
+
+    public static boolean isPlayerInventoryFull(Player player) {
+        int containerSize = player.getInventory().getContainerSize(); // Total player inventory slots
+        int armorSlotsStart = containerSize - 5; // Last 5 slots: [offhand, boots, leggings, chestplate, helmet]
+
+        // Check all main inventory slots (excluding armor and offhand slots)
+        for (int i = 0; i < armorSlotsStart; i++) {
+            if (player.getInventory().getItem(i).isEmpty()) {
+                return false;
+            }
+        }
+        // Check if armor slots and the offhand are the only empty slots
+        for (int i = armorSlotsStart; i < containerSize; i++) {
+            if (!player.getInventory().getItem(i).isEmpty()) {
+                continue;
+            }
+            return true;
+        }
+        return true;
+    }
+
+    public void sendPackageToPlayer(Player player, ItemStack itemStack) {
+        if (isPlayerInventoryFull(player)) {
+            BlockPos blockPos = getBlockPosInFront(player);
+            ItemEntity entityItem = new ItemEntity(player.level(), blockPos.getX(), blockPos.getY(), blockPos.getZ(), itemStack);
+            player.level().addFreshEntity(entityItem);
+        } else {
+            player.getInventory().add(itemStack);
+        }
+
+    }
+
+
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
