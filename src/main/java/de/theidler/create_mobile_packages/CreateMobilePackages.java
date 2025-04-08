@@ -4,13 +4,12 @@ import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import de.theidler.create_mobile_packages.index.*;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
-import de.theidler.create_mobile_packages.index.ponder.CMPPonderPlugin;
-import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.slf4j.Logger;
 
 import static net.minecraft.resources.ResourceLocation.fromNamespaceAndPath;
@@ -28,15 +27,26 @@ public class CreateMobilePackages
 
         MinecraftForge.EVENT_BUS.register(this);
 
+        LOGGER.info("Registering CMPCreativeModeTabs");
         CMPCreativeModeTabs.register(modEventBus);
+        LOGGER.info("Registering REGISTRATE");
         REGISTRATE.registerEventListeners(modEventBus);
+        LOGGER.info("Registering CMPBlocks");
         CMPBlocks.register();
+        LOGGER.info("Registering CMPItems");
         CMPItems.register();
+        LOGGER.info("Registering CMPBlockEntities");
         CMPBlockEntities.register();
+        LOGGER.info("Registering CMPMenuTypes");
         CMPMenuTypes.register();
+        LOGGER.info("Registering CMPPackets");
         CMPPackets.registerPackets();
+        LOGGER.info("Registering CMPConfigs");
         CMPConfigs.register(context);
-        PonderIndex.addPlugin(new CMPPonderPlugin());
+
+        if (FMLEnvironment.dist.isClient()) {
+            CreateMobilePackagesClient.registerClientEvents();
+        }
     }
 
     public static ResourceLocation asResource(String path) {
