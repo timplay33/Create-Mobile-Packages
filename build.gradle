@@ -91,6 +91,8 @@ minecraft {
 
         server {
             property 'forge.enabledGameTestNamespaces', mod_id
+            property("mixin.env.remapRefMap", "true")
+            property("mixin.env.refMapRemappingFile", "${projectDir}/build/createSrgToMcp/output.srg")
             args '--nogui'
         }
 
@@ -99,6 +101,8 @@ minecraft {
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             property 'forge.enabledGameTestNamespaces', mod_id
+            property("mixin.env.remapRefMap", "true")
+            property("mixin.env.refMapRemappingFile", "${projectDir}/build/createSrgToMcp/output.srg")
         }
 
         data {
