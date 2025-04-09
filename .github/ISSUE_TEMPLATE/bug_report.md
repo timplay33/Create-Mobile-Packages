@@ -25,11 +25,12 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. Windows]
-- Forge version [min. 47.4.0]
- - Create version [min. 6.0.4]
+ - Forge version: [min. 47.4.0]
+ - Create version: [min. 6.0.4]
+ - Create: Mobile Packages version: [e.g. 0.2.1]
 
-**Error Log**
-Add the Error-Log if possible
+**Crash log**
+Add the Crash log if possible
 
 **Additional context**
 Add any other context about the problem here.
