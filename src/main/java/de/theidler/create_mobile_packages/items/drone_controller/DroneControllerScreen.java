@@ -802,6 +802,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         itemsToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;
         successTicks = 1;
+        ClientScreenStorage.manualUpdate();
 
     }
 
