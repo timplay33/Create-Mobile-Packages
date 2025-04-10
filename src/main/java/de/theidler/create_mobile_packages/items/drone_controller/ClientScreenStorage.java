@@ -10,12 +10,14 @@ public class ClientScreenStorage {
     public static List<BigItemStack> stacks = new ArrayList<>();
 
     private static int ticks = 0;
+
     public static void tick() {
         if (ticks++ > 120) {
             update();
             ticks = 0;
         }
     }
+
     private static void update() {
         CMPPackets.getChannel().sendToServer(new RequestStockUpdate());
     }

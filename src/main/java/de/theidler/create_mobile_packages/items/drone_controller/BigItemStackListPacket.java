@@ -13,11 +13,7 @@ import java.util.List;
 
 public class BigItemStackListPacket extends SimplePacketBase {
 
-    private List<BigItemStack> stacks;
-
-    public BigItemStackListPacket() {
-        this.stacks = new ArrayList<>();
-    }
+    private final List<BigItemStack> stacks;
 
     // Standard constructor
     public BigItemStackListPacket(List<BigItemStack> stacks) {
@@ -33,7 +29,6 @@ public class BigItemStackListPacket extends SimplePacketBase {
         }
     }
 
-    // Custom static method for reading the packet from the buffer.
     public static BigItemStackListPacket read(FriendlyByteBuf buffer) {
         int size = buffer.readInt();
         List<BigItemStack> list = new ArrayList<>();

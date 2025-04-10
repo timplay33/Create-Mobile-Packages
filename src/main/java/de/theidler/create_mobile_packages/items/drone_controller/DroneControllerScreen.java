@@ -37,13 +37,10 @@ import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneControllerMenu> implements ScreenWithStencils {
-
-    private static DroneControllerScreen activeInstance;
 
     private static final AllGuiTextures NUMBERS = AllGuiTextures.NUMBERS;
     private static final AllGuiTextures HEADER = AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER;
@@ -120,22 +117,17 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             //revalidateOrders();
         }
 
-        /*if (currentItemSource != null) {
-            displayedItems = new ArrayList<>(currentItemSource);
-        }*/
-
         itemScroll.tickChaser();
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
             itemScroll.setValue(itemScroll.getChaseTarget());
     }
+
     private void refreshSearchResults(boolean scrollBackUp) {
         if (scrollBackUp)
             itemScroll.startWithValue(0);
 
         String valueWithPrefix = "";//searchBox.getValue();
-        boolean anyItemsInCategory = false;
 
-        // Nothing is being filtered out
         if (valueWithPrefix.isBlank()) {
             if (currentItemSource != null) {
                 displayedItems = new ArrayList<>(currentItemSource);
@@ -179,8 +171,6 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         addressBox.setTextColor(0x714A40);
         addressBox.setValue(previouslyUsedAddress);
         addRenderableWidget(addressBox);
-
-        activeInstance = this;
         ClientScreenStorage.manualUpdate();
     }
 
@@ -204,9 +194,9 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
         int localY = y - itemsY;
 
-        for (int categoryIndex = 0; categoryIndex <  displayedItems.size(); categoryIndex++) {
+        for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
 
-            int row = Mth.floor((localY - ( 4 )) / (float) rowHeight
+            int row = Mth.floor((localY - (4)) / (float) rowHeight
                     + itemScroll.getChaseTarget());
 
             int col = (x - itemsX) / colWidth;
@@ -252,7 +242,6 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         }
 
         // Render DroneController Item
-        //ms.clear(); // fixes Error
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
@@ -457,6 +446,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             drawItemCount(graphics, entry.count, customCount);
         ms.popPose();
     }
+
     private void drawItemCount(GuiGraphics graphics, int count, int customCount) {
         count = customCount;
         String text = count >= 1000000 ? (count / 1000000) + "m"
@@ -517,7 +507,8 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                 BigItemStack entry = orderHovered ? itemsToOrder.get(slot)
                         : displayedItems.get(slot);
                 graphics.renderTooltip(font, entry.stack, mouseX, mouseY);
-            } catch (Exception ignored){}
+            } catch (Exception ignored) {
+            }
         }
 
         // Render tooltip of address input
@@ -603,56 +594,43 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
         // Items
         try {
-        boolean orderClicked = hoveredSlot.getFirst() == -1;
-        if (hoveredSlot.getSecond() > displayedItems.size()) {return false;}
-        BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
-                : displayedItems
-                .get(hoveredSlot.getSecond());
-
-        ItemStack itemStack = entry.stack;
-        int transfer = hasShiftDown() ? itemStack.getMaxStackSize() : hasControlDown() ? 10 : 1;
-
-        BigItemStack existingOrder = getOrderForItem(entry.stack);
-        if (existingOrder == null) {
-            if (itemsToOrder.size() >= cols || rmb)
-                return true;
-            itemsToOrder.add(existingOrder = new BigItemStack(itemStack.copyWithCount(1), 0));
-            playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
-            playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
-        }
-
-        int current = existingOrder.count;
-
-        if (rmb || orderClicked) {
-            existingOrder.count = current - transfer;
-            if (existingOrder.count <= 0) {
-                itemsToOrder.remove(existingOrder);
-                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
-                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+            boolean orderClicked = hoveredSlot.getFirst() == -1;
+            if (hoveredSlot.getSecond() > displayedItems.size()) {
+                return false;
             }
-            return true;
-        }
+            BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
+                    : displayedItems
+                    .get(hoveredSlot.getSecond());
 
-        existingOrder.count = current + Math.min(transfer, entry.count - current);
-        return true;
+            ItemStack itemStack = entry.stack;
+            int transfer = hasShiftDown() ? itemStack.getMaxStackSize() : hasControlDown() ? 10 : 1;
+
+            BigItemStack existingOrder = getOrderForItem(entry.stack);
+            if (existingOrder == null) {
+                if (itemsToOrder.size() >= cols || rmb)
+                    return true;
+                itemsToOrder.add(existingOrder = new BigItemStack(itemStack.copyWithCount(1), 0));
+                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
+                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
+            }
+
+            int current = existingOrder.count;
+
+            if (rmb || orderClicked) {
+                existingOrder.count = current - transfer;
+                if (existingOrder.count <= 0) {
+                    itemsToOrder.remove(existingOrder);
+                    playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
+                    playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+                }
+                return true;
+            }
+
+            existingOrder.count = current + Math.min(transfer, entry.count - current);
+            return true;
         } catch (Exception ignored) {
             return false;
         }
-    }
-
-    @Override
-    public void removed() {
-        super.removed();
-
-        activeInstance = null;
-    }
-
-    public static DroneControllerScreen getActiveInstance() {
-        return activeInstance;
-    }
-
-    public void updateWithData(List<BigItemStack> stacks) {
-        this.currentItemSource = stacks;
     }
 
     @Override
@@ -682,50 +660,50 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             return true;
         }
         try {
-        boolean orderClicked = hoveredSlot.getFirst() == -1;
-        BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
-                : displayedItems
-                .get(hoveredSlot.getSecond());
+            boolean orderClicked = hoveredSlot.getFirst() == -1;
+            BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
+                    : displayedItems
+                    .get(hoveredSlot.getSecond());
 
-        boolean remove = delta < 0;
-        int transfer = Mth.ceil(Math.abs(delta)) * (hasControlDown() ? 10 : 1);
+            boolean remove = delta < 0;
+            int transfer = Mth.ceil(Math.abs(delta)) * (hasControlDown() ? 10 : 1);
 
-        BigItemStack existingOrder = orderClicked ? entry : getOrderForItem(entry.stack);
-        if (existingOrder == null) {
-            if (itemsToOrder.size() >= cols || remove)
+            BigItemStack existingOrder = orderClicked ? entry : getOrderForItem(entry.stack);
+            if (existingOrder == null) {
+                if (itemsToOrder.size() >= cols || remove)
+                    return true;
+                itemsToOrder.add(existingOrder = new BigItemStack(entry.stack.copyWithCount(1), 0));
+                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
+                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
+            }
+
+            int current = existingOrder.count;
+
+            if (remove) {
+                existingOrder.count = current - transfer;
+                if (existingOrder.count <= 0) {
+                    itemsToOrder.remove(existingOrder);
+                    playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
+                    playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+                } else if (existingOrder.count != current)
+                    playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
                 return true;
-            itemsToOrder.add(existingOrder = new BigItemStack(entry.stack.copyWithCount(1), 0));
-            playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
-            playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
-        }
+            }
 
-        int current = existingOrder.count;
+            existingOrder.count = current + Math.min(transfer, countOf(entry) - current);
 
-        if (remove) {
-            existingOrder.count = current - transfer;
-            if (existingOrder.count <= 0) {
-                itemsToOrder.remove(existingOrder);
-                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
-                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
-            } else if (existingOrder.count != current)
+            if (existingOrder.count != current && current != 0)
                 playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
+
             return true;
-        }
-
-        existingOrder.count = current + Math.min(transfer, countOf(entry) - current);
-
-        if (existingOrder.count != current && current != 0)
-            playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
-
-        return true;
         } catch (Exception ignored) {
             return false;
         }
     }
 
-    private int countOf(BigItemStack entry){
-        for (BigItemStack bigItemStack: displayedItems)
-            if(bigItemStack.stack.getItem() == entry.stack.getItem()){
+    private int countOf(BigItemStack entry) {
+        for (BigItemStack bigItemStack : displayedItems)
+            if (bigItemStack.stack.getItem() == entry.stack.getItem()) {
                 return bigItemStack.count;
             }
         return 0;
