@@ -2,6 +2,8 @@ package de.theidler.create_mobile_packages.index;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.items.drone_controller.BigItemStackListPacket;
+import de.theidler.create_mobile_packages.items.drone_controller.RequestStockUpdate;
 import de.theidler.create_mobile_packages.items.drone_controller.SendPackage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -20,7 +22,13 @@ import java.util.function.Supplier;
 import static net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER;
 
 public enum CMPPackets {
-    LOGISTICS_PACKAGE_REQUEST(SendPackage.class, SendPackage::new, PLAY_TO_SERVER);
+    // Server to Client
+    LOGISTICS_PACKAGE_REQUEST(SendPackage.class, SendPackage::new, PLAY_TO_SERVER),
+    REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate::new, PLAY_TO_SERVER),
+
+    // Client to Server
+    BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT);
+
 
     public static final ResourceLocation CHANNEL_NAME = CreateMobilePackages.asResource("main");
     public static final int NETWORK_VERSION = 3;
