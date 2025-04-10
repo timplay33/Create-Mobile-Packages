@@ -46,6 +46,9 @@ public class StockCheckingItem extends Item {
     // Retrieve an accurate summary of the network
     public static InventorySummary getAccurateSummary(ItemStack stack) {
         Freq = networkFromStack(stack);
+        if (Freq == null) {
+            return new InventorySummary();
+        }
         return LogisticsManager.getSummaryOfNetwork(Freq, true);
     }
 

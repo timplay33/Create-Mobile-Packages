@@ -85,14 +85,11 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         this.playerInventory = playerInventory;
     }
 
-    private void sendUpdateRequest() {
-        CMPPackets.getChannel().sendToServer(new RequestStockUpdate());
-    }
-
     @Override
     protected void containerTick() {
         super.containerTick();
         addressBox.tick();
+        ClientScreenStorage.tick();
 
         if (forcedEntries != null) {
             if (!forcedEntries.isEmpty()) {
@@ -116,25 +113,22 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         else
             successTicks = 0;
 
-        List<BigItemStack> clientStockSnapshot = currentItemSource;
+        List<BigItemStack> clientStockSnapshot = ClientScreenStorage.stacks;
         if (clientStockSnapshot != currentItemSource) {
             currentItemSource = clientStockSnapshot;
-        }
             refreshSearchResults(false);
-
             //revalidateOrders();
+        }
 
-        if (currentItemSource != null){
-        displayedItems = new ArrayList<>();
-        displayedItems.addAll(currentItemSource);}
+        /*if (currentItemSource != null) {
+            displayedItems = new ArrayList<>(currentItemSource);
+        }*/
 
         itemScroll.tickChaser();
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
             itemScroll.setValue(itemScroll.getChaseTarget());
     }
     private void refreshSearchResults(boolean scrollBackUp) {
-        sendUpdateRequest();
-        displayedItems = Collections.emptyList();
         if (scrollBackUp)
             itemScroll.startWithValue(0);
 
@@ -187,6 +181,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         addRenderableWidget(addressBox);
 
         activeInstance = this;
+        ClientScreenStorage.manualUpdate();
     }
 
     private Couple<Integer> getHoveredSlot(int x, int y) {
@@ -609,7 +604,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         // Items
         try {
         boolean orderClicked = hoveredSlot.getFirst() == -1;
-        if (hoveredSlot.getSecond() > menu.getBigItemStacks().size()) {return false;}
+        if (hoveredSlot.getSecond() > displayedItems.size()) {return false;}
         BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
                 : displayedItems
                 .get(hoveredSlot.getSecond());
@@ -729,7 +724,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     }
 
     private int countOf(BigItemStack entry){
-        for (BigItemStack bigItemStack: menu.getBigItemStacks())
+        for (BigItemStack bigItemStack: displayedItems)
             if(bigItemStack.stack.getItem() == entry.stack.getItem()){
                 return bigItemStack.count;
             }

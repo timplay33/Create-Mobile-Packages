@@ -52,11 +52,8 @@ public class BigItemStackListPacket extends SimplePacketBase {
 
     @OnlyIn(Dist.CLIENT)
     public void handleClient() {
-        DroneControllerScreen screen = DroneControllerScreen.getActiveInstance();
-        if(screen != null) {
-            screen.updateWithData(this.stacks);
-            CreateMobilePackages.LOGGER.info("Packet handled");
-        }
+        ClientScreenStorage.stacks = stacks;
+        CreateMobilePackages.LOGGER.info("Packet handled");
     }
 
 }
