@@ -67,12 +67,15 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     int successTicks = 0;
 
     Inventory playerInventory;
+    public List<BigItemStack> currentItemSource;
+    public List<BigItemStack> displayedItems;
     public List<BigItemStack> itemsToOrder;
     private boolean scrollHandleActive;
     private InventorySummary forcedEntries;
 
     public DroneControllerScreen(DroneControllerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
+        displayedItems = new ArrayList<>();
         itemsToOrder = new ArrayList<>();
         itemScroll = LerpedFloat.linear()
                 .startWithValue(0);
@@ -83,6 +86,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     protected void containerTick() {
         super.containerTick();
         addressBox.tick();
+        ClientScreenStorage.tick();
 
         if (forcedEntries != null) {
             if (!forcedEntries.isEmpty()) {
@@ -95,7 +99,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             }
         }
 
-        boolean allEmpty = menu.getBigItemStacks().isEmpty();
+        boolean allEmpty = displayedItems.isEmpty();
         if (allEmpty)
             emptyTicks++;
         else
@@ -106,9 +110,30 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         else
             successTicks = 0;
 
+        List<BigItemStack> clientStockSnapshot = ClientScreenStorage.stacks;
+        if (clientStockSnapshot != currentItemSource) {
+            currentItemSource = clientStockSnapshot;
+            refreshSearchResults(false);
+            //revalidateOrders();
+        }
+
         itemScroll.tickChaser();
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
             itemScroll.setValue(itemScroll.getChaseTarget());
+    }
+
+    private void refreshSearchResults(boolean scrollBackUp) {
+        if (scrollBackUp)
+            itemScroll.startWithValue(0);
+
+        String valueWithPrefix = "";//searchBox.getValue();
+
+        if (valueWithPrefix.isBlank()) {
+            if (currentItemSource != null) {
+                displayedItems = new ArrayList<>(currentItemSource);
+            }
+        }
+
     }
 
     @Override
@@ -146,6 +171,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         addressBox.setTextColor(0x714A40);
         addressBox.setValue(previouslyUsedAddress);
         addRenderableWidget(addressBox);
+        ClientScreenStorage.manualUpdate();
     }
 
     private Couple<Integer> getHoveredSlot(int x, int y) {
@@ -168,9 +194,9 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
         int localY = y - itemsY;
 
-        for (int categoryIndex = 0; categoryIndex <  menu.getBigItemStacks().size(); categoryIndex++) {
+        for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
 
-            int row = Mth.floor((localY - ( 4 )) / (float) rowHeight
+            int row = Mth.floor((localY - (4)) / (float) rowHeight
                     + itemScroll.getChaseTarget());
 
             int col = (x - itemsX) / colWidth;
@@ -216,7 +242,6 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         }
 
         // Render DroneController Item
-        //ms.clear(); // fixes Error
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
@@ -313,7 +338,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         }
 
         // Something isnt right
-        boolean allEmpty = menu.getBigItemStacks().isEmpty();
+        boolean allEmpty = displayedItems.isEmpty();
         if (allEmpty) {
             Component msg = getTroubleshootingMessage();
             float alpha = Mth.clamp((emptyTicks - 10f) / 5f, 0f, 1f);
@@ -335,7 +360,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         }
 
         // Items
-        List<BigItemStack> category = menu.getBigItemStacks();
+        List<BigItemStack> category = displayedItems;
         int categoryY = 0;
 
         for (int index = 0; index < category.size(); index++) {
@@ -383,7 +408,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     private int getMaxScroll() {
         int visibleHeight = windowHeight - 84;
         int totalRows = 2;
-        List<BigItemStack> list = menu.getBigItemStacks();
+        List<BigItemStack> list = displayedItems;
         totalRows++;
         totalRows += (int) Math.ceil(list.size() / (float) cols);
         return Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
@@ -421,6 +446,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             drawItemCount(graphics, entry.count, customCount);
         ms.popPose();
     }
+
     private void drawItemCount(GuiGraphics graphics, int count, int customCount) {
         count = customCount;
         String text = count >= 1000000 ? (count / 1000000) + "m"
@@ -479,9 +505,10 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             boolean orderHovered = hoveredSlot.getFirst() == -1;
             try {
                 BigItemStack entry = orderHovered ? itemsToOrder.get(slot)
-                        : menu.getBigItemStacks().get(slot);
+                        : displayedItems.get(slot);
                 graphics.renderTooltip(font, entry.stack, mouseX, mouseY);
-            } catch (Exception ignored){}
+            } catch (Exception ignored) {
+            }
         }
 
         // Render tooltip of address input
@@ -567,38 +594,40 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
         // Items
         try {
-        boolean orderClicked = hoveredSlot.getFirst() == -1;
-        if (hoveredSlot.getSecond() > menu.getBigItemStacks().size()) {return false;}
-        BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
-                : menu.getBigItemStacks()
-                .get(hoveredSlot.getSecond());
-
-        ItemStack itemStack = entry.stack;
-        int transfer = hasShiftDown() ? itemStack.getMaxStackSize() : hasControlDown() ? 10 : 1;
-
-        BigItemStack existingOrder = getOrderForItem(entry.stack);
-        if (existingOrder == null) {
-            if (itemsToOrder.size() >= cols || rmb)
-                return true;
-            itemsToOrder.add(existingOrder = new BigItemStack(itemStack.copyWithCount(1), 0));
-            playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
-            playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
-        }
-
-        int current = existingOrder.count;
-
-        if (rmb || orderClicked) {
-            existingOrder.count = current - transfer;
-            if (existingOrder.count <= 0) {
-                itemsToOrder.remove(existingOrder);
-                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
-                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+            boolean orderClicked = hoveredSlot.getFirst() == -1;
+            if (hoveredSlot.getSecond() > displayedItems.size()) {
+                return false;
             }
-            return true;
-        }
+            BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
+                    : displayedItems
+                    .get(hoveredSlot.getSecond());
 
-        existingOrder.count = current + Math.min(transfer, entry.count - current);
-        return true;
+            ItemStack itemStack = entry.stack;
+            int transfer = hasShiftDown() ? itemStack.getMaxStackSize() : hasControlDown() ? 10 : 1;
+
+            BigItemStack existingOrder = getOrderForItem(entry.stack);
+            if (existingOrder == null) {
+                if (itemsToOrder.size() >= cols || rmb)
+                    return true;
+                itemsToOrder.add(existingOrder = new BigItemStack(itemStack.copyWithCount(1), 0));
+                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
+                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
+            }
+
+            int current = existingOrder.count;
+
+            if (rmb || orderClicked) {
+                existingOrder.count = current - transfer;
+                if (existingOrder.count <= 0) {
+                    itemsToOrder.remove(existingOrder);
+                    playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
+                    playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+                }
+                return true;
+            }
+
+            existingOrder.count = current + Math.min(transfer, entry.count - current);
+            return true;
         } catch (Exception ignored) {
             return false;
         }
@@ -631,50 +660,50 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             return true;
         }
         try {
-        boolean orderClicked = hoveredSlot.getFirst() == -1;
-        BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
-                : menu.getBigItemStacks()
-                .get(hoveredSlot.getSecond());
+            boolean orderClicked = hoveredSlot.getFirst() == -1;
+            BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
+                    : displayedItems
+                    .get(hoveredSlot.getSecond());
 
-        boolean remove = delta < 0;
-        int transfer = Mth.ceil(Math.abs(delta)) * (hasControlDown() ? 10 : 1);
+            boolean remove = delta < 0;
+            int transfer = Mth.ceil(Math.abs(delta)) * (hasControlDown() ? 10 : 1);
 
-        BigItemStack existingOrder = orderClicked ? entry : getOrderForItem(entry.stack);
-        if (existingOrder == null) {
-            if (itemsToOrder.size() >= cols || remove)
+            BigItemStack existingOrder = orderClicked ? entry : getOrderForItem(entry.stack);
+            if (existingOrder == null) {
+                if (itemsToOrder.size() >= cols || remove)
+                    return true;
+                itemsToOrder.add(existingOrder = new BigItemStack(entry.stack.copyWithCount(1), 0));
+                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
+                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
+            }
+
+            int current = existingOrder.count;
+
+            if (remove) {
+                existingOrder.count = current - transfer;
+                if (existingOrder.count <= 0) {
+                    itemsToOrder.remove(existingOrder);
+                    playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
+                    playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+                } else if (existingOrder.count != current)
+                    playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
                 return true;
-            itemsToOrder.add(existingOrder = new BigItemStack(entry.stack.copyWithCount(1), 0));
-            playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
-            playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
-        }
+            }
 
-        int current = existingOrder.count;
+            existingOrder.count = current + Math.min(transfer, countOf(entry) - current);
 
-        if (remove) {
-            existingOrder.count = current - transfer;
-            if (existingOrder.count <= 0) {
-                itemsToOrder.remove(existingOrder);
-                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
-                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
-            } else if (existingOrder.count != current)
+            if (existingOrder.count != current && current != 0)
                 playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
+
             return true;
-        }
-
-        existingOrder.count = current + Math.min(transfer, countOf(entry) - current);
-
-        if (existingOrder.count != current && current != 0)
-            playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
-
-        return true;
         } catch (Exception ignored) {
             return false;
         }
     }
 
-    private int countOf(BigItemStack entry){
-        for (BigItemStack bigItemStack: menu.getBigItemStacks())
-            if(bigItemStack.stack.getItem() == entry.stack.getItem()){
+    private int countOf(BigItemStack entry) {
+        for (BigItemStack bigItemStack : displayedItems)
+            if (bigItemStack.stack.getItem() == entry.stack.getItem()) {
                 return bigItemStack.count;
             }
         return 0;
@@ -773,17 +802,18 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         itemsToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;
         successTicks = 1;
+        ClientScreenStorage.manualUpdate();
 
     }
 
     private Component getTroubleshootingMessage() {
-        if (menu.getBigItemStacks() == null)
+        if (currentItemSource == null)
             return CreateLang.translate("gui.stock_keeper.checking_stocks")
                     .component();
         /*if (blockEntity.activeLinks == 0)
             return CreateLang.translate("gui.stock_keeper.no_packagers_linked")
                     .component();*/
-        if (menu.getBigItemStacks().isEmpty())
+        if (currentItemSource.isEmpty())
             return CreateLang.translate("gui.stock_keeper.inventories_empty")
                     .component();
         return CreateLang.translate("gui.stock_keeper.no_search_results")
