@@ -16,8 +16,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -76,10 +79,12 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
             for (Player player : level.players()) {
                 if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
                     LOGGER.info("Sending package to player: {}", player.getName().getString());
+                    /*Vec3 spawnPos = findSpawnPositionNearPlayer(player);
                     DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), level);
                     drone.setTargetPlayerUUID(player.getUUID());
-                    drone.setPos(this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.0, this.worldPosition.getZ() + 0.5);
-                    level.addFreshEntity(drone);
+                    drone.setPos(spawnPos);
+                    level.addFreshEntity(drone);*/
+                    spawnAndMoveDrone(player);
                     sendPackageToPlayerWithDelay(player, itemStack);
                     inventory.setStackInSlot(slot, ItemStack.EMPTY);
                     break;
@@ -87,9 +92,67 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
             }
         }
     }
+    private Vec3 findSpawnPositionFromPort(Player player) {
+        Level level = player.level();
+        Vec3 portPos = this.getBlockPos().getCenter();  // Get the port's position
+        Vec3 playerPos = player.position();
+
+        // Calculate direction from the port to the player
+        Vec3 directionToPlayer = playerPos.subtract(portPos).normalize();
+
+        // Adjust spawn position: we want the drone to spawn slightly behind the player
+        double offsetDistance = 2; // You can adjust this distance
+        Vec3 spawnPos = portPos.add(directionToPlayer.scale(offsetDistance));
+        // Height adjustment for better visibility
+
+        // Check if the spawn position is valid (not colliding with blocks)
+        ClipContext context = new ClipContext(portPos.add(0, 1, 0), spawnPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player);
+        if (level.clip(context).getType() == HitResult.Type.MISS) {
+            return spawnPos;
+        } else {
+            // Fallback if the position is not valid (defaulting to above the port)
+            return portPos.add(0, 6, 0);
+        }
+    }
+
+
+    public void spawnAndMoveDrone(Player player) {
+        // Get the spawn position based on the port
+        Vec3 spawnPos = findSpawnPositionFromPort(player);
+
+        // Calculate the delay (time it would take to reach the player)
+        int delay = calcTimeDelay(spawnPos, player.position());
+
+        // Create the drone entity
+        DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), player.level());
+        drone.setPos(spawnPos);
+        drone.setTargetPlayerUUID(player.getUUID());
+
+        // Add the drone to the world
+        player.level().addFreshEntity(drone);
+
+        // Now move the drone to the player after the calculated delay
+        Executors.newScheduledThreadPool(1).schedule(() -> {
+            Vec3 targetPos = player.position();
+            moveDroneToTarget(drone, targetPos, delay);
+        }, delay, TimeUnit.MILLISECONDS);
+    }
+
+
+    private void moveDroneToTarget(DroneEntity drone, Vec3 targetPos, int delay) {
+        // Logic to move the drone towards the player smoothly after the delay
+        Vec3 currentPos = drone.position();
+        double speedPerTick = CMPConfigs.server().droneSpeed.get() / 20.0;
+
+        // Move in a straight line toward the target position
+        Vec3 direction = targetPos.subtract(currentPos).normalize();
+        Vec3 velocity = direction.scale(speedPerTick);
+        drone.setDeltaMovement(velocity);
+        drone.hasImpulse = true;
+    }
 
     private void sendPackageToPlayerWithDelay(Player player, ItemStack itemStack) {
-        int delay = calcTimeDelay(this.worldPosition, player.blockPosition());
+        int delay = calcTimeDelay(this.worldPosition.getCenter(), player.blockPosition().getCenter());
         if (delay == 0) {
             sendPackageToPlayer(player, itemStack);
         } else {
@@ -108,13 +171,12 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
         }
     }
 
-    private static int calcTimeDelay(BlockPos dronePortPos, BlockPos playerPos) {
-        int distance = getDistanceBetween(dronePortPos, playerPos);
-        return (int) Math.ceil((double) distance / CMPConfigs.server().droneSpeed.get());
-    }
+    private int calcTimeDelay(Vec3 startPos, Vec3 targetPos) {
+        double distance = startPos.distanceTo(new Vec3(targetPos.x, startPos.y, targetPos.z));
+        double speed = CMPConfigs.server().droneSpeed.get(); // Get speed from config (blocks per second)
+        double time = distance / speed; // Time in seconds
 
-    private static int getDistanceBetween(BlockPos p1, BlockPos p2) {
-        return Math.abs(p1.getX() - p2.getX()) + Math.abs(p1.getZ() - p2.getZ());
+        return (int) (time); // Convert to game ticks (20 ticks per second)
     }
 
     public static BlockPos getBlockPosInFront(Player player) {
