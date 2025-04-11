@@ -6,6 +6,8 @@ public class CMPServer extends ConfigBase {
 
     public final ConfigInt dronePortDeliveryDelay = i(3, 0, 60 * 60, "dronePortDeliveryDelay",
             CMPServer.Comments.dronePortDeliveryDelay);
+    public final ConfigInt dronePortMaxSize = i(9, 0, 9*3, "dronePortDeliveryDelay",
+            CMPServer.Comments.dronePortDeliveryDelay);
 
     @Override
     public String getName() {
