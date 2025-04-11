@@ -40,7 +40,7 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
                     if (PackageItem.isPackage(getStackInSlot(slot))) {
                         LOGGER.info("Item inserted: {} x{} -> {}", getStackInSlot(slot).getItem(), getStackInSlot(slot).getCount(), PackageItem.getAddress(getStackInSlot(slot)));
                         level.players().forEach(player -> {
-                            if (player.getDisplayName().getString().equals(PackageItem.getAddress(getStackInSlot(slot)))) {
+                            if (player.getName().getString().equals(PackageItem.getAddress(getStackInSlot(slot)))) {
                                 LOGGER.info("waiting {}s", CMPConfigs.server().dronePortDeliveryDelay.get());
                                 int delay = CMPConfigs.server().dronePortDeliveryDelay.get();
 
