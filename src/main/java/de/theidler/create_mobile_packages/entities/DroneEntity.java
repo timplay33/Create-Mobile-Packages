@@ -1,26 +1,32 @@
 package de.theidler.create_mobile_packages.entities;
 
+import de.theidler.create_mobile_packages.index.config.CMPConfigs;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
+import static de.theidler.create_mobile_packages.blocks.DronePortBlockEntity.sendPackageToPlayer;
+
 public class DroneEntity extends Mob {
 
     private UUID targetPlayerUUID;
     private Vec3 targetVelocity = Vec3.ZERO;
     private Vec3 origin;
+    private ItemStack itemStack;
 
     private enum DroneState { MOVING_TO_PLAYER, WAITING, RETURNING }
     private DroneState state = DroneState.MOVING_TO_PLAYER;
-    private int waitTicks = 60;
+    private int waitTicks = 30;
 
     public DroneEntity(EntityType<? extends Mob> type, Level level) {
         super(type, level);
@@ -41,6 +47,9 @@ public class DroneEntity extends Mob {
 
     public void setOrigin(Vec3 origin) {
         this.origin = origin;
+    }
+    public void setItemStack(ItemStack itemStack) {
+        this.itemStack = itemStack;
     }
     /**
      * Each tick, the drone behaves according to its state:
@@ -64,13 +73,14 @@ public class DroneEntity extends Mob {
         switch (state) {
             case MOVING_TO_PLAYER:
                 if (target != null && target.isAlive()) {
+                    updateDisplay(target);
                     Vec3 desiredTarget = target.position();
                     if (currentPos.distanceTo(desiredTarget) <= 1.5) {
                         state = DroneState.WAITING;
                         targetVelocity = Vec3.ZERO;
                     } else {
                         Vec3 direction = desiredTarget.subtract(currentPos).normalize();
-                        double speed = 0.5;
+                        double speed = CMPConfigs.server().droneSpeed.get() / 20.0;
                         targetVelocity = direction.scale(speed);
                     }
                 } else {
@@ -84,6 +94,7 @@ public class DroneEntity extends Mob {
                 if (waitTicks <= 0) {
                     state = DroneState.RETURNING;
                 }
+                sendPackageToPlayer(target, itemStack);
                 break;
 
             case RETURNING:
@@ -96,7 +107,7 @@ public class DroneEntity extends Mob {
                     return;
                 } else {
                     Vec3 direction = origin.subtract(currentPos).normalize();
-                    double speed = 0.5;
+                    double speed = CMPConfigs.server().droneSpeed.get() / 20.0;
                     targetVelocity = direction.scale(speed);
                 }
                 break;
@@ -104,6 +115,15 @@ public class DroneEntity extends Mob {
 
         this.setDeltaMovement(targetVelocity);
         this.move(MoverType.SELF, targetVelocity);
+    }
+
+    private void updateDisplay(Player player) {
+        player.displayClientMessage(Component.literal("Package will arrive in " + (calcETA(player)) + "s"), true);
+    }
+
+    private int calcETA(Player player) {
+        double distance = player.position().distanceTo(this.position());
+        return (int) (distance / CMPConfigs.server().droneSpeed.get())+1;
     }
 
     // No AI goals; movement is entirely controlled via tick().

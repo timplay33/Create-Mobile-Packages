@@ -78,43 +78,15 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
                     LOGGER.info("Sending package to player: {}", player.getName().getString());
                     DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), level);
                     drone.setTargetPlayerUUID(player.getUUID());
+                    drone.setItemStack(itemStack);
                     drone.setPos(this.getBlockPos().getCenter());
                     drone.setOrigin(this.getBlockPos().getCenter());
                     level.addFreshEntity(drone);
-                    sendPackageToPlayerWithDelay(player, itemStack);
                     inventory.setStackInSlot(slot, ItemStack.EMPTY);
                     break;
                 }
             }
         }
-    }
-
-    private void sendPackageToPlayerWithDelay(Player player, ItemStack itemStack) {
-        int delay = calcTimeDelay(this.worldPosition.getCenter(), player.blockPosition().getCenter());
-        if (delay == 0) {
-            sendPackageToPlayer(player, itemStack);
-        } else {
-            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-            player.displayClientMessage(Component.literal("Package will arrive in " + (delay) + "s"), true);
-            for (int i = 0; i < delay; i++) {
-                final int countdown = i;
-                scheduler.schedule(() -> {
-                    player.displayClientMessage(Component.literal("Package will arrive in " + (delay - countdown - 1) + "s"), true);
-                    if (countdown == delay - 1) {
-                        sendPackageToPlayer(player, itemStack);
-                    }
-                    scheduler.shutdown();
-                }, countdown + 1, TimeUnit.SECONDS);
-            }
-        }
-    }
-
-    private int calcTimeDelay(Vec3 startPos, Vec3 targetPos) {
-        double distance = startPos.distanceTo(new Vec3(targetPos.x, startPos.y, targetPos.z));
-        double speed = CMPConfigs.server().droneSpeed.get(); // Get speed from config (blocks per second)
-        double time = distance / speed; // Time in seconds
-
-        return (int) (time); // Convert to game ticks (20 ticks per second)
     }
 
     public static BlockPos getBlockPosInFront(Player player) {
@@ -148,7 +120,7 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
         return true;
     }
 
-    public void sendPackageToPlayer(Player player, ItemStack itemStack) {
+    public static void sendPackageToPlayer(Player player, ItemStack itemStack) {
         if (isPlayerInventoryFull(player)) {
             BlockPos blockPos = getBlockPosInFront(player);
             ItemEntity entityItem = new ItemEntity(player.level(), blockPos.getX(), blockPos.getY(), blockPos.getZ(), itemStack);
