@@ -43,9 +43,11 @@ public class CreateMobilePackages
         CMPPackets.registerPackets();
         LOGGER.info("Registering CMPConfigs");
         CMPConfigs.register(context);
+        LOGGER.info("Registering CMPEntities");
+        CMPEntities.register();
 
         if (FMLEnvironment.dist.isClient()) {
-            CreateMobilePackagesClient.registerClientEvents();
+            CreateMobilePackagesClient.registerClientEvents(modEventBus);
         }
     }
 
