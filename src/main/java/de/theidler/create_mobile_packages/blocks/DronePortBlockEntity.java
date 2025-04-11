@@ -83,7 +83,7 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
     }
 
     private void sendPackageToPlayerWithDelay(Player player, ItemStack itemStack) {
-        int delay = CMPConfigs.server().dronePortDeliveryDelay.get();
+        int delay = calcTimeDelay(this.worldPosition, player.blockPosition());
         if (delay == 0) {
             sendPackageToPlayer(player, itemStack);
         } else {
@@ -100,6 +100,15 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
                 }, countdown + 1, TimeUnit.SECONDS);
             }
         }
+    }
+
+    private static int calcTimeDelay(BlockPos dronePortPos, BlockPos playerPos) {
+        int distance = getDistanceBetween(dronePortPos, playerPos);
+        return (int) Math.ceil((double) distance / CMPConfigs.server().droneSpeed.get());
+    }
+
+    private static int getDistanceBetween(BlockPos p1, BlockPos p2) {
+        return Math.abs(p1.getX() - p2.getX()) + Math.abs(p1.getZ() - p2.getZ());
     }
 
     public static BlockPos getBlockPosInFront(Player player) {

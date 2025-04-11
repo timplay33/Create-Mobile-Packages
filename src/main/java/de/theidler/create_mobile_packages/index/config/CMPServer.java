@@ -4,10 +4,10 @@ import net.createmod.catnip.config.ConfigBase;
 
 public class CMPServer extends ConfigBase {
 
-    public final ConfigInt dronePortDeliveryDelay = i(3, 0, 60 * 60, "dronePortDeliveryDelay",
-            CMPServer.Comments.dronePortDeliveryDelay);
-    public final ConfigInt dronePortMaxSize = i(9, 0, 9*3, "dronePortDeliveryDelay",
-            CMPServer.Comments.dronePortDeliveryDelay);
+    public final ConfigInt droneSpeed = i(6, 1, Integer.MAX_VALUE, "droneSpeed",
+            CMPServer.Comments.droneSpeed);
+    public final ConfigInt dronePortMaxSize = i(9, 0, 9*3, "dronePortMaxSize",
+            CMPServer.Comments.dronePortMaxSize);
 
     @Override
     public String getName() {
@@ -15,6 +15,7 @@ public class CMPServer extends ConfigBase {
     }
 
     private static class Comments {
-        static String dronePortDeliveryDelay = "Delay for Drone Port deliveries in Seconds. Default: 3";
+        static String droneSpeed = "The Speed of a Package Delivery Drone in Blocks per Second. Default: 6";
+        static String dronePortMaxSize = "Max size of the Queue of the Drone Port in Stacks. Default: 9";
     }
 }
