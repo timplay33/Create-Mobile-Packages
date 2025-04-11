@@ -5,7 +5,7 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 - Forge 47.4.0 or newer
 - Create 6.0.4 or newer
 
-## Here to Download?
+## Where to Download?
 - Modrinth: https://modrinth.com/mod/create-mobile-packages
 - Curseforge: https://www.curseforge.com/minecraft/mc-mods/create-mobile-packages
 
