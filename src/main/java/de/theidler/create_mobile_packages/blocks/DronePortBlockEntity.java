@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import de.theidler.create_mobile_packages.entities.DroneEntity;
+import de.theidler.create_mobile_packages.index.CMPEntities;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -74,6 +76,10 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
             for (Player player : level.players()) {
                 if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
                     LOGGER.info("Sending package to player: {}", player.getName().getString());
+                    DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), level);
+                    drone.setTargetPlayerUUID(player.getUUID());
+                    drone.setPos(this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 1.0, this.worldPosition.getZ() + 0.5);
+                    level.addFreshEntity(drone);
                     sendPackageToPlayerWithDelay(player, itemStack);
                     inventory.setStackInSlot(slot, ItemStack.EMPTY);
                     break;
