@@ -5,6 +5,10 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 - Forge 47.4.0 or newer
 - Create 6.0.4 or newer
 
+## Here to Download?
+- Modrinth: https://modrinth.com/mod/create-mobile-packages
+- Curseforge: https://www.curseforge.com/minecraft/mc-mods/create-mobile-packages
+
 ## Items
 ### Drone Port
 The Drone Port is a specialized block that automates the delivery of Create mod Packages to players. When a Package is put inside (using, for example, a Funnel, Chute, or Hopper), the station reads the address label on the package and delivers its contents directly to the player whose name matches the address.
