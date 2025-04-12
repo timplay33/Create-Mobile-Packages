@@ -22,11 +22,12 @@ public class DroneEntity extends Mob {
     private UUID targetPlayerUUID;
     private Vec3 targetVelocity = Vec3.ZERO;
     private Vec3 origin;
+    private Vec3 targetOrigin;
     private ItemStack itemStack;
 
-    private enum DroneState {MOVING_TO_PLAYER, WAITING, RETURNING}
+    private enum DroneState {STARTING, MOVING_TO_PLAYER, WAITING, RETURNING, LANDING}
 
-    private DroneState state = DroneState.MOVING_TO_PLAYER;
+    private DroneState state = DroneState.STARTING;
     private int waitTicks = 30;
     private boolean isBeenDeliverd = false;
 
@@ -37,6 +38,7 @@ public class DroneEntity extends Mob {
         this.setNoAi(true);
         this.setPersistenceRequired();
         origin = this.position();
+        targetOrigin = origin.add(0,1,0);
     }
 
     public void setTargetPlayerUUID(UUID uuid) {
@@ -50,24 +52,15 @@ public class DroneEntity extends Mob {
 
     public void setOrigin(Vec3 origin) {
         this.origin = origin;
+        this.targetOrigin = origin.add(0,1,0);
     }
 
     public void setItemStack(ItemStack itemStack) {
         this.itemStack = itemStack;
     }
 
-    /**
-     * Each tick, the drone behaves according to its state:
-     * <p>
-     * - MOVING_TO_PLAYER: Moves in a straight line toward the target player.
-     * When close (within 0.5 blocks), it transitions to WAITING.
-     * <p>
-     * - WAITING: Remains at approximately 0.5 blocks away for a set time.
-     * When waitTicks reaches 0, state changes to RETURNING.
-     * <p>
-     * - RETURNING: Moves in a straight line back to its origin.
-     * Once close to the origin (within 0.5 blocks), the drone is discarded.
-     */
+    private int ticksInBlock = 0;
+    private int ticksOnStart = 0;
     @Override
     public void tick() {
         super.tick();
@@ -76,48 +69,20 @@ public class DroneEntity extends Mob {
         Vec3 currentPos = this.position();
 
         switch (state) {
+            case STARTING:
+                startingState();
+                break;
             case MOVING_TO_PLAYER:
-                if (target != null && target.isAlive()) {
-                    updateDisplay(target);
-                    Vec3 desiredTarget = target.position();
-                    if (currentPos.distanceTo(desiredTarget) <= 1.5) {
-                        state = DroneState.WAITING;
-                        targetVelocity = Vec3.ZERO;
-                    } else {
-                        Vec3 direction = desiredTarget.subtract(currentPos).normalize();
-                        double speed = CMPConfigs.server().droneSpeed.get() / 20.0;
-                        targetVelocity = direction.scale(speed);
-                    }
-                } else {
-                    targetVelocity = Vec3.ZERO;
-                }
+                movingToPlayerState(target, currentPos);
                 break;
-
             case WAITING:
-                targetVelocity = Vec3.ZERO;
-                waitTicks--;
-                if (waitTicks <= 0) {
-                    state = DroneState.RETURNING;
-                }
-                if (!isBeenDeliverd) {
-                    sendPackageToPlayer(target, itemStack, this);
-                    isBeenDeliverd = true;
-                }
+                waitingState(target);
                 break;
-
             case RETURNING:
-                if (origin == null) {
-                    targetVelocity = Vec3.ZERO;
-                    break;
-                }
-                if (currentPos.distanceTo(origin) <= 0.5) {
-                    this.discard();
-                    return;
-                } else {
-                    Vec3 direction = origin.subtract(currentPos).normalize();
-                    double speed = CMPConfigs.server().droneSpeed.get() / 20.0;
-                    targetVelocity = direction.scale(speed);
-                }
+                returningState(currentPos);
+                break;
+            case LANDING:
+                landingState();
                 break;
         }
 
@@ -166,4 +131,69 @@ public class DroneEntity extends Mob {
     @Override
     public void checkDespawn() {
     }
+
+    // States
+    private void startingState() {
+        Vec3 direction = targetOrigin.subtract(this.position()).normalize();
+        double speed = 1 / 20.0;
+        targetVelocity = new Vec3(0, direction.scale(speed).y, 0);
+        ticksOnStart++;
+        if (ticksOnStart >= 20) {
+            targetVelocity = Vec3.ZERO;
+            state = DroneState.MOVING_TO_PLAYER;
+        }
+    }
+
+    private void movingToPlayerState(Player target, Vec3 currentPos) {
+        if (target != null && target.isAlive()) {
+            updateDisplay(target);
+            Vec3 desiredTarget = target.position().add(0,2,0);
+            if (currentPos.distanceTo(desiredTarget) <= 1.5) {
+                state = DroneState.WAITING;
+                targetVelocity = Vec3.ZERO;
+            } else {
+                Vec3 direction = desiredTarget.subtract(currentPos).normalize();
+                double speed = CMPConfigs.server().droneSpeed.get() / 20.0;
+                targetVelocity = direction.scale(speed);
+            }
+        } else {
+            targetVelocity = Vec3.ZERO;
+        }
+    }
+    private void waitingState(Player target) {
+        targetVelocity = Vec3.ZERO;
+        waitTicks--;
+        if (waitTicks <= 0) {
+            state = DroneState.RETURNING;
+        }
+        if (!isBeenDeliverd) {
+            sendPackageToPlayer(target, itemStack, this);
+            isBeenDeliverd = true;
+        }
+    }
+    private void returningState(Vec3 currentPos) {
+        if (targetOrigin == null) {
+            targetVelocity = Vec3.ZERO;
+            return;
+        }
+        if (currentPos.distanceTo(targetOrigin) <= 0.1) {
+            targetVelocity = Vec3.ZERO;
+            this.setPos(targetOrigin);
+            state = DroneState.LANDING;
+        } else {
+            Vec3 direction = targetOrigin.subtract(currentPos).normalize();
+            double speed = CMPConfigs.server().droneSpeed.get() / 20.0;
+            targetVelocity = direction.scale(speed);
+        }
+    }
+    private void landingState() {
+        Vec3 direction = origin.subtract(this.position()).normalize();
+        targetVelocity = direction.scale(1.0 / 20.0);
+        ticksInBlock++;
+        if (ticksInBlock >= 40) { // 2 Sekunden (40 Ticks)
+            this.discard();
+        }
+    }
+
+
 }
