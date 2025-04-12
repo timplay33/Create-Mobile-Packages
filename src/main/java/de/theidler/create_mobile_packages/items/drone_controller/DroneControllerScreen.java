@@ -797,6 +797,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         CMPPackets.getChannel()
                 .sendToServer(new SendPackage(new PackageOrder(itemsToOrder),
                         addressBox.getValue(), false, PackageOrder.empty()));
+        menu.droneController.previouslyUsedAddress = addressBox.getValue();
 
         itemsToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;
