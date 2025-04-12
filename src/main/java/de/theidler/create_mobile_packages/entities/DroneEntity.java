@@ -15,7 +15,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
-import static de.theidler.create_mobile_packages.blocks.DronePortBlockEntity.sendPackageToPlayer;
+import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity.sendPackageToPlayer;
 
 public class DroneEntity extends Mob {
 

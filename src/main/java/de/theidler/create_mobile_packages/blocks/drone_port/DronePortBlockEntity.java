@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks;
+package de.theidler.create_mobile_packages.blocks.drone_port;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
@@ -14,7 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 
 public class DronePortBlockEntity extends PackagePortBlockEntity {
 

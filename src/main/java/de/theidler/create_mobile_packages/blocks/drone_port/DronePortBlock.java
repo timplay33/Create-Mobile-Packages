@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks;
+package de.theidler.create_mobile_packages.blocks.drone_port;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
