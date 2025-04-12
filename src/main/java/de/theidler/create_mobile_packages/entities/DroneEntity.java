@@ -24,9 +24,11 @@ public class DroneEntity extends Mob {
     private Vec3 origin;
     private ItemStack itemStack;
 
-    private enum DroneState { MOVING_TO_PLAYER, WAITING, RETURNING }
+    private enum DroneState {MOVING_TO_PLAYER, WAITING, RETURNING}
+
     private DroneState state = DroneState.MOVING_TO_PLAYER;
     private int waitTicks = 30;
+    private boolean isBeenDeliverd = false;
 
     public DroneEntity(EntityType<? extends Mob> type, Level level) {
         super(type, level);
@@ -49,20 +51,22 @@ public class DroneEntity extends Mob {
     public void setOrigin(Vec3 origin) {
         this.origin = origin;
     }
+
     public void setItemStack(ItemStack itemStack) {
         this.itemStack = itemStack;
     }
+
     /**
      * Each tick, the drone behaves according to its state:
-     *
+     * <p>
      * - MOVING_TO_PLAYER: Moves in a straight line toward the target player.
-     *   When close (within 0.5 blocks), it transitions to WAITING.
-     *
+     * When close (within 0.5 blocks), it transitions to WAITING.
+     * <p>
      * - WAITING: Remains at approximately 0.5 blocks away for a set time.
-     *   When waitTicks reaches 0, state changes to RETURNING.
-     *
+     * When waitTicks reaches 0, state changes to RETURNING.
+     * <p>
      * - RETURNING: Moves in a straight line back to its origin.
-     *   Once close to the origin (within 0.5 blocks), the drone is discarded.
+     * Once close to the origin (within 0.5 blocks), the drone is discarded.
      */
     @Override
     public void tick() {
@@ -95,7 +99,10 @@ public class DroneEntity extends Mob {
                 if (waitTicks <= 0) {
                     state = DroneState.RETURNING;
                 }
-                sendPackageToPlayer(target, itemStack);
+                if (!isBeenDeliverd) {
+                    sendPackageToPlayer(target, itemStack, this);
+                    isBeenDeliverd = true;
+                }
                 break;
 
             case RETURNING:
@@ -124,7 +131,7 @@ public class DroneEntity extends Mob {
 
     private int calcETA(Player player) {
         double distance = player.position().distanceTo(this.position());
-        return (int) (distance / CMPConfigs.server().droneSpeed.get())+1;
+        return (int) (distance / CMPConfigs.server().droneSpeed.get()) + 1;
     }
 
     // No AI goals; movement is entirely controlled via tick().

@@ -70,17 +70,6 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         }
     }
 
-    public static BlockPos getBlockPosInFront(Player player) {
-        Vec3 eyePosition = player.getEyePosition(1.0F);
-        Vec3 lookDirection = player.getLookAngle();
-        Vec3 blockPosition = eyePosition.add(lookDirection);
-        return new BlockPos(
-                (int) (lookDirection.x > 0 ? Math.ceil(blockPosition.x) : Math.floor(blockPosition.x)),
-                (int) (Math.floor(player.position().y) + 2),
-                (int) (lookDirection.z > 0 ? Math.ceil(blockPosition.z) : Math.floor(blockPosition.z))
-        );
-    }
-
     public static boolean isPlayerInventoryFull(Player player) {
         int containerSize = player.getInventory().getContainerSize(); // Total player inventory slots
         int armorSlotsStart = containerSize - 5; // Last 5 slots: [offhand, boots, leggings, chestplate, helmet]
@@ -101,10 +90,10 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         return true;
     }
 
-    public static void sendPackageToPlayer(Player player, ItemStack itemStack) {
+    public static void sendPackageToPlayer(Player player, ItemStack itemStack, DroneEntity droneEntity) {
         if (isPlayerInventoryFull(player)) {
-            BlockPos blockPos = getBlockPosInFront(player);
-            ItemEntity entityItem = new ItemEntity(player.level(), blockPos.getX(), blockPos.getY(), blockPos.getZ(), itemStack);
+            BlockPos blockPos = droneEntity.blockPosition();
+            ItemEntity entityItem = new ItemEntity(player.level(), blockPos.getX(), player.getY(), blockPos.getZ(), itemStack);
             player.level().addFreshEntity(entityItem);
         } else {
             player.getInventory().add(itemStack);
