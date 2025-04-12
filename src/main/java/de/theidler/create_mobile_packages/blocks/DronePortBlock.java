@@ -50,18 +50,7 @@ public class DronePortBlock extends Block implements IBE<DronePortBlockEntity>, 
 
     @Override
     public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pMovedByPiston) {
-        if (!pState.is(pNewState.getBlock())) {
-            withBlockEntityDo(pLevel, pPos, blockEntity -> {
-                SimpleContainer container = new SimpleContainer(blockEntity.getInventory().getSlots());
-
-                for (int i = 0; i < blockEntity.getInventory().getSlots(); i++) {
-                    container.setItem(i, blockEntity.getInventory().getStackInSlot(i));
-                }
-
-                Containers.dropContents(pLevel, pPos, container);
-            });
-            super.onRemove(pState, pLevel, pPos, pNewState, pMovedByPiston);
-        }
+        IBE.onRemove(pState, pLevel, pPos, pNewState);
     }
 
     @Override
@@ -74,13 +63,8 @@ public class DronePortBlock extends Block implements IBE<DronePortBlockEntity>, 
     }
 
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        return onBlockEntityUse(pLevel, pPos, dronePortBlockEntity -> {
-            if (pPlayer instanceof ServerPlayer sp) {
-                NetworkHooks.openScreen(sp, dronePortBlockEntity.new Menu(), dronePortBlockEntity.getBlockPos());
-            }
-
-            return InteractionResult.SUCCESS;
-        });
+    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
+                                 BlockHitResult hit) {
+        return onBlockEntityUse(worldIn, pos, be -> be.use(player));
     }
 }

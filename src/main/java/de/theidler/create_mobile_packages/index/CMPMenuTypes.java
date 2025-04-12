@@ -2,8 +2,6 @@ package de.theidler.create_mobile_packages.index;
 
 import com.tterrag.registrate.util.entry.MenuEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.blocks.DronePortMenu;
-import de.theidler.create_mobile_packages.blocks.DronePortScreen;
 import de.theidler.create_mobile_packages.items.drone_controller.DroneController;
 import de.theidler.create_mobile_packages.items.drone_controller.DroneControllerMenu;
 import de.theidler.create_mobile_packages.items.drone_controller.DroneControllerScreen;
@@ -17,13 +15,6 @@ public class CMPMenuTypes {
                     "drone_controller_menu",
                     (droneControllerMenuMenuType, containerId, playerInventory) -> new DroneControllerMenu(containerId, playerInventory, getAccurateSummary(playerInventory.player.getMainHandItem()).getStacks(), (DroneController) playerInventory.player.getMainHandItem().getItem()),
                     () -> DroneControllerScreen::new
-            ).register();
-
-    public static final MenuEntry<DronePortMenu> DRONE_PORT_MENU =
-            CreateMobilePackages.REGISTRATE.menu(
-                    "drone_port_menu",
-                    DronePortMenu::new,
-                    () -> DronePortScreen::new
             ).register();
 
     public static void register() {

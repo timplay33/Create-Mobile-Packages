@@ -1,41 +1,25 @@
 package de.theidler.create_mobile_packages.blocks;
 
-import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.logistics.box.PackageItem;
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.DroneEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
-import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
-public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvider {
-    private static final Logger LOGGER = LogUtils.getLogger();
-    private final ItemStackHandler inventory = new ItemStackHandler(27);//CMPConfigs.server().dronePortMaxSize.get());
-    private final LazyOptional<IItemHandler> inventoryCapability = LazyOptional.of(() -> inventory);
+public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
@@ -75,7 +59,7 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
 
             for (Player player : level.players()) {
                 if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
-                    LOGGER.info("Sending package to player: {}", player.getName().getString());
+                    CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
                     DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), level);
                     drone.setTargetPlayerUUID(player.getUUID());
                     drone.setItemStack(itemStack);
@@ -132,51 +116,9 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
 
     }
 
-
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-
-    }
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            return inventoryCapability.cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        inventoryCapability.invalidate();
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.create_mobile_packages.drone_port");
-    }
-
-
-    public ItemStackHandler getInventory() {
-        return inventory;
-    }
-
-    @Override
-    public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        return null;
-    }
-
-    public class Menu implements MenuProvider {
-
-        @Override
-        public Component getDisplayName() {
-            return Component.empty();
-        }
-
-        @Override
-        public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-            return DronePortMenu.create(pContainerId, pPlayerInventory, DronePortBlockEntity.this);
-        }
+    protected void onOpenChange(boolean open) {
+        level.playSound(null, worldPosition, open ? SoundEvents.CHEST_OPEN : SoundEvents.CHEST_CLOSE,
+                SoundSource.BLOCKS);
     }
 }
