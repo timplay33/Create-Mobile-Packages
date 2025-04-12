@@ -12,7 +12,7 @@
 			"to": [16, 13, 16],
 			"faces": {
 				"north": {"uv": [4, 0.5, 8, 3.75], "texture": "#default"},
-				"east": {"uv": [4, 4.25, 8, 7.5], "texture": "#missing"},
+				"east": {"uv": [4, 4.25, 8, 7.5], "texture": "#default"},
 				"south": {"uv": [4, 8, 8, 11.25], "texture": "#default"},
 				"west": {"uv": [0, 8.5, 4, 11.75], "texture": "#default"},
 				"up": {"uv": [4, 4, 0, 0], "texture": "#default"},
