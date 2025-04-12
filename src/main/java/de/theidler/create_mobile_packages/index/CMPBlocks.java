@@ -16,10 +16,10 @@ public class CMPBlocks {
     }
 
     public static final BlockEntry<DronePortBlock> DRONE_PORT = CreateMobilePackages.REGISTRATE.block("drone_port", DronePortBlock::new)
-                    .initialProperties(SharedProperties::softMetal)
+                    .initialProperties(SharedProperties::wooden)
                     .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
                     .item()
-                    .transform(customItemModel())
+                    .transform(customItemModel("_", "block"))
                     .register();
 
     public static void register() {
