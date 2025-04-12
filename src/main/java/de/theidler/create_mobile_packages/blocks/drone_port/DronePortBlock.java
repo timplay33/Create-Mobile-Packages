@@ -6,32 +6,48 @@ import de.theidler.create_mobile_packages.index.CMPBlockEntities;
 import de.theidler.create_mobile_packages.index.CMPBlocks;
 import de.theidler.create_mobile_packages.index.CMPShapes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class DronePortBlock extends Block implements IBE<DronePortBlockEntity>, IWrenchable {
-    public static final VoxelShape DRONE_PORT_SHAPE = CMPShapes.shape(0, 0, 0, 16, 2, 16).add(7, 2, 7, 9, 4, 9).build();
+    public static final BooleanProperty IS_OPEN_TEXTURE = BooleanProperty.create("open");
 
     public DronePortBlock(Properties properties) {
         super(properties);
     }
 
     @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
+        super.createBlockStateDefinition(pBuilder);
+        pBuilder.add(IS_OPEN_TEXTURE);
+    }
+
+    @Override
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext pContext) {
+        return this.defaultBlockState().setValue(IS_OPEN_TEXTURE, false);
+    }
+
+    @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        return DRONE_PORT_SHAPE;
+        return CMPShapes.DRONE_PORT_SHAPE.get(Direction.UP);
     }
 
     @Override

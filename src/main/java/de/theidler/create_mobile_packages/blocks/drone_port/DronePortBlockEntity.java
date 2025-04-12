@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
+import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlock.IS_OPEN_TEXTURE;
+
 public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
@@ -56,17 +58,29 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
             for (Player player : level.players()) {
                 if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
                     CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
-                    DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), level);
+                    DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), level, this);
                     drone.setTargetPlayerUUID(player.getUUID());
                     drone.setItemStack(itemStack);
-                    drone.setPos(this.getBlockPos().getCenter());
-                    drone.setOrigin(this.getBlockPos().getCenter());
+                    drone.setPos(this.getBlockPos().getCenter().subtract(0,0.5,0));
+                    drone.setOrigin(this.getBlockPos().getCenter().subtract(0,0.5,0));
                     level.addFreshEntity(drone);
+                    setOpen(this,true);
                     inventory.setStackInSlot(slot, ItemStack.EMPTY);
                     break;
                 }
             }
         }
+    }
+
+    public static void setOpen(DronePortBlockEntity dronePortBlockEntity,boolean open) {
+        if (dronePortBlockEntity == null) {
+            return;
+        }
+        if (dronePortBlockEntity.level == null) {
+            return;
+        }
+        dronePortBlockEntity.level.setBlockAndUpdate(dronePortBlockEntity.getBlockPos(), dronePortBlockEntity.getBlockState().setValue(IS_OPEN_TEXTURE, open));
+
     }
 
     public static boolean isPlayerInventoryFull(Player player) {

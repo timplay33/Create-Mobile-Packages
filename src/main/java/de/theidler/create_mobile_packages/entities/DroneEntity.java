@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.entities;
 
+import de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
@@ -16,6 +17,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity.sendPackageToPlayer;
+import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity.setOpen;
 
 public class DroneEntity extends Mob {
 
@@ -30,8 +32,9 @@ public class DroneEntity extends Mob {
     private DroneState state = DroneState.STARTING;
     private int waitTicks = 30;
     private boolean isBeenDeliverd = false;
+    private final DronePortBlockEntity dpbe;
 
-    public DroneEntity(EntityType<? extends Mob> type, Level level) {
+    public DroneEntity(EntityType<? extends Mob> type, Level level, DronePortBlockEntity dpbe) {
         super(type, level);
         this.setNoGravity(true);
         this.noPhysics = true;
@@ -39,6 +42,11 @@ public class DroneEntity extends Mob {
         this.setPersistenceRequired();
         origin = this.position();
         targetOrigin = origin.add(0,1,0);
+        this.dpbe = dpbe;
+    }
+
+    public static DroneEntity createEmpty(EntityType<? extends Mob> type, Level level) {
+        return new DroneEntity(type, level, null);
     }
 
     public void setTargetPlayerUUID(UUID uuid) {
@@ -134,13 +142,14 @@ public class DroneEntity extends Mob {
 
     // States
     private void startingState() {
+        setOpen(dpbe, true);
         Vec3 direction = targetOrigin.subtract(this.position()).normalize();
         double speed = 1 / 20.0;
         targetVelocity = new Vec3(0, direction.scale(speed).y, 0);
         ticksOnStart++;
         if (ticksOnStart >= 20) {
-            targetVelocity = Vec3.ZERO;
             state = DroneState.MOVING_TO_PLAYER;
+            setOpen(dpbe, false);
         }
     }
 
@@ -179,6 +188,7 @@ public class DroneEntity extends Mob {
         if (currentPos.distanceTo(targetOrigin) <= 0.1) {
             targetVelocity = Vec3.ZERO;
             this.setPos(targetOrigin);
+            setOpen(dpbe, true);
             state = DroneState.LANDING;
         } else {
             Vec3 direction = targetOrigin.subtract(currentPos).normalize();
@@ -191,6 +201,7 @@ public class DroneEntity extends Mob {
         targetVelocity = direction.scale(1.0 / 20.0);
         ticksInBlock++;
         if (ticksInBlock >= 40) { // 2 Sekunden (40 Ticks)
+            setOpen(dpbe, false);
             this.discard();
         }
     }
