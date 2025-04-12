@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvider {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private final ItemStackHandler inventory = new ItemStackHandler(CMPConfigs.server().dronePortMaxSize.get());
+    private final ItemStackHandler inventory = new ItemStackHandler(27);//CMPConfigs.server().dronePortMaxSize.get());
     private final LazyOptional<IItemHandler> inventoryCapability = LazyOptional.of(() -> inventory);
 
     public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
@@ -165,5 +165,18 @@ public class DronePortBlockEntity extends SmartBlockEntity implements MenuProvid
     @Override
     public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
         return null;
+    }
+
+    public class Menu implements MenuProvider {
+
+        @Override
+        public Component getDisplayName() {
+            return Component.empty();
+        }
+
+        @Override
+        public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
+            return DronePortMenu.create(pContainerId, pPlayerInventory, DronePortBlockEntity.this);
+        }
     }
 }
