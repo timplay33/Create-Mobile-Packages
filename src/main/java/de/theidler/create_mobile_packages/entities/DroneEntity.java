@@ -33,6 +33,7 @@ public class DroneEntity extends Mob {
         this.setNoGravity(true);
         this.noPhysics = true;
         this.setNoAi(true);
+        this.setPersistenceRequired();
         origin = this.position();
     }
 
@@ -153,5 +154,9 @@ public class DroneEntity extends Mob {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 10.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.0D);
+    }
+
+    @Override
+    public void checkDespawn() {
     }
 }
