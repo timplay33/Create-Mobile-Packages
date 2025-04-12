@@ -273,8 +273,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             AllGuiTextures.STOCK_KEEPER_REQUEST_SEND_HOVER.render(pGuiGraphics, x + windowWidth - 81,
                     y + windowHeight - 41);
 
-        MutableComponent headerTitle = CreateLang.translate("gui.stock_keeper.title")
-                .component();
+        MutableComponent headerTitle = Component.literal("Drone Controller");
         pGuiGraphics.drawString(font, headerTitle, x + windowWidth / 2 - font.width(headerTitle) / 2, y + 4, 0x714A40,
                 false);
         MutableComponent component =
