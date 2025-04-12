@@ -58,13 +58,13 @@ public class DroneController extends StockCheckingItem {
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
             MenuProvider provider = new SimpleMenuProvider(
-                    (id, inv, p) -> new DroneControllerMenu(id, inv, bigItemStacks, this),
+                    (id, inv, p) -> new DroneControllerMenu(id, inv, this),
                     Component.translatable("screen.create_mobile_packages.drone_controller")
             );
             NetworkHooks.openScreen((ServerPlayer) pPlayer, provider);
             if (pPlayer instanceof ServerPlayer serverPlayer) {
                 NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
-                        (id, inv, ply) -> new DroneControllerMenu(id, inv, bigItemStacks, this),
+                        (id, inv, ply) -> new DroneControllerMenu(id, inv, this),
                         Component.literal("Drone Controller")
                 ), buf -> {});
             }
