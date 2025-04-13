@@ -1,11 +1,8 @@
 package de.theidler.create_mobile_packages.entities.render;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.DroneEntity;
 import de.theidler.create_mobile_packages.entities.models.DroneEntityModel;
-import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
