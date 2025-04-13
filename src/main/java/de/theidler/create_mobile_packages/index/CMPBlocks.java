@@ -19,7 +19,7 @@ public class CMPBlocks {
                     .initialProperties(SharedProperties::wooden)
                     .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
                     .item()
-                    .transform(customItemModel("_", "block"))
+                    .transform(customItemModel())
                     .register();
 
     public static void register() {
