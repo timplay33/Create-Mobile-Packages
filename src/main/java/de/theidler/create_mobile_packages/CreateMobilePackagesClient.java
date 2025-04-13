@@ -24,7 +24,7 @@ public class CreateMobilePackagesClient {
         event.registerEntityRenderer(CMPEntities.DRONE_ENTITY.get(), DroneEntityRenderer::new);
     }
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(DroneEntityRenderer.LAYER_LOCATION, DroneEntityModel::createBodyLayer);
+        event.registerLayerDefinition(DroneEntityModel.LAYER_LOCATION, DroneEntityModel::createBodyLayer);
     }
 
 

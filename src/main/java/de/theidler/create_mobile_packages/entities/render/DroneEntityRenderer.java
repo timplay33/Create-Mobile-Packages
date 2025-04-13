@@ -10,12 +10,11 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 
-public class DroneEntityRenderer extends MobRenderer<DroneEntity, DroneEntityModel> {
-    private static final ResourceLocation TEXTURE = CreateMobilePackages.asResource("textures/item/drone_controller.png");
-    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(CreateMobilePackages.asResource("drone"), "main");
+public class DroneEntityRenderer extends MobRenderer<DroneEntity, DroneEntityModel<DroneEntity>> {
+    private static final ResourceLocation TEXTURE = CreateMobilePackages.asResource("textures/entity/drone.png");
 
     public DroneEntityRenderer(EntityRendererProvider.Context pContext) {
-        super(pContext, new DroneEntityModel(pContext.bakeLayer(LAYER_LOCATION)), 0.5F);
+        super(pContext, new DroneEntityModel<>(pContext.bakeLayer(DroneEntityModel.LAYER_LOCATION)), 0.5F);
     }
 
     @Override
@@ -23,8 +22,4 @@ public class DroneEntityRenderer extends MobRenderer<DroneEntity, DroneEntityMod
         return TEXTURE;
     }
 
-    @Override
-    public void render(DroneEntity pEntity, float pEntityYaw, float pPartialTick, PoseStack pPoseStack, MultiBufferSource pBuffer, int pPackedLight) {
-        super.render(pEntity, pEntityYaw, pPartialTick, pPoseStack, pBuffer, pPackedLight);
-    }
 }
