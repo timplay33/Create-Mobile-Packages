@@ -185,7 +185,7 @@ public class DroneEntity extends Mob {
             targetVelocity = Vec3.ZERO;
             return;
         }
-        if (currentPos.distanceTo(targetOrigin) <= 0.1) {
+        if (currentPos.distanceTo(targetOrigin) <= 0.2) {
             targetVelocity = Vec3.ZERO;
             this.setPos(targetOrigin);
             setOpen(dpbe, true);
