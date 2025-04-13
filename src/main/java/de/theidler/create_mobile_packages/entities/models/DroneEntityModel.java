@@ -74,6 +74,7 @@ public class DroneEntityModel<T extends DroneEntity> extends EntityModel<T> {
 	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
 		poseStack.pushPose();
 		poseStack.scale(0.2F,0.2F,0.2F);
+		poseStack.translate(0.0F, 4.0F, 0.0F);
 		drone.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 		poseStack.popPose();
 	}
