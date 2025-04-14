@@ -117,7 +117,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     @Override
     protected void onOpenChange(boolean open) {
-        level.playSound(null, worldPosition, open ? SoundEvents.CHEST_OPEN : SoundEvents.CHEST_CLOSE,
+        level.playSound(null, worldPosition, open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
                 SoundSource.BLOCKS);
     }
 }
