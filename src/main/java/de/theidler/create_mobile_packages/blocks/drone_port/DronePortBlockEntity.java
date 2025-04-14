@@ -80,6 +80,8 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
             return;
         }
         dronePortBlockEntity.level.setBlockAndUpdate(dronePortBlockEntity.getBlockPos(), dronePortBlockEntity.getBlockState().setValue(IS_OPEN_TEXTURE, open));
+        dronePortBlockEntity.level.playSound(null, dronePortBlockEntity.getBlockPos(), open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
+                SoundSource.BLOCKS);
 
     }
 
