@@ -33,11 +33,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneControllerMenu> implements ScreenWithStencils {
@@ -73,12 +75,16 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     private boolean scrollHandleActive;
     private InventorySummary forcedEntries;
 
+    public boolean refreshSearchNextTick;
+    public boolean moveToTopNextTick;
+
     public DroneControllerScreen(DroneControllerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         displayedItems = new ArrayList<>();
         itemsToOrder = new ArrayList<>();
         itemScroll = LerpedFloat.linear()
                 .startWithValue(0);
+        forcedEntries = new InventorySummary();
         this.playerInventory = playerInventory;
     }
 
@@ -117,7 +123,13 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             //revalidateOrders();
         }
 
+        if (refreshSearchNextTick) {
+            refreshSearchNextTick = false;
+            refreshSearchResults(moveToTopNextTick);
+        }
+
         itemScroll.tickChaser();
+
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
             itemScroll.setValue(itemScroll.getChaseTarget());
     }
@@ -126,11 +138,55 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         if (scrollBackUp)
             itemScroll.startWithValue(0);
 
-        String valueWithPrefix = "";//searchBox.getValue();
+        String valueWithPrefix = searchBox.getValue();
 
+        // Nothing is being filtered out
         if (valueWithPrefix.isBlank()) {
             if (currentItemSource != null) {
                 displayedItems = new ArrayList<>(currentItemSource);
+            }
+        }
+
+        // Filter by search string
+        boolean modSearch = false;
+        boolean tagSearch = false;
+        if ((modSearch = valueWithPrefix.startsWith("@")) || (tagSearch = valueWithPrefix.startsWith("#")))
+            valueWithPrefix = valueWithPrefix.substring(1);
+        final String value = valueWithPrefix.toLowerCase(Locale.ROOT);
+
+        if (currentItemSource == null) {return;}
+        displayedItems.clear();
+
+        for (BigItemStack entry : currentItemSource) {
+            ItemStack stack = entry.stack;
+
+            if (modSearch) {
+                if (ForgeRegistries.ITEMS.getKey(stack.getItem())
+                        .getNamespace()
+                        .contains(value)) {
+                    displayedItems.add(entry);
+                }
+                continue;
+            }
+
+            if (tagSearch) {
+                if (stack.getTags()
+                        .anyMatch(key -> key.location()
+                                .toString()
+                                .contains(value)))
+                    displayedItems.add(entry);
+                continue;
+            }
+
+            if (stack.getHoverName()
+                    .getString()
+                    .toLowerCase(Locale.ROOT)
+                    .contains(value)
+                    || ForgeRegistries.ITEMS.getKey(stack.getItem())
+                    .getPath()
+                    .contains(value)) {
+                displayedItems.add(entry);
+                continue;
             }
         }
 
@@ -273,8 +329,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             AllGuiTextures.STOCK_KEEPER_REQUEST_SEND_HOVER.render(pGuiGraphics, x + windowWidth - 81,
                     y + windowHeight - 41);
 
-        MutableComponent headerTitle = CreateLang.translate("gui.stock_keeper.title")
-                .component();
+        MutableComponent headerTitle = Component.literal("Drone Controller");
         pGuiGraphics.drawString(font, headerTitle, x + windowWidth / 2 - font.width(headerTitle) / 2, y + 4, 0x714A40,
                 false);
         MutableComponent component =
@@ -336,6 +391,14 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                 continue;
             AllGuiTextures.STOCK_KEEPER_REQUEST_BG.render(pGuiGraphics, x + 22, y + sliceY + 18);
         }
+
+        // Search bar
+        AllGuiTextures.STOCK_KEEPER_REQUEST_SEARCH.render(pGuiGraphics, x + 42, searchBox.getY() - 5);
+        searchBox.render(pGuiGraphics, mouseX, mouseY, partialTicks);
+        if (searchBox.getValue()
+                .isBlank() && !searchBox.isFocused())
+            pGuiGraphics.drawString(font, searchBox.getMessage(),
+                    x + windowWidth / 2 - font.width(searchBox.getMessage()) / 2, searchBox.getY(), 0xff4A2D31, false);
 
         // Something isnt right
         boolean allEmpty = displayedItems.isEmpty();
@@ -418,6 +481,19 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                                  boolean isRenderingOrders) {
 
         int customCount = entry.count;
+
+        if (!isRenderingOrders) {
+            BigItemStack order = getOrderForItem(entry.stack);
+            if (entry.count < BigItemStack.INF) {
+                int forcedCount = forcedEntries.getCountOf(entry.stack);
+                if (forcedCount != 0)
+                    customCount = Math.min(customCount, -forcedCount - 1);
+                if (order != null)
+                    customCount -= order.count;
+                customCount = Math.max(0, customCount);
+            }
+            AllGuiTextures.STOCK_KEEPER_REQUEST_SLOT.render(graphics, 0, 0);
+        }
 
         boolean craftable = entry instanceof CraftableBigItemStack;
         PoseStack ms = graphics.pose();
@@ -552,8 +628,8 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         // Search
         if (rmb && searchBox.isMouseOver(pMouseX, pMouseY)) {
             searchBox.setValue("");
-            //refreshSearchNextTick = true;
-            //moveToTopNextTick = true;
+            refreshSearchNextTick = true;
+            moveToTopNextTick = true;
             searchBox.setFocused(true);
             //syncJEI();
             return true;
@@ -749,8 +825,8 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         if (!searchBox.charTyped(pCodePoint, pModifiers))
             return false;
         if (!Objects.equals(s, searchBox.getValue())) {
-            //refreshSearchNextTick = true;
-            //moveToTopNextTick = true;
+            refreshSearchNextTick = true;
+            moveToTopNextTick = true;
             //syncJEI();
         }
         return true;
@@ -775,8 +851,8 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         if (!searchBox.keyPressed(pKeyCode, pScanCode, pModifiers))
             return searchBox.isFocused() && searchBox.isVisible() && pKeyCode != 256 || super.keyPressed(pKeyCode, pScanCode, pModifiers);
         if (!Objects.equals(s, searchBox.getValue())) {
-            //refreshSearchNextTick = true;
-            //moveToTopNextTick = true;
+            refreshSearchNextTick = true;
+            moveToTopNextTick = true;
             //syncJEI();
         }
         return true;
@@ -798,6 +874,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         CMPPackets.getChannel()
                 .sendToServer(new SendPackage(new PackageOrder(itemsToOrder),
                         addressBox.getValue(), false, PackageOrder.empty()));
+        menu.droneController.previouslyUsedAddress = addressBox.getValue();
 
         itemsToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;

@@ -12,6 +12,18 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CMPShapes {
 
+    public static final VoxelShaper
+            DRONE_PORT_SHAPE = shape(0, 0, 0, 16, 14, 16)
+            .add(12, 14, 2, 14, 16, 4)
+            .add(2, 14, 2, 4, 16, 4)
+            .add(2, 14, 12, 4, 16, 14)
+            .add(12, 14, 12, 14, 16, 14)
+            .add(14, 14, 0, 16, 16, 16)
+            .add(0, 14, 0, 2, 16, 16)
+            .add(2, 14, 0, 14, 16, 2)
+            .add(2, 14, 14, 14, 16, 16)
+            .forDirectional();
+
     // From create:AllShapes
     public static Builder shape(VoxelShape shape) {
         return new Builder(shape);

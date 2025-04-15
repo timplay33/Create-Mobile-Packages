@@ -2,7 +2,7 @@ package de.theidler.create_mobile_packages.index;
 
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.blocks.DronePortBlockEntity;
+import de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity;
 
 public class CMPBlockEntities {
 

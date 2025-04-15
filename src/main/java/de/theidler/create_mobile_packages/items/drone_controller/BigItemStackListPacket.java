@@ -2,7 +2,6 @@ package de.theidler.create_mobile_packages.items.drone_controller;
 
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
-import de.theidler.create_mobile_packages.CreateMobilePackages;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -18,7 +17,6 @@ public class BigItemStackListPacket extends SimplePacketBase {
     // Standard constructor
     public BigItemStackListPacket(List<BigItemStack> stacks) {
         this.stacks = stacks;
-        CreateMobilePackages.LOGGER.info("Packet received with " + stacks.size() + " stacks");
     }
 
     @Override
@@ -48,7 +46,6 @@ public class BigItemStackListPacket extends SimplePacketBase {
     @OnlyIn(Dist.CLIENT)
     public void handleClient() {
         ClientScreenStorage.stacks = stacks;
-        CreateMobilePackages.LOGGER.info("Packet handled");
     }
 
 }
