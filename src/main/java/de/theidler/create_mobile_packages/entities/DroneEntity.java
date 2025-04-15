@@ -141,12 +141,7 @@ public class DroneEntity extends Mob {
     }
 
     // States
-    private boolean hasStarted = false;
     private void startingState() {
-        if (!hasStarted) {
-            setOpen(dpbe, true);
-            hasStarted = true;
-        }
         Vec3 direction = targetOrigin.subtract(this.position()).normalize();
         double speed = 1 / 20.0;
         targetVelocity = new Vec3(0, direction.scale(speed).y, 0);
