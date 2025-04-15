@@ -16,7 +16,6 @@ public class CreateMobilePackagesClient {
     }
 
     private static void registerPonder() {
-        CreateMobilePackages.LOGGER.info("Registering PonderIndex");
         PonderIndex.addPlugin(new CMPPonderPlugin());
     }
 
