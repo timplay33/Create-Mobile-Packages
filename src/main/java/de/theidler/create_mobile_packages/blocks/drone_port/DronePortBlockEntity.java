@@ -35,7 +35,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         if (tickCounter++ < 20) {
             return;
         }
-        if (level.isClientSide) {
+        if (level == null || level.isClientSide) {
             return;
         }
 
@@ -50,26 +50,23 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     }
 
     private void sendItemFromQueueIfPossible(ItemStack itemStack, int slot) {
-        if (itemStack != null) {
-            if (!PackageItem.isPackage(itemStack)) {
-                return;
-            }
+        if (level == null || itemStack == null || !PackageItem.isPackage(itemStack)) { return; }
 
-            for (Player player : level.players()) {
-                if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
-                    CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
-                    DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), level, this);
-                    drone.setTargetPlayerUUID(player.getUUID());
-                    drone.setItemStack(itemStack);
-                    drone.setPos(this.getBlockPos().getCenter().subtract(0,0.5,0));
-                    drone.setOrigin(this.getBlockPos().getCenter().subtract(0,0.5,0));
-                    level.addFreshEntity(drone);
-                    setOpen(this,true);
-                    inventory.setStackInSlot(slot, ItemStack.EMPTY);
-                    break;
-                }
+        for (Player player : level.players()) {
+            if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
+                CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
+                DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), level, this);
+                drone.setTargetPlayerUUID(player.getUUID());
+                drone.setItemStack(itemStack);
+                drone.setPos(this.getBlockPos().getCenter().subtract(0,0.5,0));
+                drone.setOrigin(this.getBlockPos().getCenter().subtract(0,0.5,0));
+                level.addFreshEntity(drone);
+                setOpen(this,true);
+                inventory.setStackInSlot(slot, ItemStack.EMPTY);
+                break;
             }
         }
+
     }
 
     public static void setOpen(DronePortBlockEntity dronePortBlockEntity,boolean open) {
@@ -119,6 +116,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     @Override
     protected void onOpenChange(boolean open) {
+        if (level == null) { return; }
         level.playSound(null, worldPosition, open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
                 SoundSource.BLOCKS);
         setOpen(this, open);
