@@ -84,6 +84,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         itemsToOrder = new ArrayList<>();
         itemScroll = LerpedFloat.linear()
                 .startWithValue(0);
+        forcedEntries = new InventorySummary();
         this.playerInventory = playerInventory;
     }
 
@@ -480,6 +481,19 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                                  boolean isRenderingOrders) {
 
         int customCount = entry.count;
+
+        if (!isRenderingOrders) {
+            BigItemStack order = getOrderForItem(entry.stack);
+            if (entry.count < BigItemStack.INF) {
+                int forcedCount = forcedEntries.getCountOf(entry.stack);
+                if (forcedCount != 0)
+                    customCount = Math.min(customCount, -forcedCount - 1);
+                if (order != null)
+                    customCount -= order.count;
+                customCount = Math.max(0, customCount);
+            }
+            AllGuiTextures.STOCK_KEEPER_REQUEST_SLOT.render(graphics, 0, 0);
+        }
 
         boolean craftable = entry instanceof CraftableBigItemStack;
         PoseStack ms = graphics.pose();
