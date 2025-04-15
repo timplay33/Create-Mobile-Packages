@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.entities;
 
 import de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -30,7 +31,7 @@ public class DroneEntity extends Mob {
     private enum DroneState {STARTING, MOVING_TO_PLAYER, WAITING, RETURNING, LANDING}
 
     private DroneState state = DroneState.STARTING;
-    private int waitTicks = 30;
+    private int waitTicks = 10;
     private boolean isBeenDeliverd = false;
     private final DronePortBlockEntity dpbe;
 
@@ -78,7 +79,7 @@ public class DroneEntity extends Mob {
 
         switch (state) {
             case STARTING:
-                startingState();
+                startingState(target);
                 break;
             case MOVING_TO_PLAYER:
                 movingToPlayerState(target, currentPos);
@@ -136,12 +137,20 @@ public class DroneEntity extends Mob {
                 .add(Attributes.MOVEMENT_SPEED, 0.0D);
     }
 
+    private void lookAt(BlockPos pos) {
+        Vec3 lookAt = new Vec3(pos.getX(), pos.getY(), pos.getZ());
+        Vec3 direction = lookAt.subtract(this.position()).normalize();
+        this.setYRot((float) Math.toDegrees(Math.atan2(direction.z, direction.x))+90);
+        this.setXRot((float) Math.toDegrees(Math.atan2(direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z))));
+    }
+
     @Override
     public void checkDespawn() {
     }
 
     // States
-    private void startingState() {
+    private void startingState(Player target) {
+        if (target != null) lookAt(target.blockPosition());
         Vec3 direction = targetOrigin.subtract(this.position()).normalize();
         double speed = 1 / 20.0;
         targetVelocity = new Vec3(0, direction.scale(speed).y, 0);
@@ -154,6 +163,7 @@ public class DroneEntity extends Mob {
 
     private void movingToPlayerState(Player target, Vec3 currentPos) {
         if (target != null && target.isAlive()) {
+            lookAt(target.blockPosition());
             updateDisplay(target);
             Vec3 desiredTarget = target.position().add(0,2,0);
             if (currentPos.distanceTo(desiredTarget) <= 1.5) {
@@ -169,6 +179,7 @@ public class DroneEntity extends Mob {
         }
     }
     private void waitingState(Player target) {
+        lookAt(BlockPos.containing(targetOrigin));
         targetVelocity = Vec3.ZERO;
         waitTicks--;
         if (waitTicks <= 0) {
@@ -184,6 +195,7 @@ public class DroneEntity extends Mob {
             targetVelocity = Vec3.ZERO;
             return;
         }
+        lookAt(BlockPos.containing(targetOrigin));
         if (currentPos.distanceTo(targetOrigin) <= 0.2) {
             targetVelocity = Vec3.ZERO;
             this.setPos(targetOrigin);
