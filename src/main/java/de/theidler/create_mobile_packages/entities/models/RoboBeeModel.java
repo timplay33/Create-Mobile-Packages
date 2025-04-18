@@ -59,7 +59,11 @@ public class RoboBeeModel<T extends RoboBeeEntity> extends EntityModel<T> {
 
 	@Override
 	public void setupAnim(RoboBeeEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+		float rotationSpeed = 20.0F; // Geschwindigkeit der Rotation
+		float rotation = ageInTicks * rotationSpeed;
 
+		this.rotor1.yRot = rotation;
+		this.rotor2.yRot = -rotation;
 	}
 
 	@Override
