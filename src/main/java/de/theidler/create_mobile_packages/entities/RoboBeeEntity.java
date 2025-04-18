@@ -140,7 +140,7 @@ public class RoboBeeEntity extends Mob {
     private void lookAt(BlockPos pos) {
         Vec3 lookAt = new Vec3(pos.getX(), pos.getY(), pos.getZ());
         Vec3 direction = lookAt.subtract(this.position()).normalize();
-        this.setYRot((float) Math.toDegrees(Math.atan2(direction.z, direction.x))+90);
+        this.setYRot((float) Math.toDegrees(Math.atan2(direction.z, direction.x))-90);
         this.setXRot((float) Math.toDegrees(Math.atan2(direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z))));
     }
 
