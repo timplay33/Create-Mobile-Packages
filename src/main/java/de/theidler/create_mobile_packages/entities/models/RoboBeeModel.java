@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.entities.models;// Made with Blockben
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -10,7 +11,7 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 
 //Thanks to @AzulConspirator & @SNRTom for the model
-public class RoboBeeModel<T extends RoboBee> extends EntityModel<T> {
+public class RoboBeeModel<T extends RoboBeeEntity> extends EntityModel<T> {
 	// This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
 	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(CreateMobilePackages.asResource("robobeemodel"), "main");
 	private final ModelPart stinger;
@@ -57,7 +58,7 @@ public class RoboBeeModel<T extends RoboBee> extends EntityModel<T> {
 	}
 
 	@Override
-	public void setupAnim(RoboBee entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+	public void setupAnim(RoboBeeEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 
 	}
 

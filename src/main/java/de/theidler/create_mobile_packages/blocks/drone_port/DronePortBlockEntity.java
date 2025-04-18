@@ -3,7 +3,7 @@ package de.theidler.create_mobile_packages.blocks.drone_port;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.entities.DroneEntity;
+import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -55,7 +55,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         for (Player player : level.players()) {
             if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
                 CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
-                DroneEntity drone = new DroneEntity(CMPEntities.DRONE_ENTITY.get(), level, this);
+                RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, this);
                 drone.setTargetPlayerUUID(player.getUUID());
                 drone.setItemStack(itemStack);
                 drone.setPos(this.getBlockPos().getCenter().subtract(0,0.5,0));
@@ -102,9 +102,9 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         return true;
     }
 
-    public static void sendPackageToPlayer(Player player, ItemStack itemStack, DroneEntity droneEntity) {
+    public static void sendPackageToPlayer(Player player, ItemStack itemStack, RoboBeeEntity roboBeeEntity) {
         if (isPlayerInventoryFull(player)) {
-            BlockPos blockPos = droneEntity.blockPosition();
+            BlockPos blockPos = roboBeeEntity.blockPosition();
             ItemEntity entityItem = new ItemEntity(player.level(), blockPos.getX(), player.getY(), blockPos.getZ(), itemStack);
             player.level().addFreshEntity(entityItem);
         } else {

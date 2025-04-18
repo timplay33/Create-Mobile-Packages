@@ -20,7 +20,7 @@ import java.util.UUID;
 import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity.sendPackageToPlayer;
 import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity.setOpen;
 
-public class DroneEntity extends Mob {
+public class RoboBeeEntity extends Mob {
 
     private UUID targetPlayerUUID;
     private Vec3 targetVelocity = Vec3.ZERO;
@@ -35,7 +35,7 @@ public class DroneEntity extends Mob {
     private boolean isBeenDeliverd = false;
     private final DronePortBlockEntity dpbe;
 
-    public DroneEntity(EntityType<? extends Mob> type, Level level, DronePortBlockEntity dpbe) {
+    public RoboBeeEntity(EntityType<? extends Mob> type, Level level, DronePortBlockEntity dpbe) {
         super(type, level);
         this.setNoGravity(true);
         this.noPhysics = true;
@@ -46,8 +46,8 @@ public class DroneEntity extends Mob {
         this.dpbe = dpbe;
     }
 
-    public static DroneEntity createEmpty(EntityType<? extends Mob> type, Level level) {
-        return new DroneEntity(type, level, null);
+    public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
+        return new RoboBeeEntity(type, level, null);
     }
 
     public void setTargetPlayerUUID(UUID uuid) {
