@@ -2,7 +2,7 @@
 A Minecraft mod that adds support for delivering Create Mod Packages directly to the player.
 
 ## Requirements
-- Forge 47.4.0 or newer
+- Forge 47.1.3 or newer
 - Create 6.0.4 or newer
 
 ## Where to Download?
