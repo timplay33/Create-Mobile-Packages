@@ -7,15 +7,20 @@ import de.theidler.create_mobile_packages.index.ponder.CMPPonderPlugin;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 public class CreateMobilePackagesClient {
-    public static void registerClientEvents(IEventBus modEventBus) {
-        registerPonder();
+
+    public CreateMobilePackagesClient() {
+    }
+
+    public static void onCtorClient(IEventBus modEventBus, IEventBus forgeEventBus) {
+        modEventBus.addListener(CreateMobilePackagesClient::clientInit);
         modEventBus.addListener(CreateMobilePackagesClient::registerEntityRenderers);
         modEventBus.addListener(CreateMobilePackagesClient::registerLayerDefinitions);
     }
 
-    private static void registerPonder() {
+    private static void clientInit(FMLClientSetupEvent event) {
         PonderIndex.addPlugin(new CMPPonderPlugin());
     }
 
@@ -25,6 +30,4 @@ public class CreateMobilePackagesClient {
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(DroneEntityModel.LAYER_LOCATION, DroneEntityModel::createBodyLayer);
     }
-
-
 }
