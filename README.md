@@ -1,4 +1,6 @@
 # Create: Mobile Packages
+<a href="https://www.curseforge.com/minecraft/mc-mods/create-mobile-packages"><img src="https://cf.way2muchnoise.eu/1232978.svg" alt="CF"></a>
+<a href="https://modrinth.com/mod/create-mobile-packages"><img src="https://img.shields.io/modrinth/dt/create-mobile-packages?logo=modrinth&label=&suffix=%20&style=flat&color=242629&labelColor=5ca424&logoColor=1c1c1c" alt="Modrinth"></a><br></br>
 A Minecraft mod that adds support for delivering Create Mod Packages directly to the player.
 
 ## Requirements
