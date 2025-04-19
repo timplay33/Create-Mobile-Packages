@@ -1,10 +1,9 @@
 {
-	"credit": "Made with Blockbench",
-	"parent": "block/block",
+	"credit": "SNRTom",
 	"texture_size": [32, 32],
 	"textures": {
-		"1": "block/texture",
-		"particle": "block/texture"
+		"1": "create_mobile_packages:item/bee_controller",
+		"particle": "create_mobile_packages:item/bee_controller"
 	},
 	"elements": [
 		{
