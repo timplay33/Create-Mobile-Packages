@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # === Git-Flow Wrapper für Bash (macOS/Linux) ===
-#../wrapper.sh 1.20.1 feature start #issue
+#../wrapper.sh 1.20.1 feature start "#issue"
 
 # Prüfe, ob ein Versions‑Parameter übergeben wurde (z.B. 1.20.1)
 if [[ -z "$1" ]]; then

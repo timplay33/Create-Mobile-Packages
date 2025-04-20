@@ -2,7 +2,7 @@
 .SYNOPSIS
   Git-Flow Wrapper für PowerShell (Windows)
   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-  ..\wrapper.ps1 1.21.1 hotfix start #issue
+  ..\wrapper.ps1 1.21.1 hotfix start "#issue"
 #>
 
 param(
