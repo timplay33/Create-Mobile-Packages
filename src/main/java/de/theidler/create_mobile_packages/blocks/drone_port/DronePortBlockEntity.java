@@ -15,6 +15,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.io.Console;
+import java.util.List;
+
 import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlock.IS_OPEN_TEXTURE;
 
 public class DronePortBlockEntity extends PackagePortBlockEntity {
@@ -66,6 +69,11 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
                 break;
             }
         }
+        level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
+                .ifPresent(tracker -> {
+                    List<DronePortDataStore> allBEs = tracker.getAll();
+                    allBEs.forEach(be -> System.out.printf("%s %s\n", be.getPos(), be.getAddress()));
+                });
 
     }
 
@@ -120,5 +128,23 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         level.playSound(null, worldPosition, open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
                 SoundSource.BLOCKS);
         setOpen(this, open);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (!level.isClientSide){
+            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
+                    .ifPresent(tracker -> tracker.add(new DronePortDataStore(this)));
+        }
+    }
+
+    @Override
+    public void remove() {
+        if (!level.isClientSide) {
+            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
+                    .ifPresent(tracker -> tracker.remove(new DronePortDataStore(this)));
+        }
+        super.remove();
     }
 }
