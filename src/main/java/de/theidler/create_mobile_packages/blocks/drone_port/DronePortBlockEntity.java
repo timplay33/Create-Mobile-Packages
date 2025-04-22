@@ -71,8 +71,8 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         }
         level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
                 .ifPresent(tracker -> {
-                    List<DronePortDataStore> allBEs = tracker.getAll();
-                    allBEs.forEach(be -> System.out.printf("%s %s\n", be.getPos(), be.getAddress()));
+                    List<DronePortBlockEntity> allBEs = tracker.getAll();
+                    allBEs.forEach(be -> System.out.printf("%s %s\n", be.getBlockPos(), be.addressFilter));
                 });
 
     }
@@ -135,7 +135,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         super.onLoad();
         if (!level.isClientSide){
             level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
-                    .ifPresent(tracker -> tracker.add(new DronePortDataStore(this)));
+                    .ifPresent(tracker -> tracker.add(this));
         }
     }
 
@@ -143,7 +143,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     public void remove() {
         if (!level.isClientSide) {
             level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
-                    .ifPresent(tracker -> tracker.remove(new DronePortDataStore(this)));
+                    .ifPresent(tracker -> tracker.remove(this));
         }
         super.remove();
     }
