@@ -4,9 +4,13 @@ import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 
 public class AdjustRotationToTarget implements RoboEntityState {
+    int wait = 0;
     @Override
     public void tick(RoboEntity re) {
         if (true) { //TODO: fix rotation
+            if (wait++ < 20){
+                return;
+            }
             re.setState(new FlyToTargetState());
             return;
         }
