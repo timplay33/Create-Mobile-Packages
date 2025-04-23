@@ -181,6 +181,9 @@ public class RoboEntity extends Mob {
         if (pReason == RemovalReason.KILLED) {
             if (itemStack != null) {
                 level().addFreshEntity(new ItemEntity(level(), this.getX(), this.getY(), this.getZ(), itemStack));
+                if (this.targetPlayer != null) {
+                    targetPlayer.displayClientMessage(Component.literal("Robo Bee died at " + this.getX() + " " + this.getY() + " " + this.getZ() + " with a Package for " + targetPlayer.getName()), false);
+                }
             }
         }
         super.remove(pReason);
