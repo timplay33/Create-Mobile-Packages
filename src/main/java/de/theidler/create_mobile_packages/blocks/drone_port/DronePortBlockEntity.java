@@ -68,10 +68,12 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         }
         level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
             List<DronePortBlockEntity> allBEs = tracker.getAll();
-            if (allBEs.stream().anyMatch(dpbe -> PackageItem.matchAddress(address, dpbe.addressFilter))){
-                RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
-                level.addFreshEntity(drone);
-                inventory.setStackInSlot(slot, ItemStack.EMPTY);
+            if (allBEs.stream().anyMatch(dpbe -> PackageItem.matchAddress(address, dpbe.addressFilter) && dpbe != this)) {
+                if (!PackageItem.matchAddress(address, this.addressFilter)) {
+                    RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
+                    level.addFreshEntity(drone);
+                    inventory.setStackInSlot(slot, ItemStack.EMPTY);
+                }
             }
         });
     }
