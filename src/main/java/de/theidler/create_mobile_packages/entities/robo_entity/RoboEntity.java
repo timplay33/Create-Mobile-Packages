@@ -107,22 +107,22 @@ public class RoboEntity extends Mob {
      * @return The closest DronePortBlockEntity.
      */
     public DronePortBlockEntity getClosestDronePort() {
-        return getClosestDronePort(null);
+        return getClosestDronePort("");
     }
 
     /**
      * Finds the closest drone port to the RoboEntity, filtered by an address.
      *
-     * @param addressFilter The address filter to apply, or null for no filtering.
+     * @param address The address filter to apply, or "" for no filtering.
      * @return The closest DronePortBlockEntity matching the filter, or null if none found.
      */
-    public DronePortBlockEntity getClosestDronePort(String addressFilter) {
+    public DronePortBlockEntity getClosestDronePort(String address) {
         final DronePortBlockEntity[] closestDronePort = {null};
         level().getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
                 .ifPresent(tracker -> {
                     List<DronePortBlockEntity> allBEs = tracker.getAll();
                     closestDronePort[0] = allBEs.stream()
-                            .filter(dpbe -> addressFilter == null || addressFilter.equals(dpbe.addressFilter))
+                            .filter(dpbe -> address == null || PackageItem.matchAddress(address, dpbe.addressFilter))
                             .min((dpbe1, dpbe2) -> Double.compare(
                                     dpbe1.getBlockPos().distSqr(this.blockPosition()),
                                     dpbe2.getBlockPos().distSqr(this.blockPosition())
