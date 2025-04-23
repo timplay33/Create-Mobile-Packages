@@ -15,7 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.io.Console;
 import java.util.List;
 
 import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlock.IS_OPEN_TEXTURE;
@@ -58,23 +57,13 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         for (Player player : level.players()) {
             if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
                 CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
-                RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, this);
-                drone.setTargetPlayerUUID(player.getUUID());
-                drone.setItemStack(itemStack);
-                drone.setPos(this.getBlockPos().getCenter().subtract(0,0.5,0));
-                drone.setOrigin(this.getBlockPos().getCenter().subtract(0,0.5,0));
+                RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
                 level.addFreshEntity(drone);
                 setOpen(this,true);
                 inventory.setStackInSlot(slot, ItemStack.EMPTY);
                 break;
             }
         }
-        level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
-                .ifPresent(tracker -> {
-                    List<DronePortBlockEntity> allBEs = tracker.getAll();
-                    allBEs.forEach(be -> System.out.printf("%s %s\n", be.getBlockPos(), be.addressFilter));
-                });
-
     }
 
     public static void setOpen(DronePortBlockEntity dronePortBlockEntity,boolean open) {
@@ -88,6 +77,16 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         dronePortBlockEntity.level.playSound(null, dronePortBlockEntity.getBlockPos(), open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
                 SoundSource.BLOCKS);
 
+    }
+
+    public boolean addItemStack(ItemStack itemStack){
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            if (inventory.getStackInSlot(i).isEmpty()){
+                inventory.insertItem(i, itemStack, false);
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isPlayerInventoryFull(Player player) {
@@ -110,10 +109,9 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         return true;
     }
 
-    public static void sendPackageToPlayer(Player player, ItemStack itemStack, RoboBeeEntity roboBeeEntity) {
+    public static void sendPackageToPlayer(Player player, ItemStack itemStack, BlockPos dropSpot) {
         if (isPlayerInventoryFull(player)) {
-            BlockPos blockPos = roboBeeEntity.blockPosition();
-            ItemEntity entityItem = new ItemEntity(player.level(), blockPos.getX(), player.getY(), blockPos.getZ(), itemStack);
+            ItemEntity entityItem = new ItemEntity(player.level(), dropSpot.getX(), player.getY(), dropSpot.getZ(), itemStack);
             player.level().addFreshEntity(entityItem);
         } else {
             player.getInventory().add(itemStack);
