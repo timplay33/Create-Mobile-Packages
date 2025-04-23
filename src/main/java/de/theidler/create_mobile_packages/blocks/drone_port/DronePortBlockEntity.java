@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
+        itemHandler = LazyOptional.of(() -> inventory);
     }
 
     @Override
