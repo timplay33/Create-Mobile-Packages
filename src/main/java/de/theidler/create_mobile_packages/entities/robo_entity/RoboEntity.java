@@ -28,7 +28,7 @@ public class RoboEntity extends Mob {
     private ItemStack itemStack;
     private Player targetPlayer;
     private DronePortBlockEntity targetBlockEntity;
-    private final DronePortBlockEntity startDronePortBlockEntity;
+    private DronePortBlockEntity startDronePortBlockEntity;
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
@@ -42,7 +42,9 @@ public class RoboEntity extends Mob {
         this.targetVelocity = Vec3.ZERO;
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
-        startDronePortBlockEntity = (DronePortBlockEntity) level().getBlockEntity(spawnPos); //TODO: check Type safety
+        if (level().getBlockEntity(spawnPos) instanceof DronePortBlockEntity dpbe) {
+            startDronePortBlockEntity = dpbe;
+        }
         this.setYRot(getSnapAngle(getAngleToTarget()));
         // don't fly out of the port if target is origin
         if (targetBlockEntity != null && targetBlockEntity.equals(startDronePortBlockEntity)) {
@@ -63,6 +65,7 @@ public class RoboEntity extends Mob {
      * @param itemStack The ItemStack used to determine the target.
      */
     private void setTargetFromItemStack(ItemStack itemStack) {
+        if (itemStack == null) return;
         if (!PackageItem.isPackage(itemStack)) {
             this.targetBlockEntity = getClosestDronePort();
             return;
@@ -90,11 +93,11 @@ public class RoboEntity extends Mob {
         } else {
             DronePortBlockEntity closest = getClosestDronePort();
             targetBlockEntity = closest;
-                if (closest != null) {
-                    return closest.getBlockPos().above();
-                } else {
-                    return null;
-                }
+            if (closest != null) {
+                return closest.getBlockPos().above();
+            } else {
+                return null;
+            }
         }
     }
 
@@ -138,6 +141,7 @@ public class RoboEntity extends Mob {
     }
 
     public void setState(RoboEntityState state) {
+        if (state == null) return;
         this.state = state;
     }
 
@@ -146,6 +150,7 @@ public class RoboEntity extends Mob {
     }
 
     public void setItemStack(ItemStack itemStack) {
+        if (itemStack == null) return;
         this.itemStack = itemStack;
     }
     public DronePortBlockEntity getStartDronePortBlockEntity() {
@@ -153,6 +158,7 @@ public class RoboEntity extends Mob {
     }
 
     public void setTargetVelocity(Vec3 targetVelocity) {
+        if (targetVelocity == null) return;
         this.targetVelocity = targetVelocity;
     }
 
@@ -196,10 +202,12 @@ public class RoboEntity extends Mob {
     }
 
     public void updateDisplay(Player player) {
+        if (player == null) return;
         player.displayClientMessage(Component.literal("Package will arrive in " + (calcETA(player)) + "s"), true);
     }
 
     private int calcETA(Player player) {
+        if (player == null) return Integer.MAX_VALUE;
         double distance = player.position().distanceTo(this.position());
         return (int) (distance / CMPConfigs.server().droneSpeed.get()) + 1;
     }
