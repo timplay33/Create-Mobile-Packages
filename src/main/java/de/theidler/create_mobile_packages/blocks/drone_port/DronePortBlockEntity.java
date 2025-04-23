@@ -55,17 +55,25 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     private void sendItemFromQueueIfPossible(ItemStack itemStack, int slot) {
         if (level == null || itemStack == null || !PackageItem.isPackage(itemStack)) { return; }
+        String address = PackageItem.getAddress(itemStack);
 
         for (Player player : level.players()) {
-            if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
+            if (player.getName().getString().equals(address)) {
                 CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
                 RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
                 level.addFreshEntity(drone);
-                setOpen(this,true);
                 inventory.setStackInSlot(slot, ItemStack.EMPTY);
                 break;
             }
         }
+        level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
+            List<DronePortBlockEntity> allBEs = tracker.getAll();
+            if (allBEs.stream().anyMatch(dpbe -> PackageItem.matchAddress(address, dpbe.addressFilter))){
+                RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
+                level.addFreshEntity(drone);
+                inventory.setStackInSlot(slot, ItemStack.EMPTY);
+            }
+        });
     }
 
     public static void setOpen(DronePortBlockEntity dronePortBlockEntity,boolean open) {
