@@ -20,77 +20,127 @@ import java.util.List;
 
 import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlock.IS_OPEN_TEXTURE;
 
+/**
+ * Represents a Drone Port block entity that handles the processing and sending of Create Mod packages
+ * to players or other drone ports using drones.
+ */
 public class DronePortBlockEntity extends PackagePortBlockEntity {
 
+    private int tickCounter = 0; // Counter to track ticks for periodic processing.
+
+    /**
+     * Constructor for the DronePortBlockEntity.
+     *
+     * @param pType       The type of the block entity.
+     * @param pPos        The position of the block in the world.
+     * @param pBlockState The state of the block.
+     */
     public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
         itemHandler = LazyOptional.of(() -> inventory);
     }
 
+    /**
+     * Called every tick to perform periodic updates.
+     * Processes items every 20 ticks.
+     */
     @Override
     public void tick() {
         super.tick();
-        senderTick();
+        if (++tickCounter >= 20) {
+            tickCounter = 0;
+            processItems();
+        }
     }
 
-    private int tickCounter = 0;
-
-    private void senderTick() {
-        if (tickCounter++ < 20) {
-            return;
-        }
-        if (level == null || level.isClientSide) {
-            return;
-        }
+    /**
+     * Processes items in the inventory by attempting to send them to their destination.
+     */
+    private void processItems() {
+        if (level == null || level.isClientSide) return;
 
         for (int i = 0; i < inventory.getSlots(); i++) {
             ItemStack itemStack = inventory.getStackInSlot(i);
             if (!itemStack.isEmpty()) {
-                sendItemFromQueueIfPossible(itemStack, i);
+                sendItem(itemStack, i);
             }
         }
-
-        tickCounter = 0;
     }
 
-    private void sendItemFromQueueIfPossible(ItemStack itemStack, int slot) {
-        if (level == null || itemStack == null || !PackageItem.isPackage(itemStack)) { return; }
+    /**
+     * Sends a Create Mod package to its destination, either to a player or another drone port.
+     *
+     * @param itemStack The Create Mod package to send.
+     * @param slot      The inventory slot of the item.
+     */
+    private void sendItem(ItemStack itemStack, int slot) {
+        if (level == null || !PackageItem.isPackage(itemStack)) return;
         String address = PackageItem.getAddress(itemStack);
 
+        // Check if the item can be sent to a player.
         for (Player player : level.players()) {
             if (player.getName().getString().equals(address)) {
-                CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
-                RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
-                level.addFreshEntity(drone);
-                inventory.setStackInSlot(slot, ItemStack.EMPTY);
-                break;
+                sendToPlayer(player, itemStack, slot);
+                return;
             }
         }
+
+        // Check if the item can be sent to another drone port.
         level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
             List<DronePortBlockEntity> allBEs = tracker.getAll();
             if (allBEs.stream().anyMatch(dpbe -> PackageItem.matchAddress(address, dpbe.addressFilter) && dpbe != this)) {
                 if (!PackageItem.matchAddress(address, this.addressFilter)) {
-                    RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
-                    level.addFreshEntity(drone);
-                    inventory.setStackInSlot(slot, ItemStack.EMPTY);
+                    sendDrone(itemStack, slot);
                 }
             }
         });
     }
 
-    public static void setOpen(DronePortBlockEntity dronePortBlockEntity,boolean open) {
-        if (dronePortBlockEntity == null) {
-            return;
-        }
-        if (dronePortBlockEntity.level == null) {
-            return;
-        }
-        dronePortBlockEntity.level.setBlockAndUpdate(dronePortBlockEntity.getBlockPos(), dronePortBlockEntity.getBlockState().setValue(IS_OPEN_TEXTURE, open));
-        dronePortBlockEntity.level.playSound(null, dronePortBlockEntity.getBlockPos(), open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
+    /**
+     * Sends a Create Mod package to a player.
+     *
+     * @param player    The player to send the package to.
+     * @param itemStack The Create Mod package to send.
+     * @param slot      The inventory slot of the item.
+     */
+    private void sendToPlayer(Player player, ItemStack itemStack, int slot) {
+        CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
+        sendDrone(itemStack, slot);
+    }
+
+    /**
+     * Sends a Create Mod package.
+     *
+     * @param itemStack The Create Mod package to send.
+     * @param slot      The inventory slot of the item.
+     */
+    private void sendDrone(ItemStack itemStack, int slot) {
+        RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
+        level.addFreshEntity(drone);
+        inventory.setStackInSlot(slot, ItemStack.EMPTY);
+    }
+
+    /**
+     * Sets the open state of the drone port and updates the block state and sound.
+     *
+     * @param entity The drone port entity.
+     * @param open   Whether the port is open.
+     */
+    public static void setOpen(DronePortBlockEntity entity, boolean open) {
+        if (entity == null || entity.level == null) return;
+
+        entity.level.setBlockAndUpdate(entity.getBlockPos(), entity.getBlockState().setValue(IS_OPEN_TEXTURE, open));
+        entity.level.playSound(null, entity.getBlockPos(), open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
                 SoundSource.BLOCKS);
 
     }
 
+    /**
+     * Adds a Create Mod package to the inventory if there is space.
+     *
+     * @param itemStack The Create Mod package to add.
+     * @return True if the package was added, false otherwise.
+     */
     public boolean addItemStack(ItemStack itemStack){
         for (int i = 0; i < inventory.getSlots(); i++) {
             if (inventory.getStackInSlot(i).isEmpty()){
@@ -101,30 +151,26 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         return false;
     }
 
+    /**
+     * Checks if the player's inventory is full.
+     *
+     * @param player The player to check.
+     * @return True if the inventory is full, false otherwise.
+     */
     public static boolean isPlayerInventoryFull(Player player) {
-        int containerSize = player.getInventory().getContainerSize(); // Total player inventory slots
-        int armorSlotsStart = containerSize - 5; // Last 5 slots: [offhand, boots, leggings, chestplate, helmet]
-
-        // Check all main inventory slots (excluding armor and offhand slots)
-        for (int i = 0; i < armorSlotsStart; i++) {
-            if (player.getInventory().getItem(i).isEmpty()) {
-                return false;
-            }
-        }
-        // Check if armor slots and the offhand are the only empty slots
-        for (int i = armorSlotsStart; i < containerSize; i++) {
-            if (!player.getInventory().getItem(i).isEmpty()) {
-                continue;
-            }
-            return true;
-        }
-        return true;
+        return player.getInventory().items.stream().limit(player.getInventory().getContainerSize() - 5).noneMatch(ItemStack::isEmpty);
     }
 
+    /**
+     * Sends a Create Mod package to a player. If the player's inventory is full, the item is dropped at a specified location.
+     *
+     * @param player    The player to send the package to.
+     * @param itemStack The Create Mod package to send.
+     * @param dropSpot  The location to drop the package if the inventory is full.
+     */
     public static void sendPackageToPlayer(Player player, ItemStack itemStack, BlockPos dropSpot) {
         if (isPlayerInventoryFull(player)) {
-            ItemEntity entityItem = new ItemEntity(player.level(), dropSpot.getX(), player.getY(), dropSpot.getZ(), itemStack);
-            player.level().addFreshEntity(entityItem);
+            player.level().addFreshEntity(new ItemEntity(player.level(), dropSpot.getX(), player.getY(), dropSpot.getZ(), itemStack));
         } else {
             player.getInventory().add(itemStack);
         }
@@ -132,28 +178,36 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     }
 
+    /**
+     * Handles changes to the open state of the drone port.
+     *
+     * @param open Whether the port is open.
+     */
     @Override
     protected void onOpenChange(boolean open) {
         if (level == null) { return; }
-        level.playSound(null, worldPosition, open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
-                SoundSource.BLOCKS);
+        level.playSound(null, worldPosition, open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE, SoundSource.BLOCKS);
         setOpen(this, open);
     }
 
+    /**
+     * Called when the block entity is loaded. Registers the entity with the tracker.
+     */
     @Override
     public void onLoad() {
         super.onLoad();
         if (!level.isClientSide){
-            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
-                    .ifPresent(tracker -> tracker.add(this));
+            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
         }
     }
 
+    /**
+     * Called when the block entity is removed. Unregisters the entity from the tracker.
+     */
     @Override
     public void remove() {
         if (!level.isClientSide) {
-            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
-                    .ifPresent(tracker -> tracker.remove(this));
+            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
         }
         super.remove();
     }
