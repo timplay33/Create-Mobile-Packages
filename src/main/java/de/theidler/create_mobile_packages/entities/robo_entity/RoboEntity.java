@@ -121,13 +121,13 @@ public class RoboEntity extends Mob {
      * @return The closest DronePortBlockEntity.
      */
     public DronePortBlockEntity getClosestDronePort() {
-        return getClosestDronePort("");
+        return getClosestDronePort(null);
     }
 
     /**
      * Finds the closest drone port to the RoboEntity, filtered by an address.
      *
-     * @param address The address filter to apply, or "" for no filtering.
+     * @param address The address filter to apply, or null for no filtering.
      * @return The closest DronePortBlockEntity matching the filter, or null if none found.
      */
     public DronePortBlockEntity getClosestDronePort(String address) {
