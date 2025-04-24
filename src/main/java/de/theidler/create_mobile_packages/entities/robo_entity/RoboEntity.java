@@ -25,12 +25,10 @@ import java.util.List;
 
 public class RoboEntity extends Mob {
 
-    private static final EntityDataAccessor<Float> ROT_YAW =
-            SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> ROT_YAW = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
 
     private RoboEntityState state;
-    private Vec3 targetVelocity;
-
+    private Vec3 targetVelocity = Vec3.ZERO;
     private ItemStack itemStack;
     private Player targetPlayer;
     private DronePortBlockEntity targetBlockEntity;
@@ -38,14 +36,15 @@ public class RoboEntity extends Mob {
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
-     * @param type type
-     * @param level level
+     *
+     * @param type      The entity type.
+     * @param level     The level in which the entity exists.
      * @param itemStack The ItemStack (package) used to determine the target.
+     * @param spawnPos  The spawn position of the entity.
      */
     public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos spawnPos) {
         super(type, level);
         setItemStack(itemStack);
-        this.targetVelocity = Vec3.ZERO;
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
         if (level().getBlockEntity(spawnPos) instanceof DronePortBlockEntity dpbe) {
@@ -84,13 +83,11 @@ public class RoboEntity extends Mob {
             this.targetBlockEntity = getClosestDronePort();
             return;
         }
-        for (Player player : level().players()) {
-            if (player.getName().getString().equals(PackageItem.getAddress(itemStack))) {
-                this.targetPlayer = player;
-                return;
-            }
-        }
-        targetBlockEntity = getClosestDronePort(PackageItem.getAddress(itemStack));
+        level().players().stream()
+                .filter(player -> player.getName().getString().equals(PackageItem.getAddress(itemStack)))
+                .findFirst()
+                .ifPresentOrElse(player -> targetPlayer = player,
+                        () -> targetBlockEntity = getClosestDronePort(PackageItem.getAddress(itemStack)));
     }
 
     /**
@@ -100,19 +97,10 @@ public class RoboEntity extends Mob {
      * @return The block position of the target.
      */
     public BlockPos getTargetPosition() {
-        if (targetPlayer != null) {
-            return targetPlayer.blockPosition().above();
-        } else if (targetBlockEntity != null) {
-            return targetBlockEntity.getBlockPos().above();
-        } else {
-            DronePortBlockEntity closest = getClosestDronePort();
-            targetBlockEntity = closest;
-            if (closest != null) {
-                return closest.getBlockPos().above();
-            } else {
-                return null;
-            }
-        }
+        if (targetPlayer != null) return targetPlayer.blockPosition().above();
+        if (targetBlockEntity != null) return targetBlockEntity.getBlockPos().above();
+        targetBlockEntity = getClosestDronePort();
+        return targetBlockEntity != null ? targetBlockEntity.getBlockPos().above() : null;
     }
 
     /**
@@ -152,10 +140,14 @@ public class RoboEntity extends Mob {
         state.tick(this);
         this.setDeltaMovement(targetVelocity);
         this.move(MoverType.SELF, targetVelocity);
-
         this.setYRot(this.entityData.get(ROT_YAW));
     }
 
+    /**
+     * Sets the current state of the RoboEntity.
+     *
+     * @param state The new state to set.
+     */
     public void setState(RoboEntityState state) {
         if (state == null) return;
         this.state = state;
@@ -178,10 +170,21 @@ public class RoboEntity extends Mob {
         this.targetVelocity = targetVelocity;
     }
 
+    /**
+     * Calculates the snap angle for a given angle. (45, 135, 225, 315)
+     *
+     * @param angle The angle to snap.
+     * @return The snapped angle.
+     */
     public int getSnapAngle(double angle) {
         return (int) Math.abs(Math.round(angle / 90) * 90 - 45);
     }
 
+    /**
+     * Calculates the angle to the current target.
+     *
+     * @return The angle to the target.
+     */
     public double getAngleToTarget() {
         BlockPos targetPos = getTargetPosition();
         return targetPos != null
@@ -191,12 +194,10 @@ public class RoboEntity extends Mob {
 
     @Override
     public void remove(RemovalReason pReason) {
-        if (pReason == RemovalReason.KILLED) {
-            if (itemStack != null) {
-                level().addFreshEntity(new ItemEntity(level(), this.getX(), this.getY(), this.getZ(), itemStack));
-                if (this.targetPlayer != null) {
-                    targetPlayer.displayClientMessage(Component.literal("Robo Bee died at " + this.getX() + " " + this.getY() + " " + this.getZ() + " with a Package for " + targetPlayer.getName()), false);
-                }
+        if (pReason == RemovalReason.KILLED && itemStack != null) {
+            level().addFreshEntity(new ItemEntity(level(), this.getX(), this.getY(), this.getZ(), itemStack));
+            if (this.targetPlayer != null) {
+                targetPlayer.displayClientMessage(Component.literal("Robo Bee died at " + this.getX() + " " + this.getY() + " " + this.getZ() + " with a Package for " + targetPlayer.getName()), false);
             }
         }
         super.remove(pReason);
@@ -217,17 +218,31 @@ public class RoboEntity extends Mob {
         this.targetBlockEntity = targetBlockEntity;
     }
 
+    /**
+     * Updates the display message for the specified player with the estimated time of arrival.
+     *
+     * @param player The player to update.
+     */
     public void updateDisplay(Player player) {
         if (player == null) return;
         player.displayClientMessage(Component.literal("Package will arrive in " + (calcETA(player)) + "s"), true);
     }
 
+    /**
+     * Calculates the estimated time of arrival (ETA) to the specified player.
+     *
+     * @param player The player to calculate the ETA for.
+     * @return The ETA in seconds.
+     */
     private int calcETA(Player player) {
         if (player == null) return Integer.MAX_VALUE;
         double distance = player.position().distanceTo(this.position());
         return (int) (distance / CMPConfigs.server().droneSpeed.get()) + 1;
     }
 
+    /**
+     * Instantly rotates the RoboEntity to look at its target.
+     */
     public void lookAtTarget(){
         if (level().isClientSide()) return;
         BlockPos targetPos = getTargetPosition();
@@ -238,63 +253,41 @@ public class RoboEntity extends Mob {
     }
 
     /**
-     * Rotates the RoboEntity to face its target position.
-     * Calculates the shortest rotation angle to the target and adjusts the yaw
-     * incrementally based on a fixed rotation speed. Returns the number of ticks
-     * required to complete the rotation.
+     * Rotates the RoboEntity to face its target.
      *
-     * @return The number of ticks remaining to complete the rotation, or 0 if already aligned.
+     * @return The number of ticks required to complete the rotation.
      */
     public int rotateLookAtTarget(){
-        if (level().isClientSide()) return -1;
-        float currentYaw = this.getYRot();
-        float targetYaw = (float) getAngleToTarget();
-        float deltaYaw = targetYaw - currentYaw;
-        if (deltaYaw > 180) {
-            deltaYaw -= 360;
-        } else if (deltaYaw < -180) {
-            deltaYaw += 360;
-        }
-        float rotationSpeed = 1f; // degrees per tick
-        if (Math.abs(deltaYaw) > rotationSpeed) {
-            if (deltaYaw > 0) {
-                currentYaw += rotationSpeed;
-            } else {
-                currentYaw -= rotationSpeed;
-            }
-        } else {
-            currentYaw = targetYaw;
-            this.entityData.set(ROT_YAW,currentYaw);
-
-            return 0;
-        }
-        this.entityData.set(ROT_YAW,currentYaw);
-        return (int) Math.ceil(Math.abs(deltaYaw) / rotationSpeed);
+        return rotateToAngle((float) getAngleToTarget());
     }
 
+    /**
+     * Rotates the RoboEntity to the nearest snap angle.
+     *
+     * @return The number of ticks required to complete the rotation.
+     */
     public int rotateToSnap(){
+        return rotateToAngle((float) getSnapAngle(getAngleToTarget()));
+    }
+
+    /**
+     * Rotates the RoboEntity to a specified yaw angle.
+     *
+     * @param targetYaw The target yaw angle.
+     * @return The number of ticks required to complete the rotation.
+     */
+    private int rotateToAngle(float targetYaw) {
         if (level().isClientSide()) return -1;
         float currentYaw = this.getYRot();
-        float targetYaw = (float) getSnapAngle(getAngleToTarget());
         float deltaYaw = targetYaw - currentYaw;
-        if (deltaYaw > 180) {
-            deltaYaw -= 360;
-        } else if (deltaYaw < -180) {
-            deltaYaw += 360;
-        }
-        float rotationSpeed = 1f; // degrees per tick
+        deltaYaw = (deltaYaw > 180) ? deltaYaw - 360 : (deltaYaw < -180) ? deltaYaw + 360 : deltaYaw;
+        float rotationSpeed = 1f;
         if (Math.abs(deltaYaw) > rotationSpeed) {
-            if (deltaYaw > 0) {
-                currentYaw += rotationSpeed;
-            } else {
-                currentYaw -= rotationSpeed;
-            }
+            currentYaw += (deltaYaw > 0) ? rotationSpeed : -rotationSpeed;
         } else {
             currentYaw = targetYaw;
-            this.entityData.set(ROT_YAW,currentYaw);
-            return 0;
         }
-        this.entityData.set(ROT_YAW,currentYaw);
+        this.entityData.set(ROT_YAW, currentYaw);
         return (int) Math.ceil(Math.abs(deltaYaw) / rotationSpeed);
     }
 }
