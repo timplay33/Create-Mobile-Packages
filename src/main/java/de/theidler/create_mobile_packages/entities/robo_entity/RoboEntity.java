@@ -9,6 +9,9 @@ import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrep
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -21,6 +24,9 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public class RoboEntity extends Mob {
+
+    private static final EntityDataAccessor<Float> ROT_YAW =
+            SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
 
     private RoboEntityState state;
     private Vec3 targetVelocity;
@@ -45,7 +51,9 @@ public class RoboEntity extends Mob {
         if (level().getBlockEntity(spawnPos) instanceof DronePortBlockEntity dpbe) {
             startDronePortBlockEntity = dpbe;
         }
-        this.setYRot(getSnapAngle(getAngleToTarget()));
+        if (!level().isClientSide()) {
+            this.entityData.set(ROT_YAW, (float) getSnapAngle(getAngleToTarget()));
+        }
         // don't fly out of the port if target is origin
         if (targetBlockEntity != null && targetBlockEntity.equals(startDronePortBlockEntity)) {
             setState(new LandingDecendFinishState());
@@ -54,6 +62,12 @@ public class RoboEntity extends Mob {
             setState(new AdjustRotationToTarget());
         }
         setState(new LaunchPrepareState());
+    }
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(ROT_YAW, getYRot());
     }
 
     /**
@@ -87,7 +101,7 @@ public class RoboEntity extends Mob {
      */
     public BlockPos getTargetPosition() {
         if (targetPlayer != null) {
-            return targetPlayer.blockPosition();
+            return targetPlayer.blockPosition().above();
         } else if (targetBlockEntity != null) {
             return targetBlockEntity.getBlockPos().above();
         } else {
@@ -138,6 +152,8 @@ public class RoboEntity extends Mob {
         state.tick(this);
         this.setDeltaMovement(targetVelocity);
         this.move(MoverType.SELF, targetVelocity);
+
+        this.setYRot(this.entityData.get(ROT_YAW));
     }
 
     public void setState(RoboEntityState state) {
@@ -166,14 +182,11 @@ public class RoboEntity extends Mob {
         return (int) Math.abs(Math.round(angle / 90) * 90 - 45);
     }
 
-    public double getAngleToTarget(){
-        if (targetBlockEntity != null) {
-            return Math.atan2(targetBlockEntity.getBlockPos().getZ() - this.getY(), targetBlockEntity.getBlockPos().getX() - this.getX());
-        } else if (targetPlayer != null) {
-            return Math.atan2(targetPlayer.getY() - this.getY(), targetPlayer.getX() - this.getX());
-        } else {
-            return 0;
-        }
+    public double getAngleToTarget() {
+        BlockPos targetPos = getTargetPosition();
+        return targetPos != null
+                ? Math.atan2(targetPos.getZ() - this.getZ(), targetPos.getX() - this.getX())
+                : 0;
     }
 
     @Override
@@ -213,5 +226,75 @@ public class RoboEntity extends Mob {
         if (player == null) return Integer.MAX_VALUE;
         double distance = player.position().distanceTo(this.position());
         return (int) (distance / CMPConfigs.server().droneSpeed.get()) + 1;
+    }
+
+    public void lookAtTarget(){
+        if (level().isClientSide()) return;
+        BlockPos targetPos = getTargetPosition();
+        if (targetPos != null) {
+            Vec3 direction = new Vec3(targetPos.getX(), targetPos.getY(), targetPos.getZ()).subtract(this.position()).normalize();
+            this.entityData.set(ROT_YAW, (float) Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90);
+        }
+    }
+
+    /**
+     * Rotates the RoboEntity to face its target position.
+     * Calculates the shortest rotation angle to the target and adjusts the yaw
+     * incrementally based on a fixed rotation speed. Returns the number of ticks
+     * required to complete the rotation.
+     *
+     * @return The number of ticks remaining to complete the rotation, or 0 if already aligned.
+     */
+    public int rotateLookAtTarget(){
+        if (level().isClientSide()) return -1;
+        float currentYaw = this.getYRot();
+        float targetYaw = (float) getAngleToTarget();
+        float deltaYaw = targetYaw - currentYaw;
+        if (deltaYaw > 180) {
+            deltaYaw -= 360;
+        } else if (deltaYaw < -180) {
+            deltaYaw += 360;
+        }
+        float rotationSpeed = 1f; // degrees per tick
+        if (Math.abs(deltaYaw) > rotationSpeed) {
+            if (deltaYaw > 0) {
+                currentYaw += rotationSpeed;
+            } else {
+                currentYaw -= rotationSpeed;
+            }
+        } else {
+            currentYaw = targetYaw;
+            this.entityData.set(ROT_YAW,currentYaw);
+
+            return 0;
+        }
+        this.entityData.set(ROT_YAW,currentYaw);
+        return (int) Math.ceil(Math.abs(deltaYaw) / rotationSpeed);
+    }
+
+    public int rotateToSnap(){
+        if (level().isClientSide()) return -1;
+        float currentYaw = this.getYRot();
+        float targetYaw = (float) getSnapAngle(getAngleToTarget());
+        float deltaYaw = targetYaw - currentYaw;
+        if (deltaYaw > 180) {
+            deltaYaw -= 360;
+        } else if (deltaYaw < -180) {
+            deltaYaw += 360;
+        }
+        float rotationSpeed = 1f; // degrees per tick
+        if (Math.abs(deltaYaw) > rotationSpeed) {
+            if (deltaYaw > 0) {
+                currentYaw += rotationSpeed;
+            } else {
+                currentYaw -= rotationSpeed;
+            }
+        } else {
+            currentYaw = targetYaw;
+            this.entityData.set(ROT_YAW,currentYaw);
+            return 0;
+        }
+        this.entityData.set(ROT_YAW,currentYaw);
+        return (int) Math.ceil(Math.abs(deltaYaw) / rotationSpeed);
     }
 }

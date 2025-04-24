@@ -5,19 +5,18 @@ import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 
 public class LandingPrepareState implements RoboEntityState {
-    int wait = 0;
+    boolean init = true;
     @Override
     public void tick(RoboEntity re) {
         if (re.getTargetBlockEntity() != null) {
-            if (wait == 0) {
+            if (init) {
                 DronePortBlockEntity.setOpen(re.getTargetBlockEntity(), true);
                 re.setPos(re.getTargetBlockEntity().getBlockPos().above().getCenter());
+                init = false;
             }
-            //TODO: slowly rotate to snap angle
-            if (wait++ < 20) {
-                return;
+            if (re.rotateToSnap() == 0) {
+                re.setState(new LandingDecendStartState());
             }
-            re.setState(new LandingDecendStartState());
         }
     }
 }
