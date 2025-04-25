@@ -261,7 +261,7 @@ public class RoboEntity extends Mob {
      * @return The number of ticks required to complete the rotation.
      */
     public int rotateLookAtTarget(){
-        return rotateToAngle((float) getAngleToTarget());
+        return rotateToAngle((float) getAngleToTarget()+90);
     }
 
     /**
@@ -270,7 +270,7 @@ public class RoboEntity extends Mob {
      * @return The number of ticks required to complete the rotation.
      */
     public int rotateToSnap(){
-        return rotateToAngle((float) getSnapAngle(getAngleToTarget()));
+        return rotateToAngle((float) getSnapAngle(getAngleToTarget())+90);
     }
 
     /**
@@ -284,7 +284,7 @@ public class RoboEntity extends Mob {
         float currentYaw = this.entityData.get(ROT_YAW);
         float deltaYaw = targetYaw - currentYaw;
         deltaYaw = (deltaYaw > 180) ? deltaYaw - 360 : (deltaYaw < -180) ? deltaYaw + 360 : deltaYaw;
-        float rotationSpeed = 1f;
+        float rotationSpeed = CMPConfigs.server().droneRotationSpeed.get();
         if (Math.abs(deltaYaw) > rotationSpeed) {
             currentYaw += (deltaYaw > 0) ? rotationSpeed : -rotationSpeed;
         } else {
