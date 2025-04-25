@@ -140,7 +140,10 @@ public class RoboEntity extends Mob {
         state.tick(this);
         this.setDeltaMovement(targetVelocity);
         this.move(MoverType.SELF, targetVelocity);
-        this.setYRot(this.entityData.get(ROT_YAW));
+        float rotYaw = this.entityData.get(ROT_YAW);
+        this.setYRot(rotYaw);
+        this.setYHeadRot(rotYaw);
+        this.yBodyRot = rotYaw;
     }
 
     /**
@@ -278,7 +281,7 @@ public class RoboEntity extends Mob {
      */
     private int rotateToAngle(float targetYaw) {
         if (level().isClientSide()) return -1;
-        float currentYaw = this.getYRot();
+        float currentYaw = this.entityData.get(ROT_YAW);
         float deltaYaw = targetYaw - currentYaw;
         deltaYaw = (deltaYaw > 180) ? deltaYaw - 360 : (deltaYaw < -180) ? deltaYaw + 360 : deltaYaw;
         float rotationSpeed = 1f;
