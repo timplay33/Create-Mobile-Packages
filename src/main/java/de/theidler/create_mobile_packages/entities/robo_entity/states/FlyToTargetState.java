@@ -11,7 +11,7 @@ public class FlyToTargetState implements RoboEntityState {
     public void tick(RoboEntity re) {
         BlockPos targetPos = re.getTargetPosition();
         if (targetPos == null) { return; }
-        if (re.position().distanceTo(targetPos.getCenter()) <= 0.5) {
+        if (re.position().distanceTo(targetPos.getCenter()) <= CMPConfigs.server().droneSpeed.get()/12.0) {
             if (re.getTargetBlockEntity() != null) {
                 re.setState(new LandingPrepareState());
             } else if (re.getTargetPlayer() != null) {
