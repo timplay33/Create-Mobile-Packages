@@ -2,18 +2,19 @@ package de.theidler.create_mobile_packages.blocks.drone_port;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
+import com.simibubi.create.foundation.item.ItemHandlerWrapper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
      */
     public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
-        itemHandler = LazyOptional.of(() -> inventory);
+        itemHandler = new ItemHandlerWrapper(inventory);
     }
 
     /**
@@ -85,14 +86,15 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         }
 
         // Check if the item can be sent to another drone port.
-        level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
+        if (level instanceof ServerLevel serverLevel) {
+            DronePortTracker tracker = DronePortTracker.get(serverLevel);
             List<DronePortBlockEntity> allBEs = tracker.getAll();
             if (allBEs.stream().anyMatch(dpbe -> PackageItem.matchAddress(address, dpbe.addressFilter) && dpbe != this)) {
                 if (!PackageItem.matchAddress(address, this.addressFilter)) {
                     sendDrone(itemStack, slot);
                 }
             }
-        });
+        }
     }
 
     /**
@@ -198,8 +200,9 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!level.isClientSide){
-            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
+        if (level instanceof ServerLevel serverLevel) {
+            DronePortTracker tracker = DronePortTracker.get(serverLevel);
+            tracker.add(this);
         }
     }
 
@@ -208,8 +211,9 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      */
     @Override
     public void remove() {
-        if (!level.isClientSide) {
-            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
+        if (level instanceof ServerLevel serverLevel) {
+            DronePortTracker tracker = DronePortTracker.get(serverLevel);
+            tracker.add(this);
         }
         super.remove();
     }

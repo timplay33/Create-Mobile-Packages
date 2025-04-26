@@ -4,7 +4,7 @@ import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity;
-import de.theidler.create_mobile_packages.blocks.drone_port.ModCapabilities;
+import de.theidler.create_mobile_packages.blocks.drone_port.DronePortTracker;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDecendFinishState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
@@ -24,7 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.world.ForgeChunkManager;
+import net.neoforged.neoforge.common.world.chunk.ForcedChunkManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,9 +97,9 @@ public class RoboEntity extends Mob {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ROT_YAW, getYRot());
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ROT_YAW, getYRot());
     }
 
     /**
@@ -152,19 +152,18 @@ public class RoboEntity extends Mob {
      * @return The closest DronePortBlockEntity matching the filter, or null if none found.
      */
     public DronePortBlockEntity getClosestDronePort(String address) {
-        final DronePortBlockEntity[] closestDronePort = {null};
-        level().getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
-                .ifPresent(tracker -> {
-                    List<DronePortBlockEntity> allBEs = tracker.getAll();
-                    closestDronePort[0] = allBEs.stream()
-                            .filter(dpbe -> address == null || PackageItem.matchAddress(address, dpbe.addressFilter))
-                            .min((dpbe1, dpbe2) -> Double.compare(
-                                    dpbe1.getBlockPos().distSqr(this.blockPosition()),
-                                    dpbe2.getBlockPos().distSqr(this.blockPosition())
-                            ))
-                            .orElse(null);
-                });
-        return closestDronePort[0];
+        if (level() instanceof ServerLevel serverLevel) {
+            DronePortTracker tracker = DronePortTracker.get(serverLevel);
+            List<DronePortBlockEntity> allBEs = tracker.getAll();
+            return allBEs.stream()
+                    .filter(dpbe -> address == null || PackageItem.matchAddress(address, dpbe.addressFilter))
+                    .min((dpbe1, dpbe2) -> Double.compare(
+                            dpbe1.getBlockPos().distSqr(this.blockPosition()),
+                            dpbe2.getBlockPos().distSqr(this.blockPosition())
+                    ))
+                    .orElse(null);
+        }
+        return null;
     }
 
     @Override
@@ -201,7 +200,7 @@ public void updatePackageEntity() {
         loadedChunks.removeIf(loadedChunk -> {
             boolean isOutsideCurrentArea = Math.abs(loadedChunk.x - currentChunk.x) > 1 || Math.abs(loadedChunk.z - currentChunk.z) > 1;
             if (isOutsideCurrentArea) {
-                ForgeChunkManager.forceChunk(serverLevel, CreateMobilePackages.MODID, ownerPos, loadedChunk.x, loadedChunk.z, false, false);
+                serverLevel.setChunkForced(loadedChunk.x, loadedChunk.z, false);
                 return true;
             }
             return false;
@@ -216,7 +215,7 @@ public void updatePackageEntity() {
                 ChunkPos chunkPos = new ChunkPos(cx + dx, cz + dz);
                 if (loadedChunks.contains(chunkPos)) continue;
                 loadedChunks.add(chunkPos);
-                ForgeChunkManager.forceChunk(world, CreateMobilePackages.MODID, owner, chunkPos.x, chunkPos.z, true, true);
+                world.setChunkForced(chunkPos.x, chunkPos.z, true);
             }
         }
     }
@@ -280,7 +279,7 @@ public void updatePackageEntity() {
         // unload all chunks
         loadedChunks.forEach(chunkPos -> {
             if (level() instanceof ServerLevel serverLevel) {
-                ForgeChunkManager.forceChunk(serverLevel, CreateMobilePackages.MODID, this.blockPosition(), chunkPos.x, chunkPos.z, false, false);
+                serverLevel.setChunkForced(chunkPos.x, chunkPos.z, false);
             }
         });
         super.remove(pReason);

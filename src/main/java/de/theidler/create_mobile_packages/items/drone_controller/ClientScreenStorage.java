@@ -1,7 +1,7 @@
 package de.theidler.create_mobile_packages.items.drone_controller;
 
 import com.simibubi.create.content.logistics.BigItemStack;
-import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.platform.CatnipServices;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class ClientScreenStorage {
     }
 
     private static void update() {
-        CMPPackets.getChannel().sendToServer(new RequestStockUpdate());
+        CatnipServices.NETWORK.sendToServer(new RequestStockUpdate());
     }
 
     public static void manualUpdate() {

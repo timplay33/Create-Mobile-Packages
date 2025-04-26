@@ -1,16 +1,22 @@
 package de.theidler.create_mobile_packages.items.drone_controller;
 
 import com.simibubi.create.content.logistics.BigItemStack;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class BigItemStackListPacket extends SimplePacketBase {
+public class BigItemStackListPacket implements ClientboundPacketPayload {
+    public static final StreamCodec<RegistryFriendlyByteBuf, BigItemStackListPacket> STREAM_CODEC = StreamCodec.composite(
+            CatnipStreamCodecBuilders.list(BigItemStack.STREAM_CODEC), packet -> packet.stacks,
+    BigItemStackListPacket::new
+    );
 
     private final List<BigItemStack> stacks;
 
@@ -20,32 +26,13 @@ public class BigItemStackListPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeInt(stacks.size());
-        for (BigItemStack stack : stacks) {
-            stack.send(buffer);
-        }
-    }
-
-    public static BigItemStackListPacket read(FriendlyByteBuf buffer) {
-        int size = buffer.readInt();
-        List<BigItemStack> list = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            list.add(BigItemStack.receive(buffer));
-        }
-        return new BigItemStackListPacket(list);
-    }
-
-    @Override
-    public boolean handle(NetworkEvent.Context context) {
-        context.enqueueWork(this::handleClient);
-        context.setPacketHandled(true);
-        return true;
-    }
-
     @OnlyIn(Dist.CLIENT)
-    public void handleClient() {
+    public void handle(LocalPlayer player) {
         ClientScreenStorage.stacks = stacks;
     }
 
+    @Override
+    public PacketTypeProvider getTypeProvider() {
+        return CMPPackets.BIG_ITEM_STACK_LIST;
+    }
 }

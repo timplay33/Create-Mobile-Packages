@@ -5,13 +5,10 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import de.theidler.create_mobile_packages.index.*;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
 
 @Mod(CreateMobilePackages.MODID)
@@ -21,14 +18,12 @@ public class CreateMobilePackages
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(CreateMobilePackages.MODID);
 
-    public CreateMobilePackages() {
-        onCtor();
+    public CreateMobilePackages(IEventBus eventBus, ModContainer modContainer) {
+        onCtor(eventBus, modContainer);
     }
 
-    public static void onCtor() {
+    private void onCtor(IEventBus modEventBus, ModContainer modContainer) {
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
         REGISTRATE.registerEventListeners(modEventBus);
 
         CMPCreativeModeTabs.register(modEventBus);
@@ -36,19 +31,12 @@ public class CreateMobilePackages
         CMPItems.register();
         CMPBlockEntities.register();
         CMPMenuTypes.register();
-        CMPPackets.registerPackets();
-        CMPConfigs.register(modLoadingContext);
+        CMPPackets.register();
+        CMPConfigs.register(modLoadingContext, modContainer);
         CMPEntities.register();
-
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> {
-            return () -> {
-                CreateMobilePackagesClient.onCtorClient(modEventBus, forgeEventBus);
-            };
-        });
-
     }
 
     public static ResourceLocation asResource(String path) {
-        return new ResourceLocation(MODID, path);
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

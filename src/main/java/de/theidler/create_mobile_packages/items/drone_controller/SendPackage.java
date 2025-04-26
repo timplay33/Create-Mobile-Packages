@@ -5,54 +5,28 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBeha
 import com.simibubi.create.content.logistics.packagerLink.WiFiEffectPacket;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
 import com.simibubi.create.foundation.utility.AdventureUtil;
-import net.minecraft.network.FriendlyByteBuf;
+import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.net.base.ServerboundPacketPayload;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent;
 
-public class SendPackage extends SimplePacketBase {
+public class SendPackage implements ServerboundPacketPayload {
+    public static final StreamCodec<RegistryFriendlyByteBuf, SendPackage> STREAM_CODEC = StreamCodec.composite(
+            PackageOrder.STREAM_CODEC, packet -> packet.order,
+            ByteBufCodecs.STRING_UTF8, packet -> packet.address,
+            SendPackage::new
+    );
+
     private final PackageOrder order;
     private final String address;
-    private final boolean encodeRequester;
-    private final PackageOrder craftingRequest;
 
-    public SendPackage(PackageOrder order, String address, boolean encodeRequester, PackageOrder craftingRequest) {
+    public SendPackage(PackageOrder order, String address) {
         this.order = order;
         this.address = address;
-        this.encodeRequester = encodeRequester;
-        this.craftingRequest = craftingRequest;
-    }
-
-    public SendPackage(FriendlyByteBuf buffer) {
-        address = buffer.readUtf();
-        order = PackageOrder.read(buffer);
-        encodeRequester = buffer.readBoolean();
-        craftingRequest = PackageOrder.read(buffer);
-    }
-
-    @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeUtf(address);
-        order.write(buffer);
-        buffer.writeBoolean(encodeRequester);
-        craftingRequest.write(buffer);
-    }
-
-
-    @Override
-    public boolean handle(NetworkEvent.Context context) {
-        context.enqueueWork(() -> {
-            ServerPlayer player = context.getSender();
-            if (player == null || player.isSpectator() || AdventureUtil.isAdventure(player))
-                return;
-            Level world = player.level();
-            if (!world.isLoaded(player.blockPosition()))
-                return;
-            applySettings(player);
-        });
-        return true;
     }
 
     protected void applySettings(ServerPlayer player) {
@@ -63,8 +37,23 @@ public class SendPackage extends SimplePacketBase {
             WiFiEffectPacket.send(player.level(), player.blockPosition());
         }
 
-        if (player.getMainHandItem().getItem() instanceof DroneController) {
-            ((DroneController) player.getMainHandItem().getItem()).broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address);
+        if (player.getMainHandItem().getItem() instanceof DroneController droneController) {
+            droneController.broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address);
         }
+    }
+
+    @Override
+    public void handle(ServerPlayer player) {
+        if (player == null || player.isSpectator() || AdventureUtil.isAdventure(player))
+            return;
+        Level world = player.level();
+        if (!world.isLoaded(player.blockPosition()))
+            return;
+        applySettings(player);
+    }
+
+    @Override
+    public PacketTypeProvider getTypeProvider() {
+        return CMPPackets.LOGISTICS_PACKAGE_REQUEST;
     }
 }

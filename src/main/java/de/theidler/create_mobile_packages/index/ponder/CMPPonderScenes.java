@@ -9,7 +9,8 @@ import net.minecraft.resources.ResourceLocation;
 
 public class CMPPonderScenes {
     public static void register(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-        PonderSceneRegistrationHelper<ItemProviderEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+        PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+
         HELPER.forComponents(CMPBlocks.DRONE_PORT)
                 .addStoryBoard("drone_port", DronePortScenes::dronePortScene);
     }

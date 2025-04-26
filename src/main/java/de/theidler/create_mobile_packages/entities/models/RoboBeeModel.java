@@ -67,14 +67,14 @@ public class RoboBeeModel<T extends RoboBeeEntity> extends EntityModel<T> {
 	}
 
 	@Override
-	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int i, int i1, int i2) {
 		poseStack.pushPose();
 		poseStack.scale(0.8F,0.8F,0.8F);
 		poseStack.translate(0.0F, 0.4F, 0.0F);
-		stinger.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		wing1.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		wing2.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bb_main.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+		stinger.render(poseStack, vertexConsumer, i, i1, i2);
+		wing1.render(poseStack, vertexConsumer, i, i1, i2);
+		wing2.render(poseStack, vertexConsumer, i, i1, i2);
+		bb_main.render(poseStack, vertexConsumer, i, i1, i2);
 		poseStack.popPose();
 	}
 }

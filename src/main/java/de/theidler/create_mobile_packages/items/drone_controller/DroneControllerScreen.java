@@ -15,16 +15,17 @@ import com.simibubi.create.foundation.gui.ScreenWithStencils;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
-import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.element.GuiGameElement;
+import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.theme.Color;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
@@ -32,8 +33,6 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
@@ -63,7 +62,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     int windowHeight;
 
     public EditBox searchBox;
-    EditBox addressBox;
+    public AddressEditBox addressBox;
 
     int emptyTicks = 0;
     int successTicks = 0;
@@ -161,7 +160,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             ItemStack stack = entry.stack;
 
             if (modSearch) {
-                if (ForgeRegistries.ITEMS.getKey(stack.getItem())
+                if (BuiltInRegistries.ITEM.getKey(stack.getItem())
                         .getNamespace()
                         .contains(value)) {
                     displayedItems.add(entry);
@@ -182,7 +181,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                     .getString()
                     .toLowerCase(Locale.ROOT)
                     .contains(value)
-                    || ForgeRegistries.ITEMS.getKey(stack.getItem())
+                    || BuiltInRegistries.ITEM.getKey(stack.getItem())
                     .getPath()
                     .contains(value)) {
                 displayedItems.add(entry);
@@ -604,7 +603,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     @Nullable
     private BigItemStack getOrderForItem(ItemStack stack) {
         for (BigItemStack entry : itemsToOrder)
-            if (ItemHandlerHelper.canItemStacksStack(stack, entry.stack))
+            if (ItemStack.isSameItemSameComponents(stack, entry.stack))
                 return entry;
         return null;
     }
@@ -721,8 +720,8 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        if (addressBox.mouseScrolled(mouseX, mouseY, delta))
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (addressBox.mouseScrolled(mouseX, mouseY, scrollX, scrollY))
             return true;
 
         Couple<Integer> hoveredSlot = getHoveredSlot((int) mouseX, (int) mouseY);
@@ -730,7 +729,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
 
         if (noHover || hoveredSlot.getFirst() >= 0 && !hasShiftDown() && getMaxScroll() != 0) {
             int maxScroll = getMaxScroll();
-            int direction = (int) (Math.ceil(Math.abs(delta)) * -Math.signum(delta));
+            int direction = (int) (Math.ceil(Math.abs(scrollY)) * -Math.signum(scrollY));
             float newTarget = Mth.clamp(Math.round(itemScroll.getChaseTarget() + direction), 0, maxScroll);
             itemScroll.chase(newTarget, 0.5, LerpedFloat.Chaser.EXP);
             return true;
@@ -741,8 +740,8 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                     : displayedItems
                     .get(hoveredSlot.getSecond());
 
-            boolean remove = delta < 0;
-            int transfer = Mth.ceil(Math.abs(delta)) * (hasControlDown() ? 10 : 1);
+            boolean remove = scrollY < 0;
+            int transfer = Mth.ceil(Math.abs(scrollY)) * (hasControlDown() ? 10 : 1);
 
             BigItemStack existingOrder = orderClicked ? entry : getOrderForItem(entry.stack);
             if (existingOrder == null) {
@@ -871,9 +870,9 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             forcedEntries.add(toOrder.stack.copy(), -1 - Math.max(0, countOf(toOrder) - toOrder.count));
         }*/
 
-        CMPPackets.getChannel()
-                .sendToServer(new SendPackage(new PackageOrder(itemsToOrder),
-                        addressBox.getValue(), false, PackageOrder.empty()));
+        CatnipServices.NETWORK.sendToServer(
+                new SendPackage(new PackageOrder(itemsToOrder),
+                        addressBox.getValue()));
         menu.droneController.previouslyUsedAddress = addressBox.getValue();
 
         itemsToOrder = new ArrayList<>();
