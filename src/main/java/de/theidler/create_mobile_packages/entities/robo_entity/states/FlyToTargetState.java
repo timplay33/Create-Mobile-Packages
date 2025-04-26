@@ -25,7 +25,7 @@ public class FlyToTargetState implements RoboEntityState {
             Vec3 direction = targetPos.getCenter().subtract(re.position()).normalize();
             double speed = CMPConfigs.server().droneSpeed.get() / 20.0;
             re.setTargetVelocity(direction.scale(speed));
-            if (re.position().distanceTo(targetPos.getCenter()) > 1.5) { // entity rotation starts drifting
+            if (re.position().distanceTo(targetPos.getCenter()) > 2.5) { // entity rotation starts drifting
                 re.lookAtTarget();
             }
         }
