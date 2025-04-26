@@ -13,15 +13,15 @@ public class LaunchAscendState implements RoboEntityState {
             re.setState(new LaunchFinishState());
             return;
         }
+
         Vec3 target = dpbe.getBlockPos().getCenter().add(0, 2, 0);
         Vec3 direction = target.subtract(re.position()).normalize();
         re.setTargetVelocity(direction.scale(1 / 20.0)); // fixed speed of 1 block per second
 
-        if (re.position().distanceToSqr(target) < 0.2) {
+        double distanceToTarget = re.position().distanceToSqr(target);
+        if (distanceToTarget < 0.2) {
             re.setState(new LaunchFinishState());
-        }
-
-        if (re.position().distanceToSqr(target) < (2 - 0.2)) {
+        } else if (distanceToTarget < 1.8) {
             re.doPackageEntity = true;
         }
     }

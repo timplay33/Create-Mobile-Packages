@@ -13,8 +13,7 @@ public class InteractWithPlayerState implements RoboEntityState {
             re.removePackageEntity();
         }
         re.doPackageEntity = false;
-        re.setItemStack(ItemStack.EMPTY);
-        re.setPackageEntity(null);
+        re.packageDelivered();
         //TODO: check if player has toBeSendPackages
         re.setState(new DeliveryDecisionState());
     }

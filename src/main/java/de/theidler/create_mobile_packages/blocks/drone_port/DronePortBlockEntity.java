@@ -160,26 +160,25 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         return player.getInventory().items.stream().limit(player.getInventory().getContainerSize() - 5).noneMatch(ItemStack::isEmpty);
     }
 
-    /**
-     * Sends a Create Mod package to a player. If the player's inventory is full, the item is not added.
-     *
-     * @param player    The player to send the package to. Must not be null.
-     * @param itemStack The Create Mod package to send. Must not be empty.
-     * @return True if the package was successfully sent to the player, false otherwise.
-     */
-    public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
-        if (player == null || itemStack.isEmpty()) {
-            return false;
-        }
-        player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
-
-        if (isPlayerInventoryFull(player)) {
-            return false;
-        } else {
-            player.getInventory().add(itemStack);
-            return true;
-        }
+/**
+ * Sends a Create Mod package to a player. If the player's inventory is full, the item is not added.
+ *
+ * @param player    The player to send the package to. Must not be null.
+ * @param itemStack The Create Mod package to send. Must not be empty.
+ * @return True if the package was successfully sent to the player, false otherwise.
+ */
+public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
+    if (player == null || itemStack.isEmpty()) {
+        return false;
     }
+    player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
+
+    if (isPlayerInventoryFull(player)) {
+        return false;
+    }
+    player.getInventory().add(itemStack);
+    return true;
+}
 
     /**
      * Handles changes to the open state of the drone port.
