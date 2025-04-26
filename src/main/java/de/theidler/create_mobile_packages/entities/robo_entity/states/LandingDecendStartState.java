@@ -19,6 +19,10 @@ public class LandingDecendStartState implements RoboEntityState {
                 }
                 re.setState(new LandingDecendFinishState());
             }
+
+            if (re.position().distanceToSqr(target) < 1.0) {
+                re.doPackageEntity = false;
+            }
         }
     }
 }

@@ -9,7 +9,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -162,20 +161,24 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     }
 
     /**
-     * Sends a Create Mod package to a player. If the player's inventory is full, the item is dropped at a specified location.
+     * Sends a Create Mod package to a player. If the player's inventory is full, the item is not added.
      *
-     * @param player    The player to send the package to.
-     * @param itemStack The Create Mod package to send.
-     * @param dropSpot  The location to drop the package if the inventory is full.
+     * @param player    The player to send the package to. Must not be null.
+     * @param itemStack The Create Mod package to send. Must not be empty.
+     * @return True if the package was successfully sent to the player, false otherwise.
      */
-    public static void sendPackageToPlayer(Player player, ItemStack itemStack, BlockPos dropSpot) {
-        if (isPlayerInventoryFull(player)) {
-            player.level().addFreshEntity(new ItemEntity(player.level(), dropSpot.getX(), player.getY(), dropSpot.getZ(), itemStack));
-        } else {
-            player.getInventory().add(itemStack);
+    public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
+        if (player == null || itemStack.isEmpty()) {
+            return false;
         }
         player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
 
+        if (isPlayerInventoryFull(player)) {
+            return false;
+        } else {
+            player.getInventory().add(itemStack);
+            return true;
+        }
     }
 
     /**
