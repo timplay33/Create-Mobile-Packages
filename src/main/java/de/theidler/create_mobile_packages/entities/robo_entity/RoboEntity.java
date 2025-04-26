@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.entities.robo_entity;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.drone_port.ModCapabilities;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
@@ -12,15 +13,20 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.world.ForgeChunkManager;
+import org.checkerframework.checker.units.qual.C;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RoboEntity extends Mob {
@@ -33,6 +39,8 @@ public class RoboEntity extends Mob {
     private Player targetPlayer;
     private DronePortBlockEntity targetBlockEntity;
     private DronePortBlockEntity startDronePortBlockEntity;
+
+    private final List<ChunkPos> loadedChunks = new ArrayList<>();
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
@@ -137,6 +145,7 @@ public class RoboEntity extends Mob {
     @Override
     public void tick() {
         super.tick();
+        tickEntity(level(), this.blockPosition(), this.getX(), this.getZ());
         state.tick(this);
         this.setDeltaMovement(targetVelocity);
         this.move(MoverType.SELF, targetVelocity);
@@ -144,6 +153,35 @@ public class RoboEntity extends Mob {
         this.setYRot(rotYaw);
         this.setYHeadRot(rotYaw);
         this.yBodyRot = rotYaw;
+    }
+
+    public void tickEntity(Level world, BlockPos ownerPos, double x, double z) {
+        if (!(world instanceof ServerLevel serverLevel) || ownerPos == null) return;
+
+        ChunkPos currentChunk = new ChunkPos((int) x >> 4, (int) z >> 4);
+
+        loadedChunks.removeIf(loadedChunk -> {
+            boolean isOutsideCurrentArea = Math.abs(loadedChunk.x - currentChunk.x) > 1 || Math.abs(loadedChunk.z - currentChunk.z) > 1;
+            if (isOutsideCurrentArea) {
+                ForgeChunkManager.forceChunk(serverLevel, CreateMobilePackages.MODID, ownerPos, loadedChunk.x, loadedChunk.z, false, false);
+                return true;
+            }
+            return false;
+        });
+
+        forceArea(serverLevel, ownerPos, currentChunk.x, currentChunk.z);
+    }
+
+    private void forceArea(ServerLevel world, BlockPos owner, int cx, int cz) {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                ChunkPos chunkPos = new ChunkPos(cx + dx, cz + dz);
+                if (loadedChunks.contains(chunkPos)) continue;
+                loadedChunks.add(chunkPos);
+                ForgeChunkManager.forceChunk(world, CreateMobilePackages.MODID, owner, chunkPos.x, chunkPos.z, true, true);
+                CreateMobilePackages.LOGGER.info("loaded chunk " + (chunkPos.x) + " " + (chunkPos.x));
+            }
+        }
     }
 
     /**
@@ -203,6 +241,12 @@ public class RoboEntity extends Mob {
                 targetPlayer.displayClientMessage(Component.literal("Robo Bee died at " + this.getX() + " " + this.getY() + " " + this.getZ() + " with a Package for " + targetPlayer.getName()), false);
             }
         }
+        // unload all chunks
+        loadedChunks.forEach(chunkPos -> {
+            if (level() instanceof ServerLevel serverLevel) {
+                ForgeChunkManager.forceChunk(serverLevel, CreateMobilePackages.MODID, this.blockPosition(), chunkPos.x, chunkPos.z, false, false);
+            }
+        });
         super.remove(pReason);
     }
 
