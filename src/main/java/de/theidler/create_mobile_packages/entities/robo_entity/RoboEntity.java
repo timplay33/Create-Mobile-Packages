@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.entities.robo_entity;
 
+import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity;
@@ -14,6 +15,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -24,7 +26,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.world.ForgeChunkManager;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,8 @@ public class RoboEntity extends Mob {
     private DronePortBlockEntity startDronePortBlockEntity;
 
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
+    private PackageEntity packageEntity;
+    public boolean doPackageEntity = false;
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
@@ -53,6 +56,7 @@ public class RoboEntity extends Mob {
     public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos spawnPos) {
         super(type, level);
         setItemStack(itemStack);
+        createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
         if (level().getBlockEntity(spawnPos) instanceof DronePortBlockEntity dpbe) {
@@ -69,6 +73,28 @@ public class RoboEntity extends Mob {
             setState(new AdjustRotationToTarget());
         }
         setState(new LaunchPrepareState());
+    }
+
+    /**
+     * Creates a `PackageEntity` from the given `ItemStack` and initializes its properties.
+     * The created entity is added to the level.
+     *
+     * @param itemStack The `ItemStack` used to create the `PackageEntity`.
+     *                  If null or not a package, the method returns without action.
+     */
+    public void createPackageEntity(ItemStack itemStack) {
+        if (itemStack == null || !PackageItem.isPackage(itemStack)) return;
+
+        packageEntity = PackageEntity.fromItemStack(level(), this.position(), itemStack);
+        packageEntity.noPhysics = true;
+        packageEntity.setNoGravity(true);
+
+        int randomAngle = new java.util.Random().nextInt(4) * 90;
+        packageEntity.setYRot(randomAngle);
+        packageEntity.setYHeadRot(randomAngle);
+        packageEntity.setYBodyRot(randomAngle);
+
+        level().addFreshEntity(packageEntity);
     }
 
     @Override
@@ -106,9 +132,9 @@ public class RoboEntity extends Mob {
      */
     public BlockPos getTargetPosition() {
         if (targetPlayer != null) return targetPlayer.blockPosition().above();
-        if (targetBlockEntity != null) return targetBlockEntity.getBlockPos().above();
+        if (targetBlockEntity != null) return targetBlockEntity.getBlockPos().above().above();
         targetBlockEntity = getClosestDronePort();
-        return targetBlockEntity != null ? targetBlockEntity.getBlockPos().above() : null;
+        return targetBlockEntity != null ? targetBlockEntity.getBlockPos().above().above() : null;
     }
 
     /**
@@ -153,7 +179,20 @@ public class RoboEntity extends Mob {
         this.setYRot(rotYaw);
         this.setYHeadRot(rotYaw);
         this.yBodyRot = rotYaw;
+        updatePackageEntity();
     }
+
+public void updatePackageEntity() {
+    if (packageEntity == null) return;
+
+    if (doPackageEntity) {
+        packageEntity.setPos(this.getX(), this.getY() - 0.8, this.getZ());
+    }
+
+    if (packageEntity.isRemoved()) {
+        packageDelivered();
+    }
+}
 
     public void tickEntity(Level world, BlockPos ownerPos, double x, double z) {
         if (!(world instanceof ServerLevel serverLevel) || ownerPos == null) return;
@@ -235,10 +274,9 @@ public class RoboEntity extends Mob {
 
     @Override
     public void remove(RemovalReason pReason) {
-        if (pReason == RemovalReason.KILLED && itemStack != null) {
-            level().addFreshEntity(new ItemEntity(level(), this.getX(), this.getY(), this.getZ(), itemStack));
+        if (pReason == RemovalReason.KILLED && packageEntity != null) {
             if (this.targetPlayer != null) {
-                targetPlayer.displayClientMessage(Component.literal("Robo Bee died at " + this.getX() + " " + this.getY() + " " + this.getZ() + " with a Package for " + targetPlayer.getName()), false);
+                targetPlayer.displayClientMessage(Component.literal("Robo Bee died at X " + Math.round(this.getX()) + " Y " + Math.round(this.getY()) + " Z " + Math.round(this.getZ()) + " with a Package for " + targetPlayer.getName().getString()), false);
             }
         }
         // unload all chunks
@@ -336,5 +374,23 @@ public class RoboEntity extends Mob {
         }
         this.entityData.set(ROT_YAW, currentYaw);
         return (int) Math.ceil(Math.abs(deltaYaw) / rotationSpeed);
+    }
+
+    public boolean hasPackageEntity() {
+        return packageEntity != null;
+    }
+
+    public void removePackageEntity() {
+        if (packageEntity == null) return;
+        packageEntity.remove(Entity.RemovalReason.DISCARDED);
+    }
+
+    public void setPackageEntity(PackageEntity packageEntity) {
+        this.packageEntity = packageEntity;
+    }
+
+    public void packageDelivered() {
+        this.packageEntity = null;
+        this.itemStack = ItemStack.EMPTY;
     }
 }
