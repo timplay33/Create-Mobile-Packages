@@ -56,6 +56,7 @@ public class RoboEntity extends Mob {
     public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos spawnPos) {
         super(type, level);
         setItemStack(itemStack);
+        createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
         if (level().getBlockEntity(spawnPos) instanceof DronePortBlockEntity dpbe) {
@@ -72,17 +73,28 @@ public class RoboEntity extends Mob {
             setState(new AdjustRotationToTarget());
         }
         setState(new LaunchPrepareState());
+    }
 
-        if (itemStack != null && PackageItem.isPackage(itemStack)) {
-            packageEntity = PackageEntity.fromItemStack(level, this.position().subtract(0,0,0), itemStack);
-            packageEntity.noPhysics = true;
-            packageEntity.setNoGravity(true);
-            int randomAngle = new int[]{0, 90, 180, 270}[new java.util.Random().nextInt(4)];
-            packageEntity.setYRot(randomAngle);
-            packageEntity.setYHeadRot(randomAngle);
-            packageEntity.setYBodyRot(randomAngle);
-            level.addFreshEntity(packageEntity);
-        }
+    /**
+     * Creates a `PackageEntity` from the given `ItemStack` and initializes its properties.
+     * The created entity is added to the level.
+     *
+     * @param itemStack The `ItemStack` used to create the `PackageEntity`.
+     *                  If null or not a package, the method returns without action.
+     */
+    public void createPackageEntity(ItemStack itemStack) {
+        if (itemStack == null || !PackageItem.isPackage(itemStack)) return;
+
+        packageEntity = PackageEntity.fromItemStack(level(), this.position(), itemStack);
+        packageEntity.noPhysics = true;
+        packageEntity.setNoGravity(true);
+
+        int randomAngle = new java.util.Random().nextInt(4) * 90;
+        packageEntity.setYRot(randomAngle);
+        packageEntity.setYHeadRot(randomAngle);
+        packageEntity.setYBodyRot(randomAngle);
+
+        level().addFreshEntity(packageEntity);
     }
 
     @Override
@@ -167,15 +179,20 @@ public class RoboEntity extends Mob {
         this.setYRot(rotYaw);
         this.setYHeadRot(rotYaw);
         this.yBodyRot = rotYaw;
-
-        if (packageEntity != null && doPackageEntity) {
-            packageEntity.setPos(this.getX(), this.getY()-0.8, this.getZ());
-        }
-        if (packageEntity != null && packageEntity.isRemoved()) {
-            packageEntity = null;
-            itemStack = ItemStack.EMPTY;
-        }
+        updatePackageEntity();
     }
+
+public void updatePackageEntity() {
+    if (packageEntity == null) return;
+
+    if (doPackageEntity) {
+        packageEntity.setPos(this.getX(), this.getY() - 0.8, this.getZ());
+    }
+
+    if (packageEntity.isRemoved()) {
+        packageDelivered();
+    }
+}
 
     public void tickEntity(Level world, BlockPos ownerPos, double x, double z) {
         if (!(world instanceof ServerLevel serverLevel) || ownerPos == null) return;
