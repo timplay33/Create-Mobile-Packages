@@ -91,7 +91,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     protected void containerTick() {
         super.containerTick();
         addressBox.tick();
-        ClientScreenStorage.tick();
+        ClientScreenStorage.tick(menu.droneController.getFrequency());
 
         if (forcedEntries != null) {
             if (!forcedEntries.isEmpty()) {
@@ -226,7 +226,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         addressBox.setTextColor(0x714A40);
         addressBox.setValue(previouslyUsedAddress);
         addRenderableWidget(addressBox);
-        ClientScreenStorage.manualUpdate();
+        ClientScreenStorage.manualUpdate(menu.droneController.getFrequency());
     }
 
     private Couple<Integer> getHoveredSlot(int x, int y) {
@@ -878,7 +878,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         itemsToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;
         successTicks = 1;
-        ClientScreenStorage.manualUpdate();
+        ClientScreenStorage.manualUpdate(menu.droneController.getFrequency());
 
     }
 

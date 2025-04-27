@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem.*;
-
 public class StockCheckingItem extends Item {
     protected static UUID Freq;
 
@@ -76,6 +74,9 @@ public class StockCheckingItem extends Item {
         return super.use(level, player, hand);
     }
 
+    public static boolean isTuned(ItemStack pStack) {
+        return pStack.has(DataComponents.CUSTOM_DATA);
+    }
 
     @Override
     public InteractionResult useOn(UseOnContext pContext) {
@@ -101,9 +102,23 @@ public class StockCheckingItem extends Item {
         }
 
         InteractionResult useOn = super.useOn(pContext);
-        if (level.isClientSide || useOn == InteractionResult.FAIL)
-            return useOn;
         return useOn;
+    }
+
+    public static UUID networkFromStack(ItemStack pStack) {
+        CompoundTag tag = pStack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (!tag.hasUUID("Freq"))
+            return null;
+        return tag.getUUID("Freq");
+    }
+
+    public static void assignFrequency(ItemStack stack, Player player, UUID frequency) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        tag.putUUID("Freq", frequency);
+
+        player.displayClientMessage(CreateLang.translateDirect("logistically_linked.tuned"), true);
+
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
     @Override
@@ -111,7 +126,7 @@ public class StockCheckingItem extends Item {
                                 @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, tooltipContext, tooltipComponents, tooltipFlag);
 
-        CompoundTag tag = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).copyTag();
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         if (!tag.hasUUID("Freq"))
             return;
 
@@ -122,5 +137,9 @@ public class StockCheckingItem extends Item {
         CreateLang.translate("logistically_linked.tooltip_clear")
                 .style(ChatFormatting.GRAY)
                 .addTo(tooltipComponents);
+    }
+
+    public UUID getFrequency() {
+        return Freq;
     }
 }
