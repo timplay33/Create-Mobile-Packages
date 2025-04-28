@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "T": { "item": "create:transmitter" },
+    "B": { "item": "create:brass_casing" }
+  },
+  "pattern": [
+    "   ",
+    " T ",
+    "BBB"
+  ],
+  "result": {
+    "id": "create_mobile_packages:drone_port",
+    "count": 1
+  }
+}

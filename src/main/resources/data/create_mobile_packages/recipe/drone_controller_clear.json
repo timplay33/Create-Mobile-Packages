@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "create_mobile_packages:drone_controller" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "create_mobile_packages:drone_controller"
+  }
+}
