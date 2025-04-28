@@ -1,0 +1,11 @@
+{
+  "block.create_mobile_packages.drone_port": "无人机仓",
+  "item.create_mobile_packages.drone_port": "无人机仓",
+  "itemGroup.create_mobile_packages": "Create: Mobile Packages",
+  "item.create_mobile_packages.drone_controller": "无人机控制器",
+  "create_mobile_packages.drone_port.send_items": "将物品送至玩家",
+  "create_mobile_packages.ponder.drone_port.header": "无人机仓",
+  "create_mobile_packages.ponder.drone_port.text_1": "无人机仓可以将包裹送到玩家身上",
+  "create_mobile_packages.ponder.drone_port.text_2": "将包裹目的地设置为玩家ID",
+  "create_mobile_packages.ponder.drone_port.text_3": "无人机就会把包裹直接交给ID对应的玩家"
+}
