@@ -1,1 +1,12 @@
-{}
+{
+    "itemGroup.create_mobile_packages": "Create: Mobile Packages",
+    "item.create_mobile_packages.drone_controller.not_linked": "Nicht mit einem Netzwerk verbunden",
+    "item.create_mobile_packages.drone_controller.screen_title": "Drohnen Controller",
+    "create_mobile_packages.ponder.drone_port.text_2": "Setze die Packet-Adresse auf den Spielernamen",
+    "create_mobile_packages.ponder.drone_port.text_3": "Das Packet wird zum Spieler geschickt",
+    "create_mobile_packages.robo_entity.death": "Roboter Biene ist bei X %1$s Y %2$s Z %3$s mit einem Packet für %4$s gestorben",
+    "create_mobile_packages.robo_entity.eta": "Packet wird in %1$s Sekunden ankommen",
+    "item.create_mobile_packages.drone_controller.tooltip.behaviour1": "Controller verbindet sich mit dem Netzwerk",
+    "item.create_mobile_packages.drone_controller.tooltip.condition2": "Wenn benutzt",
+    "item.create_mobile_packages.drone_controller": "Drohnen Controller"
+}
