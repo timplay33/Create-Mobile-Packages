@@ -54,18 +54,18 @@ public class DroneController extends StockCheckingItem {
             List<BigItemStack> bigItemStacks = summary.getStacks();
 
             if(!isTuned(stack)) {
-                pPlayer.displayClientMessage(Component.literal("Not linked to Network"), true);
+                pPlayer.displayClientMessage(Component.translatable("item.create_mobile_packages.drone_controller.not_linked"), true);
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
             MenuProvider provider = new SimpleMenuProvider(
                     (id, inv, p) -> new DroneControllerMenu(id, inv, this),
-                    Component.translatable("screen.create_mobile_packages.drone_controller")
+                    Component.translatable("item.create_mobile_packages.drone_controller")
             );
             NetworkHooks.openScreen((ServerPlayer) pPlayer, provider);
             if (pPlayer instanceof ServerPlayer serverPlayer) {
                 NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
                         (id, inv, ply) -> new DroneControllerMenu(id, inv, this),
-                        Component.literal("Drone Controller")
+                        Component.translatable("item.create_mobile_packages.drone_controller")
                 ), buf -> {});
             }
         }
