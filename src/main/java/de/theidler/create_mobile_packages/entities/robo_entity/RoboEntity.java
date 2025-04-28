@@ -273,7 +273,7 @@ public void updatePackageEntity() {
     public void remove(RemovalReason pReason) {
         if (pReason == RemovalReason.KILLED && packageEntity != null) {
             if (this.targetPlayer != null) {
-                targetPlayer.displayClientMessage(Component.literal("Robo Bee died at X " + Math.round(this.getX()) + " Y " + Math.round(this.getY()) + " Z " + Math.round(this.getZ()) + " with a Package for " + targetPlayer.getName().getString()), false);
+                targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);
             }
         }
         // unload all chunks
@@ -307,7 +307,7 @@ public void updatePackageEntity() {
      */
     public void updateDisplay(Player player) {
         if (player == null) return;
-        player.displayClientMessage(Component.literal("Package will arrive in " + (calcETA(player)) + "s"), true);
+        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player)), true);
     }
 
     /**
