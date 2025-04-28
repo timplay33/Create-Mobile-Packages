@@ -5,6 +5,7 @@
   "item.create_mobile_packages.drone_port": "Drone Port",
 
   "item.create_mobile_packages.drone_controller": "Drone Controller",
+  "item.create_mobile_packages.drone_controller.screen_title": "Drone Controller",
   "item.create_mobile_packages.drone_controller.not_linked": "Not linked to Network",
   "item.create_mobile_packages.drone_controller.tooltip.summary": "A Mobile Stock Keeper",
   "item.create_mobile_packages.drone_controller.tooltip.condition1": "When sneak clicked on a Stock Link or Stock Ticker",
