@@ -169,6 +169,8 @@ public class RoboEntity extends Mob {
     @Override
     public void tick() {
         super.tick();
+        if (targetBlockEntity != null && targetBlockEntity.isRemoved()) targetBlockEntity = null;
+        if (startDronePortBlockEntity != null && startDronePortBlockEntity.isRemoved()) startDronePortBlockEntity = null;
         tickEntity(level(), this.blockPosition(), this.getX(), this.getZ());
         state.tick(this);
         this.setDeltaMovement(targetVelocity);
