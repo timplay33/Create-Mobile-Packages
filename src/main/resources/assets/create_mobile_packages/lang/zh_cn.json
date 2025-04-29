@@ -1,5 +1,5 @@
 {
-  "itemGroup.create_mobile_packages": "Create: Mobile Packages",
+  "itemGroup.create_mobile_packages": "机械动力：顺蜂快递",
   
   "block.create_mobile_packages.drone_port": "无人机仓",
   "item.create_mobile_packages.drone_port": "无人机仓",
@@ -20,6 +20,6 @@
   "create_mobile_packages.ponder.drone_port.text_2": "将包裹目的地设置为玩家ID",
   "create_mobile_packages.ponder.drone_port.text_3": "机械蜂就会把包裹直接交给ID对应的玩家",
 
-  "create_mobile_packages.robo_entity.death": "运往%4$s的包裹掉落在了 X=%1$s Y=%2$s Z=%3$s",
+  "create_mobile_packages.robo_entity.death": "运往%4$s的包裹在X= %1$s Y=%2$s Z=%3$s遗失，请及时处理",
   "create_mobile_packages.robo_entity.eta": "机械蜂将在%1$s秒后到达"
 }
