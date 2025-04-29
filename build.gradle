@@ -10,10 +10,11 @@ version = mod_version
 group = mod_group_id
 
 ext.buildNumber = System.getenv('BUILD_NUMBER')
+ext.branchName = System.getenv("BRANCH_NAME")
 base {
     archivesName = "${mod_id}-${minecraft_version}"
     group = 'de.theidler.'+ mod_id
-    version = mod_version + (buildNumber ? "-${buildNumber}" : '')
+    version = mod_version + (buildNumber ? "-${buildNumber}" : '') + (branchName ? "-${branchName}" : '')
 }
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
