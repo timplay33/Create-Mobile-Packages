@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.UUID;
 
-import static de.theidler.create_mobile_packages.items.drone_controller.StockCheckingItem.networkFromStack;
+import static de.theidler.create_mobile_packages.items.drone_controller.LogisticallyLinkedItem.networkFromStack;
 
 public class RequestStockUpdate implements ServerboundPacketPayload {
     public static final StreamCodec<RegistryFriendlyByteBuf, RequestStockUpdate> STREAM_CODEC = StreamCodec.composite(
