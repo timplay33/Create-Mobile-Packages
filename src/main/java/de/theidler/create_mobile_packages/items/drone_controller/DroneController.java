@@ -9,16 +9,15 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -68,6 +67,14 @@ public class DroneController extends StockCheckingItem implements MenuProvider{
             pPlayer.openMenu(this, pPlayer.blockPosition());
         }
         return super.use(pLevel, pPlayer, pUsedHand);
+    }
+
+    @Override
+    public @NotNull InteractionResult useOn(UseOnContext pContext) {
+        if (pContext.getPlayer() !=null && pContext.getPlayer().isShiftKeyDown()) {
+            return super.useOn(pContext);
+        }
+        return InteractionResult.PASS;
     }
 
     @Override
