@@ -10,7 +10,8 @@ version = mod_version
 group = mod_group_id
 
 ext.buildNumber = System.getenv('BUILD_NUMBER')
-ext.branchName = System.getenv("BRANCH_NAME")
+ext.rawBranchName = System.getenv("BRANCH_NAME")
+ext.branchName = rawBranchName ? rawBranchName.replaceAll("[^a-zA-Z0-9._-]", "_") : null
 base {
     archivesName = "${mod_id}-${minecraft_version}"
     group = 'de.theidler.'+ mod_id
