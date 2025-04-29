@@ -54,18 +54,18 @@ public class DroneController extends StockCheckingItem {
             List<BigItemStack> bigItemStacks = summary.getStacks();
 
             if(!isTuned(stack)) {
-                pPlayer.displayClientMessage(Component.literal("Not linked to Network"), true);
+                pPlayer.displayClientMessage(Component.translatable("item.create_mobile_packages.drone_controller.not_linked"), true);
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
             MenuProvider provider = new SimpleMenuProvider(
                     (id, inv, p) -> new DroneControllerMenu(id, inv, this),
-                    Component.translatable("screen.create_mobile_packages.drone_controller")
+                    Component.translatable("item.create_mobile_packages.drone_controller")
             );
             NetworkHooks.openScreen((ServerPlayer) pPlayer, provider);
             if (pPlayer instanceof ServerPlayer serverPlayer) {
                 NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
                         (id, inv, ply) -> new DroneControllerMenu(id, inv, this),
-                        Component.literal("Drone Controller")
+                        Component.translatable("item.create_mobile_packages.drone_controller")
                 ), buf -> {});
             }
         }
@@ -77,16 +77,14 @@ public class DroneController extends StockCheckingItem {
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
         if (Screen.hasShiftDown()) {
             pTooltip.add(Component.literal(""));
-            pTooltip.add(Component.literal("A Mobile Stock Keeper").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.summary").withStyle(ChatFormatting.YELLOW));
             pTooltip.add(Component.literal(""));
-            pTooltip.add(Component.literal("When sneak clicked on a Stock Link or Stock Ticker").withStyle(ChatFormatting.GRAY));
-            pTooltip.add(Component.literal(" Controller will bind to the Network").withStyle(ChatFormatting.YELLOW));
-            pTooltip.add(Component.literal("When used").withStyle(ChatFormatting.GRAY));
-            pTooltip.add(Component.literal(" Controller will open a mobile Stock Keeper menu").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.condition1").withStyle(ChatFormatting.GRAY));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.behaviour1").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.condition2").withStyle(ChatFormatting.GRAY));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.behaviour2").withStyle(ChatFormatting.YELLOW));
         } else {
-            pTooltip.add(Component.literal("Hold [").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal("Shift").withStyle(ChatFormatting.WHITE))
-                    .append(Component.literal("] for Summary").withStyle(ChatFormatting.GRAY)));
+            pTooltip.add(Component.translatable("create.tooltip.holdForDescription", Component.translatable("create.tooltip.keyShift").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
         }
 
 
