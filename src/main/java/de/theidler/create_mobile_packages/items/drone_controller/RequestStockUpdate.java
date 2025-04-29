@@ -18,18 +18,15 @@ public class RequestStockUpdate implements ServerboundPacketPayload {
             UUIDUtil.STREAM_CODEC, packet -> packet.networkId,
             RequestStockUpdate::new
     );
-    private UUID networkId;
+    private final UUID networkId;
 
     public RequestStockUpdate(UUID networkId) {
+        if (networkId == null) {
+            this.networkId = UUID.randomUUID();
+            return;
+        }
         this.networkId = networkId;
     }
-
-    public UUID getNetworkId() {
-        return networkId;
-    }
-    public RequestStockUpdate() {
-    }
-
 
     @Override
     public void handle(ServerPlayer player) {
