@@ -216,7 +216,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     public void remove() {
         if (level instanceof ServerLevel serverLevel) {
             DronePortTracker tracker = DronePortTracker.get(serverLevel);
-            tracker.add(this);
+            tracker.remove(this);
         }
         super.remove();
     }
