@@ -1,11 +1,25 @@
 {
+  "itemGroup.create_mobile_packages": "Create: Mobile Packages",
+  
   "block.create_mobile_packages.drone_port": "无人机仓",
   "item.create_mobile_packages.drone_port": "无人机仓",
-  "itemGroup.create_mobile_packages": "Create: Mobile Packages",
+
   "item.create_mobile_packages.drone_controller": "无人机控制器",
+  "item.create_mobile_packages.drone_controller.screen_title": "无人机控制器",
+  "item.create_mobile_packages.drone_controller.not_linked": "未连接到物流网络",
+  "item.create_mobile_packages.drone_controller.tooltip.summary": "一个便携式仓库管理员",
+  "item.create_mobile_packages.drone_controller.tooltip.condition1": "潜行右键仓储链接站或仓储发报机时",
+  "item.create_mobile_packages.drone_controller.tooltip.behaviour1": "控制器将会绑定到对应的物流网络",
+  "item.create_mobile_packages.drone_controller.tooltip.condition2": "右键使用时",
+  "item.create_mobile_packages.drone_controller.tooltip.behaviour2": "控制器将会打开一个便携式仓库管理员界面",
+
   "create_mobile_packages.drone_port.send_items": "将物品送至玩家",
+
   "create_mobile_packages.ponder.drone_port.header": "无人机仓",
   "create_mobile_packages.ponder.drone_port.text_1": "无人机仓可以将包裹送到玩家身上",
   "create_mobile_packages.ponder.drone_port.text_2": "将包裹目的地设置为玩家ID",
-  "create_mobile_packages.ponder.drone_port.text_3": "无人机就会把包裹直接交给ID对应的玩家"
+  "create_mobile_packages.ponder.drone_port.text_3": "机械蜂就会把包裹直接交给ID对应的玩家",
+
+  "create_mobile_packages.robo_entity.death": "运往%4$s的包裹掉落在了 X=%1$s Y=%2$s Z=%3$s",
+  "create_mobile_packages.robo_entity.eta": "机械蜂将在%1$s秒后到达"
 }
