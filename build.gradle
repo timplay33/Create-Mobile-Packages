@@ -22,10 +22,11 @@ repositories {
 }
 
 ext.buildNumber = System.getenv('BUILD_NUMBER')
+ext.branchName = System.getenv("BRANCH_NAME")
 base {
     archivesName = "${mod_id}-${minecraft_version}"
     group = 'de.theidler.'+ mod_id
-    version = mod_version + (buildNumber ? "-${buildNumber}" : '')
+    version = mod_version + (buildNumber ? "-${buildNumber}" : '') + (branchName ? "-${branchName}" : '')
 }
 
 // Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
