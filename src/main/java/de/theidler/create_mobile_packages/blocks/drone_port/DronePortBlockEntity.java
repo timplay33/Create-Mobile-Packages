@@ -4,6 +4,7 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
+import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -85,14 +86,9 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         }
 
         // Check if the item can be sent to another drone port.
-        level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
-            List<DronePortBlockEntity> allBEs = tracker.getAll();
-            if (allBEs.stream().anyMatch(dpbe -> PackageItem.matchAddress(address, dpbe.addressFilter) && dpbe != this)) {
-                if (!PackageItem.matchAddress(address, this.addressFilter)) {
-                    sendDrone(itemStack, slot);
-                }
-            }
-        });
+        if (RoboEntity.getClosestDronePort(level, address, this.getBlockPos()) != null) {
+            sendDrone(itemStack, slot);
+        }
     }
 
     /**
