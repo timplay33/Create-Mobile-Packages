@@ -213,4 +213,13 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
         }
         super.remove();
     }
+
+    public boolean isFull() {
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            if (inventory.getStackInSlot(i).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

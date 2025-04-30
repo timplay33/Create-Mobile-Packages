@@ -9,6 +9,9 @@ public class LandingDecendStartState implements RoboEntityState {
 
     @Override
     public void tick(RoboEntity re) {
+        if (re.getTargetBlockEntity() != null && re.getTargetBlockEntity().isFull()) {
+            return;
+        }
         if (re.getTargetBlockEntity() == null) {
             return;
         }

@@ -146,25 +146,31 @@ public class RoboEntity extends Mob {
     }
 
     /**
-     * Finds the closest drone port to the RoboEntity, filtered by an address.
+     * Finds the closest DronePortBlockEntity to this RoboEntity, optionally filtered by an address.
      *
-     * @param address The address filter to apply, or null for no filtering.
-     * @return The closest DronePortBlockEntity matching the filter, or null if none found.
+     * This method searches for all available DronePortBlockEntity instances in the current level.
+     * If an address is provided, only ports matching the address filter are considered.
+     * All full ports are removed from the selection.
+     * Finally, the closest port to this RoboEntity's position is determined.
+     *
+     * @param address The address to filter by, or {@code null} for no filtering.
+     * @return The closest DronePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
     public DronePortBlockEntity getClosestDronePort(String address) {
-        final DronePortBlockEntity[] closestDronePort = {null};
-        level().getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
-                .ifPresent(tracker -> {
-                    List<DronePortBlockEntity> allBEs = tracker.getAll();
-                    closestDronePort[0] = allBEs.stream()
-                            .filter(dpbe -> address == null || PackageItem.matchAddress(address, dpbe.addressFilter))
-                            .min((dpbe1, dpbe2) -> Double.compare(
-                                    dpbe1.getBlockPos().distSqr(this.blockPosition()),
-                                    dpbe2.getBlockPos().distSqr(this.blockPosition())
-                            ))
-                            .orElse(null);
-                });
-        return closestDronePort[0];
+        final DronePortBlockEntity[] closest = {null};
+        level().getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
+            List<DronePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            if (address != null) {
+                allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
+            }
+            allBEs.removeIf(DronePortBlockEntity::isFull);
+            closest[0] = allBEs.stream()
+                    .min((a, b) -> Double.compare(
+                            a.getBlockPos().distSqr(this.blockPosition()),
+                            b.getBlockPos().distSqr(this.blockPosition())))
+                    .orElse(null);
+        });
+        return closest[0];
     }
 
     @Override
