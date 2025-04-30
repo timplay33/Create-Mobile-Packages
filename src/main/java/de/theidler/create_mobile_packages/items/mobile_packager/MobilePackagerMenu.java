@@ -16,6 +16,7 @@ import net.minecraftforge.items.SlotItemHandler;
 public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     public ItemStackHandler proxyInventory;
+    public ItemStackHandler packageInventory;
 
     public MobilePackagerMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
         super(CMPMenuTypes.MOBILE_PACKAGER_MENU.get(), id, inv, extraData);
@@ -33,12 +34,16 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
     @Override
     public void initAndReadInventory(MobilePackager contentHolder) {
         proxyInventory = new ItemStackHandler(1);
+        packageInventory = new ItemStackHandler(9);
     }
 
     @Override
     public void addSlots() {
         addSlot(new SlotItemHandler(proxyInventory, 0, 16, 24));
-        addPlayerSlots(18, 106);
+        for (int i = 0; i < 9; i++) {
+            addSlot(new SlotItemHandler(packageInventory, i, 16 + i * 18, 50));
+        }
+        addPlayerSlots(18, 118);
     }
 
     @Override
@@ -92,8 +97,24 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     public void serverConfirm(String value) {
         ItemStack stack = proxyInventory.getStackInSlot(0);
-        if (!stack.isEmpty() && PackageItem.isPackage(stack)) {
+        if (PackageItem.isPackage(stack)) {
             PackageItem.addAddress(stack, value);
+        } else {
+            ItemStack newStack = PackageItem.containing(packageInventory);
+            PackageItem.addAddress(newStack, value);
+            proxyInventory.setStackInSlot(0, newStack);
+            for (int i = 0; i < packageInventory.getSlots(); i++) {
+                packageInventory.setStackInSlot(i, ItemStack.EMPTY);
+            }
         }
+
+    }
+
+    public ItemStackHandler getContents() {
+        ItemStack stack = proxyInventory.getStackInSlot(0);
+        if (PackageItem.isPackage(stack)){
+            return PackageItem.getContents(stack);
+        }
+        return new ItemStackHandler(9);
     }
 }

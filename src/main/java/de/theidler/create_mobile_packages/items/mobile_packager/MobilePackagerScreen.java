@@ -17,7 +17,7 @@ import java.util.Objects;
 public class MobilePackagerScreen extends AbstractSimiContainerScreen<MobilePackagerMenu>
         implements ScreenWithStencils {
 
-    final int slices = 4;
+    final int slices = 6;
     private String address = "";
 
     private EditBox editorEditBox;
@@ -35,7 +35,7 @@ public class MobilePackagerScreen extends AbstractSimiContainerScreen<MobilePack
         super.init();
         clearWidgets();
 
-        editorConfirm = new IconButton(leftPos + 36 + 131, topPos + 59, AllIcons.I_CONFIRM);
+        editorConfirm = new IconButton(leftPos + 36 + 131, topPos + 79, AllIcons.I_CONFIRM);
 
         editorEditBox = new EditBox(font, leftPos + 47, topPos + 28, 124, 10, Component.literal(menu.getAddress()));
         editorEditBox.setTextColor(0xffeeeeee);
@@ -55,6 +55,8 @@ public class MobilePackagerScreen extends AbstractSimiContainerScreen<MobilePack
         y += AllGuiTextures.STOCK_KEEPER_CATEGORY_HEADER.getHeight();
         AllGuiTextures.STOCK_KEEPER_CATEGORY_EDIT.render(graphics, leftPos, y);
         y += AllGuiTextures.STOCK_KEEPER_CATEGORY_EDIT.getHeight();
+        AllGuiTextures.STOCK_KEEPER_CATEGORY.render(graphics, leftPos, y);
+        y += AllGuiTextures.STOCK_KEEPER_CATEGORY.getHeight();
         AllGuiTextures.STOCK_KEEPER_CATEGORY_FOOTER.render(graphics, leftPos, y);
 
         renderPlayerInventory(graphics, leftPos + 10, topPos + 88);
@@ -92,6 +94,7 @@ public class MobilePackagerScreen extends AbstractSimiContainerScreen<MobilePack
             if (!Objects.equals(currentAddress, address)) {
                 address = currentAddress;
                 editorEditBox.setValue(currentAddress);
+                menu.packageInventory = menu.getContents();
             }
         }
         if (!(menu.player.getMainHandItem().getItem() instanceof MobilePackager)) {
