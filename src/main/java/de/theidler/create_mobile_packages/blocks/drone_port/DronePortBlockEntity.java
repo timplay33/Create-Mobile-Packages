@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 
-import java.util.List;
+import java.util.HashSet;
 
 import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlock.IS_OPEN_TEXTURE;
 
@@ -27,6 +27,7 @@ import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBloc
 public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
+    public HashSet<RoboEntity> entitiesWantingToEnter = new HashSet<>(); // Set of entities wanting to enter the drone port.
 
     /**
      * Constructor for the DronePortBlockEntity.
@@ -47,9 +48,15 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if (++tickCounter >= 20) {
-            tickCounter = 0;
+        if (++tickCounter % 20 == 0) {
             processItems();
+        }
+        if (tickCounter % 100 == 0) {
+            tickCounter = 0;
+            if (!isFull() && !entitiesWantingToEnter.isEmpty()) {
+                RoboEntity re = entitiesWantingToEnter.iterator().next();
+                re.allowEntry = true;
+            }
         }
     }
 

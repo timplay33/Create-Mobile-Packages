@@ -44,6 +44,7 @@ public class RoboEntity extends Mob {
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
     private PackageEntity packageEntity;
     public boolean doPackageEntity = false;
+    public boolean allowEntry = true;
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
