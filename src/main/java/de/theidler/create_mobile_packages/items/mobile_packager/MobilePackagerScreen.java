@@ -42,6 +42,6 @@ public class MobilePackagerScreen extends AbstractSimiContainerScreen<MobilePack
 
         FormattedCharSequence formattedcharsequence = Component.translatable("item.create_mobile_packages.mobile_packager")
                 .getVisualOrderText();
-        graphics.drawString(font, formattedcharsequence, AllGuiTextures.STOCK_KEEPER_CATEGORY_EDIT.getWidth() - font.width(formattedcharsequence)/4, topPos - 1, 0x3D3C48, false);
+        graphics.drawString(font, formattedcharsequence, leftPos + AllGuiTextures.STOCK_KEEPER_CATEGORY_EDIT.getWidth()/2 - font.width(formattedcharsequence)/2, topPos - 1, 0x3D3C48, false);
     }
 }
