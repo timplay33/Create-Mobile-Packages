@@ -1,7 +1,9 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
+import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
+import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -72,5 +74,26 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
         if (!playerIn.getInventory().add(stack))
             playerIn.level().addFreshEntity(new ItemEntity(playerIn.level(), playerIn.getX(), playerIn.getY(), playerIn.getZ(), stack));
         super.removed(playerIn);
+    }
+
+    public String getAddress() {
+        ItemStack stack = proxyInventory.getStackInSlot(0);
+        if (PackageItem.isPackage(stack)){
+            return PackageItem.getAddress(stack);
+        }
+        return "";
+    }
+
+    public void confirm(String value) {
+        if (player.level().isClientSide) {
+            CMPPackets.getChannel().sendToServer(new ConfirmAddressPacket(value));
+        }
+    }
+
+    public void serverConfirm(String value) {
+        ItemStack stack = proxyInventory.getStackInSlot(0);
+        if (!stack.isEmpty() && PackageItem.isPackage(stack)) {
+            PackageItem.addAddress(stack, value);
+        }
     }
 }
