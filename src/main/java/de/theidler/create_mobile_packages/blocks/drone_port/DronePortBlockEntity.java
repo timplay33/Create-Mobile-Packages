@@ -27,6 +27,7 @@ import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBloc
 public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
+    private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
     public HashSet<RoboEntity> entitiesWantingToEnter = new HashSet<>(); // Set of entities wanting to enter the drone port.
 
     /**
@@ -67,6 +68,9 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         if (level == null || level.isClientSide) return;
 
         for (int i = 0; i < inventory.getSlots(); i++) {
+            if (sendItemThisTime-- > 0) {
+                return;
+            }
             ItemStack itemStack = inventory.getStackInSlot(i);
             if (!itemStack.isEmpty()) {
                 sendItem(itemStack, i);
@@ -106,6 +110,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
      * @param slot      The inventory slot of the item.
      */
     private void sendToPlayer(Player player, ItemStack itemStack, int slot) {
+        sendItemThisTime = 2;
         CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
         sendDrone(itemStack, slot);
     }
@@ -117,6 +122,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
      * @param slot      The inventory slot of the item.
      */
     private void sendDrone(ItemStack itemStack, int slot) {
+        sendItemThisTime = 2;
         RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
         level.addFreshEntity(drone);
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
