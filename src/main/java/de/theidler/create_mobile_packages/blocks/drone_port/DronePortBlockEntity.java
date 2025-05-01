@@ -4,6 +4,7 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
+import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -15,7 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 
-import java.util.List;
+import java.util.HashSet;
 
 import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlock.IS_OPEN_TEXTURE;
 
@@ -27,6 +28,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
+    private boolean isEntityOnTravel = false;
 
     /**
      * Constructor for the DronePortBlockEntity.
@@ -47,8 +49,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if (++tickCounter >= 20) {
-            tickCounter = 0;
+        if (++tickCounter % 20 == 0) {
             processItems();
         }
     }
@@ -89,14 +90,10 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         }
 
         // Check if the item can be sent to another drone port.
-        level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
-            List<DronePortBlockEntity> allBEs = tracker.getAll();
-            if (allBEs.stream().anyMatch(dpbe -> PackageItem.matchAddress(address, dpbe.addressFilter) && dpbe != this)) {
-                if (!PackageItem.matchAddress(address, this.addressFilter)) {
-                    sendDrone(itemStack, slot);
-                }
-            }
-        });
+        if (PackageItem.matchAddress(address, addressFilter)) {return;}
+        if (RoboEntity.getClosestDronePort(level, address, this.getBlockPos()) != null) {
+            sendDrone(itemStack, slot);
+        }
     }
 
     /**
@@ -218,5 +215,33 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
             level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
         }
         super.remove();
+    }
+
+    /**
+     * Checks if the drone port is full.
+     *
+     * @return True if the drone port is full, false otherwise.
+     */
+    public boolean isFull() {
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            if (inventory.getStackInSlot(i).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if the drone port can accept a Create Mod package.
+     *
+     * @return True if the drone port can accept a package, false otherwise.
+     */
+    public boolean canAcceptEntity() {
+        if (isEntityOnTravel) return false;
+        return !isFull();
+    }
+
+    public void setEntityOnTravel(boolean state) {
+        isEntityOnTravel = state;
     }
 }
