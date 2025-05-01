@@ -27,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.world.chunk.ForcedChunkManager;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class RoboEntity extends Mob {
@@ -58,6 +59,7 @@ public class RoboEntity extends Mob {
         createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
+        if (targetBlockEntity != null) {targetBlockEntity.setEntityOnTravel(true);}
         if (level().getBlockEntity(spawnPos) instanceof DronePortBlockEntity dpbe) {
             startDronePortBlockEntity = dpbe;
         }
@@ -67,9 +69,11 @@ public class RoboEntity extends Mob {
         // don't fly out of the port if target is origin
         if (targetBlockEntity != null && targetBlockEntity.equals(startDronePortBlockEntity)) {
             setState(new LandingDecendFinishState());
+            return;
         }
         if (startDronePortBlockEntity == null) {
             setState(new AdjustRotationToTarget());
+            return;
         }
         setState(new LaunchPrepareState());
     }
@@ -113,14 +117,14 @@ public class RoboEntity extends Mob {
     private void setTargetFromItemStack(ItemStack itemStack) {
         if (itemStack == null) return;
         if (!PackageItem.isPackage(itemStack)) {
-            this.targetBlockEntity = getClosestDronePort();
+            this.targetBlockEntity = getClosestDronePort(level(), this.blockPosition());
             return;
         }
         level().players().stream()
                 .filter(player -> player.getName().getString().equals(PackageItem.getAddress(itemStack)))
                 .findFirst()
                 .ifPresentOrElse(player -> targetPlayer = player,
-                        () -> targetBlockEntity = getClosestDronePort(PackageItem.getAddress(itemStack)));
+                        () -> targetBlockEntity = getClosestDronePort(level(), PackageItem.getAddress(itemStack), this.blockPosition()));
     }
 
     /**
@@ -132,7 +136,7 @@ public class RoboEntity extends Mob {
     public BlockPos getTargetPosition() {
         if (targetPlayer != null) return targetPlayer.blockPosition().above();
         if (targetBlockEntity != null) return targetBlockEntity.getBlockPos().above().above();
-        targetBlockEntity = getClosestDronePort();
+        targetBlockEntity = getClosestDronePort(level(), this.blockPosition());
         return targetBlockEntity != null ? targetBlockEntity.getBlockPos().above().above() : null;
     }
 
@@ -141,26 +145,31 @@ public class RoboEntity extends Mob {
      *
      * @return The closest DronePortBlockEntity.
      */
-    public DronePortBlockEntity getClosestDronePort() {
-        return getClosestDronePort(null);
+    public static DronePortBlockEntity getClosestDronePort(Level level, BlockPos origin) {
+        return getClosestDronePort(level, null, origin);
     }
 
     /**
-     * Finds the closest drone port to the RoboEntity, filtered by an address.
+     * Finds the closest DronePortBlockEntity to this RoboEntity, optionally filtered by an address.
      *
-     * @param address The address filter to apply, or null for no filtering.
-     * @return The closest DronePortBlockEntity matching the filter, or null if none found.
+     * This method searches for all available DronePortBlockEntity instances in the current level.
+     * If an address is provided, only ports matching the address filter are considered.
+     * All full ports are removed from the selection.
+     * Finally, the closest port to this RoboEntity's position is determined.
+     *
+     * @param address The address to filter by, or {@code null} for no filtering.
+     * @return The closest DronePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
-    public DronePortBlockEntity getClosestDronePort(String address) {
-        if (level() instanceof ServerLevel serverLevel) {
+    public static DronePortBlockEntity getClosestDronePort(Level level, String address, BlockPos origin) {
+        if (level instanceof ServerLevel serverLevel) {
             DronePortTracker tracker = DronePortTracker.get(serverLevel);
-            List<DronePortBlockEntity> allBEs = tracker.getAll();
+            List<DronePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            if (address != null) {
+                allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
+            }
+            allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity());
             return allBEs.stream()
-                    .filter(dpbe -> address == null || PackageItem.matchAddress(address, dpbe.addressFilter))
-                    .min((dpbe1, dpbe2) -> Double.compare(
-                            dpbe1.getBlockPos().distSqr(this.blockPosition()),
-                            dpbe2.getBlockPos().distSqr(this.blockPosition())
-                    ))
+                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin)))
                     .orElse(null);
         }
         return null;
@@ -273,6 +282,11 @@ public void updatePackageEntity() {
 
     @Override
     public void remove(RemovalReason pReason) {
+
+        if (getTargetBlockEntity() != null) {
+            getTargetBlockEntity().setEntityOnTravel(false);
+        }
+
         if (pReason == RemovalReason.KILLED && packageEntity != null) {
             if (this.targetPlayer != null) {
                 targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);

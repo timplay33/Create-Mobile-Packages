@@ -13,7 +13,7 @@
   "item.create_mobile_packages.drone_controller.tooltip.condition2": "When used",
   "item.create_mobile_packages.drone_controller.tooltip.behaviour2": "Controller will open a mobile Stock Keeper menu",
 
-  "create_mobile_packages.drone_port.send_items": "Send Items to Player",
+  "create_mobile_packages.drone_port.send_items": "Sent Items to Player",
 
   "create_mobile_packages.ponder.drone_port.header": "Drone Port",
   "create_mobile_packages.ponder.drone_port.text_1": "The Drone Port sends Packages to Players",
