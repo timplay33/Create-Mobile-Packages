@@ -9,10 +9,12 @@ public class LandingDecendStartState implements RoboEntityState {
 
     @Override
     public void tick(RoboEntity re) {
+        if (re.getTargetBlockEntity() != null && re.getTargetBlockEntity().isFull()) {
+            return;
+        }
         if (re.getTargetBlockEntity() == null) {
             return;
         }
-
         Vec3 target = re.getTargetBlockEntity().getBlockPos().getCenter().subtract(0, 0.5, 0);
         Vec3 direction = target.subtract(re.position()).normalize();
         re.setTargetVelocity(direction.scale(1 / 20.0)); // fixed speed of 1 block per second
