@@ -44,7 +44,6 @@ public class RoboEntity extends Mob {
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
     private PackageEntity packageEntity;
     public boolean doPackageEntity = false;
-    public boolean allowEntry = true;
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
@@ -60,6 +59,7 @@ public class RoboEntity extends Mob {
         createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
+        if (targetBlockEntity != null) {targetBlockEntity.setEntityOnTravel(true);}
         if (level().getBlockEntity(spawnPos) instanceof DronePortBlockEntity dpbe) {
             startDronePortBlockEntity = dpbe;
         }
@@ -167,7 +167,7 @@ public class RoboEntity extends Mob {
             if (address != null) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
             }
-            allBEs.removeIf(DronePortBlockEntity::isFull);
+            allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity());
             closest[0] = allBEs.stream()
                     .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin)))
                     .orElse(null);
@@ -280,6 +280,11 @@ public void updatePackageEntity() {
 
     @Override
     public void remove(RemovalReason pReason) {
+
+        if (getTargetBlockEntity() != null) {
+            getTargetBlockEntity().setEntityOnTravel(false);
+        }
+
         if (pReason == RemovalReason.KILLED && packageEntity != null) {
             if (this.targetPlayer != null) {
                 targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);

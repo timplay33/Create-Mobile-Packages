@@ -28,7 +28,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
 
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
-    public HashSet<RoboEntity> entitiesWantingToEnter = new HashSet<>(); // Set of entities wanting to enter the drone port.
+    private boolean isEntityOnTravel = false;
 
     /**
      * Constructor for the DronePortBlockEntity.
@@ -51,13 +51,6 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         super.tick();
         if (++tickCounter % 20 == 0) {
             processItems();
-        }
-        if (tickCounter % 100 == 0) {
-            tickCounter = 0;
-            if (!isFull() && !entitiesWantingToEnter.isEmpty()) {
-                RoboEntity re = entitiesWantingToEnter.iterator().next();
-                re.allowEntry = true;
-            }
         }
     }
 
@@ -97,6 +90,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         }
 
         // Check if the item can be sent to another drone port.
+        if (PackageItem.matchAddress(address, addressFilter)) {return;}
         if (RoboEntity.getClosestDronePort(level, address, this.getBlockPos()) != null) {
             sendDrone(itemStack, slot);
         }
@@ -223,6 +217,11 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
         super.remove();
     }
 
+    /**
+     * Checks if the drone port is full.
+     *
+     * @return True if the drone port is full, false otherwise.
+     */
     public boolean isFull() {
         for (int i = 0; i < inventory.getSlots(); i++) {
             if (inventory.getStackInSlot(i).isEmpty()) {
@@ -230,5 +229,19 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
             }
         }
         return true;
+    }
+
+    /**
+     * Checks if the drone port can accept a Create Mod package.
+     *
+     * @return True if the drone port can accept a package, false otherwise.
+     */
+    public boolean canAcceptEntity() {
+        if (isEntityOnTravel) return false;
+        return !isFull();
+    }
+
+    public void setEntityOnTravel(boolean state) {
+        isEntityOnTravel = state;
     }
 }
