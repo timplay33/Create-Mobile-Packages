@@ -3,7 +3,7 @@ package de.theidler.create_mobile_packages.items.drone_controller;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.WiFiEffectPacket;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import com.simibubi.create.foundation.utility.AdventureUtil;
@@ -13,23 +13,20 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 
 public class SendPackage extends SimplePacketBase {
-    private final PackageOrder order;
+    private final PackageOrderWithCrafts order;
     private final String address;
     private final boolean encodeRequester;
-    private final PackageOrder craftingRequest;
 
-    public SendPackage(PackageOrder order, String address, boolean encodeRequester, PackageOrder craftingRequest) {
+    public SendPackage(PackageOrderWithCrafts order, String address, boolean encodeRequester) {
         this.order = order;
         this.address = address;
         this.encodeRequester = encodeRequester;
-        this.craftingRequest = craftingRequest;
     }
 
     public SendPackage(FriendlyByteBuf buffer) {
         address = buffer.readUtf();
-        order = PackageOrder.read(buffer);
+        order = PackageOrderWithCrafts.read(buffer);
         encodeRequester = buffer.readBoolean();
-        craftingRequest = PackageOrder.read(buffer);
     }
 
     @Override
@@ -37,7 +34,6 @@ public class SendPackage extends SimplePacketBase {
         buffer.writeUtf(address);
         order.write(buffer);
         buffer.writeBoolean(encodeRequester);
-        craftingRequest.write(buffer);
     }
 
 
