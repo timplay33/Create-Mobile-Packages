@@ -63,6 +63,33 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     public void lazyTick() {
         super.lazyTick();
         tryPullingFromAdjacentInventories();
+        if (level != null && level.hasNeighborSignal(worldPosition)) {
+            tryPushingToAdjacentInventories();
+        }
+    }
+
+    private void tryPushingToAdjacentInventories() {
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            ItemStack itemStack = inventory.getStackInSlot(i);
+            if (!PackageItem.isPackage(itemStack) || !PackageItem.matchAddress(itemStack, addressFilter)) {
+                continue;
+            }
+            for (IItemHandler adjacentInventory : getAdjacentInventories()) {
+                if (tryPushingToInventory(adjacentInventory, itemStack, i)) {
+                    return;
+                }
+            }
+        }
+    }
+
+    private boolean tryPushingToInventory(IItemHandler inventory, ItemStack itemStack, int extractSlot) {
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            if (inventory.getStackInSlot(i).isEmpty()) {
+                inventory.insertItem(i, this.inventory.extractItem(extractSlot, 1, false), false);
+                return true;
+            }
+        }
+        return false;
     }
 
     private void tryPullingFromAdjacentInventories() {
