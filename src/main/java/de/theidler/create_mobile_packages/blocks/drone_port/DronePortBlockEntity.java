@@ -2,21 +2,26 @@ package de.theidler.create_mobile_packages.blocks.drone_port;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
+import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
 
-import java.util.HashSet;
+import java.util.List;
 
 import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlock.IS_OPEN_TEXTURE;
 
@@ -52,6 +57,72 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
         if (++tickCounter % 20 == 0) {
             processItems();
         }
+    }
+
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
+        tryPullingFromAdjacentInventories();
+        if (level != null && level.hasNeighborSignal(worldPosition)) {
+            tryPushingToAdjacentInventories();
+        }
+    }
+
+    private void tryPushingToAdjacentInventories() {
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            ItemStack itemStack = inventory.getStackInSlot(i);
+            if (!PackageItem.isPackage(itemStack) || !PackageItem.matchAddress(itemStack, addressFilter)) {
+                continue;
+            }
+            for (IItemHandler adjacentInventory : getAdjacentInventories()) {
+                if (tryPushingToInventory(adjacentInventory, itemStack, i)) {
+                    return;
+                }
+            }
+        }
+    }
+
+    private boolean tryPushingToInventory(IItemHandler inventory, ItemStack itemStack, int extractSlot) {
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            if (inventory.getStackInSlot(i).isEmpty()) {
+                inventory.insertItem(i, this.inventory.extractItem(extractSlot, 1, false), false);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void tryPullingFromAdjacentInventories() {
+        if (isFull(isEntityOnTravel ? 1 : 0)) return;
+
+        getAdjacentInventories().forEach(( inventory) -> {
+            if (inventory == null) return;
+            if (isFull(isEntityOnTravel ? 1 : 0)) return;
+            for (int i = 0; i < inventory.getSlots(); i++) {
+                ItemStack itemStack = inventory.getStackInSlot(i);
+                if (!itemStack.isEmpty() && PackageItem.isPackage(itemStack)) {
+                    addItemStack(inventory.extractItem(i, 1, false));
+                }
+            }
+        });
+    }
+
+    private List<IItemHandler> getAdjacentInventories() {
+        List<IItemHandler> inventories = new java.util.ArrayList<>();
+        for (Direction side : Direction.values()) {
+            IItemHandler inventory = getAdjacentInventory(side);
+            if (inventory != null) {
+                inventories.add(inventory);
+            }
+        }
+        return inventories;
+    }
+    private IItemHandler getAdjacentInventory(Direction side) {
+        BlockEntity blockEntity = level.getBlockEntity(worldPosition.relative(side));
+        if (blockEntity == null || blockEntity instanceof FrogportBlockEntity)
+            return null;
+        return blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side.getOpposite())
+                .orElse(null);
     }
 
     /**
@@ -218,17 +289,28 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     }
 
     /**
+     * Checks if the drone port is full, considering a specified number of slots to leave empty.
+     *
+     * @param slotsToLeaveEmpty The number of slots that should remain empty.
+     * @return True if the number of empty slots is less than or equal to the specified slots to leave empty, false otherwise.
+     */
+    public boolean isFull(int slotsToLeaveEmpty) {
+        int emptySlots = 0;
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            if (inventory.getStackInSlot(i).isEmpty()) {
+                emptySlots++;
+            }
+        }
+        return emptySlots <= slotsToLeaveEmpty;
+    }
+
+    /**
      * Checks if the drone port is full.
      *
      * @return True if the drone port is full, false otherwise.
      */
     public boolean isFull() {
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            if (inventory.getStackInSlot(i).isEmpty()) {
-                return false;
-            }
-        }
-        return true;
+        return isFull(0);
     }
 
     /**

@@ -17,7 +17,9 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 
 ## Items
 ### Drone Port
-The Drone Port is a specialized block that automates the delivery of Create mod Packages to players or other Drone Ports. It now features a menu with an inventory, where packages can be inserted manually or automatically using devices like Funnels, Chutes, or Hoppers. The station reads the address label on each package and dispatches it accordingly — either delivering the package to a player whose name matches the address or forwarding it to another Drone Port.
+The Drone Port is a specialized block that automates the delivery of Create mod Packages to players or other Drone Ports. It features a menu with an inventory, where packages can be inserted manually or automatically using devices like Funnels, Chutes, or Hoppers. The station reads the address label on each package and dispatches it accordingly — either delivering the package to a player whose name matches the address or forwarding it to another Drone Port.
+
+As of version 0.5.0, the Port can now pull packages from adjacent inventories. It can also push packages to adjacent inventories if their address matches the port's addresses and it is powered by a redstone signal.
 
 ![drone Port](https://github.com/user-attachments/assets/3b15287e-44fc-4ebc-9e59-a38fc2a5da49)
 
