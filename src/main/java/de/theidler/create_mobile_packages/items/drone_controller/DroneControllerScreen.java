@@ -15,6 +15,9 @@ import com.simibubi.create.foundation.gui.ScreenWithStencils;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
+import com.simibubi.create.infrastructure.config.AllConfigs;
+import de.theidler.create_mobile_packages.compat.CMPJEI;
+import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
@@ -228,6 +231,12 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         addressBox.setValue(previouslyUsedAddress);
         addRenderableWidget(addressBox);
         ClientScreenStorage.manualUpdate();
+
+        if (initial) {
+            playUiSound(SoundEvents.WOOD_HIT, 0.5f, 1.5f);
+            playUiSound(SoundEvents.BOOK_PAGE_TURN, 1, 1);
+            syncJEI();
+        }
     }
 
     private Couple<Integer> getHoveredSlot(int x, int y) {
@@ -631,7 +640,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             refreshSearchNextTick = true;
             moveToTopNextTick = true;
             searchBox.setFocused(true);
-            //syncJEI();
+            syncJEI();
             return true;
         }
 
@@ -827,7 +836,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         if (!Objects.equals(s, searchBox.getValue())) {
             refreshSearchNextTick = true;
             moveToTopNextTick = true;
-            //syncJEI();
+            syncJEI();
         }
         return true;
     }
@@ -853,7 +862,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         if (!Objects.equals(s, searchBox.getValue())) {
             refreshSearchNextTick = true;
             moveToTopNextTick = true;
-            //syncJEI();
+            syncJEI();
         }
         return true;
     }
@@ -897,5 +906,8 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                 .component();
     }
 
-
+    private void syncJEI() {
+        if (Mods.JEI.isLoaded() && AllConfigs.client().syncJeiSearch.get())
+            CMPJEI.runtime.getIngredientFilter().setFilterText(searchBox.getValue());
+    }
 }
