@@ -4,7 +4,7 @@ import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -39,7 +39,7 @@ public class DroneController extends StockCheckingItem {
     }
 
     @Override
-    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrder order, IdentifiedInventory ignoredHandler,
+    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, IdentifiedInventory ignoredHandler,
                                            String address) {
         boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address);
         previouslyUsedAddress = address;

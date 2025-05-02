@@ -6,9 +6,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.logistics.BigItemStack;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.ScreenWithStencils;
@@ -16,11 +18,12 @@ import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
-import de.theidler.create_mobile_packages.compat.CMPJEI;
+import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
 import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
+import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.theme.Color;
@@ -35,15 +38,15 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 
 public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneControllerMenu> implements ScreenWithStencils {
 
@@ -75,18 +78,23 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     public List<BigItemStack> currentItemSource;
     public List<BigItemStack> displayedItems;
     public List<BigItemStack> itemsToOrder;
+    public List<CraftableBigItemStack> recipesToOrder;
     private boolean scrollHandleActive;
     private InventorySummary forcedEntries;
 
     public boolean refreshSearchNextTick;
     public boolean moveToTopNextTick;
+    private boolean canRequestCraftingPackage;
 
     public DroneControllerScreen(DroneControllerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         displayedItems = new ArrayList<>();
         itemsToOrder = new ArrayList<>();
+        recipesToOrder = new ArrayList<>();
         itemScroll = LerpedFloat.linear()
                 .startWithValue(0);
+        canRequestCraftingPackage = false;
+        menu.screenReference = this;
         forcedEntries = new InventorySummary();
         this.playerInventory = playerInventory;
     }
@@ -250,6 +258,14 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             if (itemsToOrder.size() <= col || col < 0)
                 return noneHovered;
             return Couple.create(-1, col);
+        }
+
+        // Ordered recipe is hovered
+        if (y >= orderY - 31 && y < orderY - 31 + rowHeight) {
+            int jeiX = getGuiLeft() + (windowWidth - colWidth * recipesToOrder.size()) / 2 + 1;
+            int col = Mth.floorDiv(x - jeiX, colWidth);
+            if (recipesToOrder.size() > col && col >= 0)
+                return Couple.create(-2, col);
         }
 
         if (y < getGuiTop() + 16 || y > getGuiTop() + windowHeight - 80)
@@ -474,6 +490,34 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_BOT.render(pGuiGraphics, barX, barY + barSize - 5);
             ms.popPose();
         }
+
+        // Render JEI imported
+        if (recipesToOrder.size() > 0) {
+            int jeiX = x + (windowWidth - colWidth * recipesToOrder.size()) / 2 + 1;
+            int jeiY = orderY - 31;
+            ms.pushPose();
+            ms.translate(jeiX, jeiY, 200);
+            int xoffset = -3;
+            AllGuiTextures.STOCK_KEEPER_REQUEST_BLUEPRINT_LEFT.render(pGuiGraphics, xoffset, -3);
+            xoffset += 10;
+            for (int i = 0; i <= (recipesToOrder.size() - 1) * 5; i++) {
+                AllGuiTextures.STOCK_KEEPER_REQUEST_BLUEPRINT_MIDDLE.render(pGuiGraphics, xoffset, -3);
+                xoffset += 4;
+            }
+            AllGuiTextures.STOCK_KEEPER_REQUEST_BLUEPRINT_RIGHT.render(pGuiGraphics, xoffset, -3);
+
+            for (int index = 0; index < recipesToOrder.size(); index++) {
+                CraftableBigItemStack craftableBigItemStack = recipesToOrder.get(index);
+                boolean isStackHovered = index == hoveredSlot.getSecond() && -2 == hoveredSlot.getFirst();
+                ms.pushPose();
+                ms.translate(index * colWidth, 0, 0);
+                renderItemEntry(pGuiGraphics, 1, craftableBigItemStack, isStackHovered, true);
+                ms.popPose();
+            }
+
+            ms.popPose();
+        }
+
         UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
     }
 
@@ -587,9 +631,11 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         // Render tooltip of hovered item
         if (hoveredSlot != noneHovered) {
             int slot = hoveredSlot.getSecond();
+            boolean recipeHovered = hoveredSlot.getFirst() == -2;
             boolean orderHovered = hoveredSlot.getFirst() == -1;
             try {
-                BigItemStack entry = orderHovered ? itemsToOrder.get(slot)
+                BigItemStack entry = recipeHovered ? recipesToOrder.get(slot)
+                        : orderHovered ? itemsToOrder.get(slot)
                         : displayedItems.get(slot);
                 graphics.renderTooltip(font, entry.stack, mouseX, mouseY);
             } catch (Exception ignored) {
@@ -680,15 +726,27 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         // Items
         try {
             boolean orderClicked = hoveredSlot.getFirst() == -1;
+            boolean recipeClicked = hoveredSlot.getFirst() == -2;
             if (hoveredSlot.getSecond() > displayedItems.size()) {
                 return false;
             }
-            BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
+            BigItemStack entry = recipeClicked ? recipesToOrder.get(hoveredSlot.getSecond())
+                    : orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
                     : displayedItems
                     .get(hoveredSlot.getSecond());
 
             ItemStack itemStack = entry.stack;
             int transfer = hasShiftDown() ? itemStack.getMaxStackSize() : hasControlDown() ? 10 : 1;
+
+            if (recipeClicked) {
+                CraftableBigItemStack cbis = (CraftableBigItemStack) entry;
+                if (rmb && cbis.count == 0) {
+                    recipesToOrder.remove(cbis);
+                    return true;
+                }
+                requestCraftable(cbis, rmb ? -transfer : transfer);
+                return true;
+            }
 
             BigItemStack existingOrder = getOrderForItem(entry.stack);
             if (existingOrder == null) {
@@ -716,6 +774,207 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         } catch (Exception ignored) {
             return false;
         }
+    }
+
+    public void requestCraftable(CraftableBigItemStack cbis, int requestedDifference) {
+        boolean takeOrdersAway = requestedDifference < 0;
+        if (takeOrdersAway)
+            requestedDifference = Math.max(-cbis.count, requestedDifference);
+        if (requestedDifference == 0)
+            return;
+
+        InventorySummary availableItems = new InventorySummary();
+        for (BigItemStack stack : displayedItems) {availableItems.add(stack);}
+        Function<ItemStack, Integer> countModifier = stack -> {
+            BigItemStack ordered = getOrderForItem(stack);
+            return ordered == null ? 0 : -ordered.count;
+        };
+
+        if (takeOrdersAway) {
+            availableItems = new InventorySummary();
+            for (BigItemStack ordered : itemsToOrder)
+                availableItems.add(ordered.stack, ordered.count);
+            countModifier = stack -> 0;
+        }
+
+        Pair<Integer, List<List<BigItemStack>>> craftingResult =
+                maxCraftable(cbis, availableItems, countModifier, takeOrdersAway ? -1 : 9 - itemsToOrder.size());
+        int outputCount = cbis.getOutputCount(playerInventory.player.level());
+        int adjustToRecipeAmount = Mth.ceil(Math.abs(requestedDifference) / (float) outputCount) * outputCount;
+        int maxCraftable = Math.min(adjustToRecipeAmount, craftingResult.getFirst());
+
+        if (maxCraftable == 0)
+            return;
+
+        cbis.count += takeOrdersAway ? -maxCraftable : maxCraftable;
+
+        List<List<BigItemStack>> validEntriesByIngredient = craftingResult.getSecond();
+        for (List<BigItemStack> list : validEntriesByIngredient) {
+            int remaining = maxCraftable / outputCount;
+            for (BigItemStack entry : list) {
+                if (remaining <= 0)
+                    break;
+
+                int toTransfer = Math.min(remaining, entry.count);
+                BigItemStack order = getOrderForItem(entry.stack);
+
+                if (takeOrdersAway) {
+                    if (order != null) {
+                        order.count -= toTransfer;
+                        if (order.count == 0)
+                            itemsToOrder.remove(order);
+                    }
+                } else {
+                    if (order == null)
+                        itemsToOrder.add(order = new BigItemStack(entry.stack.copyWithCount(1), 0));
+                    order.count += toTransfer;
+                }
+
+                remaining -= entry.count;
+            }
+        }
+
+        updateCraftableAmounts();
+    }
+
+    private void updateCraftableAmounts() {
+        InventorySummary usedItems = new InventorySummary();
+        InventorySummary availableItems = new InventorySummary();
+
+        for (BigItemStack ordered : itemsToOrder)
+            availableItems.add(ordered.stack, ordered.count);
+
+        for (CraftableBigItemStack cbis : recipesToOrder) {
+            Pair<Integer, List<List<BigItemStack>>> craftingResult =
+                    maxCraftable(cbis, availableItems, stack -> -usedItems.getCountOf(stack), -1);
+            int maxCraftable = craftingResult.getFirst();
+            List<List<BigItemStack>> validEntriesByIngredient = craftingResult.getSecond();
+            int outputCount = cbis.getOutputCount(playerInventory.player.level());
+
+            // Only tweak amounts downward
+            cbis.count = Math.min(cbis.count, maxCraftable);
+
+            // Use ingredients up before checking next recipe
+            for (List<BigItemStack> list : validEntriesByIngredient) {
+                int remaining = cbis.count / outputCount;
+                for (BigItemStack entry : list) {
+                    if (remaining <= 0)
+                        break;
+                    usedItems.add(entry.stack, Math.min(remaining, entry.count));
+                    remaining -= entry.count;
+                }
+            }
+        }
+
+        canRequestCraftingPackage = false;
+        for (BigItemStack ordered : itemsToOrder)
+            if (usedItems.getCountOf(ordered.stack) != ordered.count)
+                return;
+        canRequestCraftingPackage = true;
+    }
+
+    private Pair<Integer, List<List<BigItemStack>>> maxCraftable(CraftableBigItemStack cbis, InventorySummary summary,
+                                                                 Function<ItemStack, Integer> countModifier, int newTypeLimit) {
+        List<Ingredient> ingredients = cbis.getIngredients();
+        List<List<BigItemStack>> validEntriesByIngredient = new ArrayList<>();
+        List<ItemStack> visited = new ArrayList<>();
+
+        for (Ingredient ingredient : ingredients) {
+            if (ingredient.isEmpty())
+                continue;
+            List<BigItemStack> valid = new ArrayList<>();
+            for (List<BigItemStack> list : summary.getItemMap()
+                    .values())
+                Entries:for (BigItemStack entry : list) {
+                    if (!ingredient.test(entry.stack))
+                        continue;
+                    BigItemStack asBis = new BigItemStack(entry.stack,
+                            summary.getCountOf(entry.stack) + countModifier.apply(entry.stack));
+                    if (asBis.count > 0)
+                        valid.add(asBis);
+                    for (ItemStack visitedStack : visited) {
+                        if (!ItemHandlerHelper.canItemStacksStack(visitedStack, entry.stack))
+                            continue;
+                        visitedStack.grow(1);
+                        continue Entries;
+                    }
+                    visited.add(entry.stack.copyWithCount(1));
+                }
+
+            if (valid.isEmpty())
+                return Pair.of(0, List.of());
+
+            Collections.sort(valid,
+                    (bis1, bis2) -> -Integer.compare(summary.getCountOf(bis1.stack), summary.getCountOf(bis2.stack)));
+            validEntriesByIngredient.add(valid);
+        }
+
+        // Used new items may have to be trimmed
+        if (newTypeLimit != -1) {
+            int toRemove = (int) validEntriesByIngredient.stream()
+                    .flatMap(l -> l.stream())
+                    .filter(entry -> getOrderForItem(entry.stack) == null)
+                    .distinct()
+                    .count() - newTypeLimit;
+
+            for (int i = 0; i < toRemove; i++)
+                removeLeastEssentialItemStack(validEntriesByIngredient);
+        }
+
+        // Ingredients with shared items must divide counts
+        for (ItemStack visitedItem : visited) {
+            for (List<BigItemStack> list : validEntriesByIngredient) {
+                for (BigItemStack entry : list) {
+                    if (!ItemHandlerHelper.canItemStacksStack(entry.stack, visitedItem))
+                        continue;
+                    entry.count = entry.count / visitedItem.getCount();
+                }
+            }
+        }
+
+        // Determine the bottlenecking ingredient
+        int minCount = Integer.MAX_VALUE;
+        for (List<BigItemStack> list : validEntriesByIngredient) {
+            int sum = 0;
+            for (BigItemStack entry : list)
+                sum += entry.count;
+            minCount = Math.min(sum, minCount);
+        }
+
+        if (minCount == 0)
+            return Pair.of(0, List.of());
+
+        int outputCount = cbis.getOutputCount(playerInventory.player.level());
+        return Pair.of(minCount * outputCount, validEntriesByIngredient);
+    }
+
+    private void removeLeastEssentialItemStack(List<List<BigItemStack>> validIngredients) {
+        List<BigItemStack> longest = null;
+        int most = 0;
+        for (List<BigItemStack> list : validIngredients) {
+            int count = (int) list.stream()
+                    .filter(entry -> getOrderForItem(entry.stack) == null)
+                    .count();
+            if (longest != null && count <= most)
+                continue;
+            longest = list;
+            most = count;
+        }
+
+        if (longest.isEmpty())
+            return;
+
+        BigItemStack chosen = null;
+        for (int i = 0; i < longest.size(); i++) {
+            BigItemStack entry = longest.get(longest.size() - 1 - i);
+            if (getOrderForItem(entry.stack) != null)
+                continue;
+            chosen = entry;
+            break;
+        }
+
+        for (List<BigItemStack> list : validIngredients)
+            list.remove(chosen);
     }
 
     @Override
@@ -746,7 +1005,9 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         }
         try {
             boolean orderClicked = hoveredSlot.getFirst() == -1;
-            BigItemStack entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
+            boolean recipeClicked = hoveredSlot.getFirst() == -2;
+            BigItemStack entry = recipeClicked ? recipesToOrder.get(hoveredSlot.getSecond())
+                    : orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
                     : displayedItems
                     .get(hoveredSlot.getSecond());
 
@@ -872,20 +1133,36 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         if (itemsToOrder.isEmpty())
             return;
 
-        /*forcedEntries = new InventorySummary();
+        forcedEntries = new InventorySummary();
         for (BigItemStack toOrder : itemsToOrder) {
             // momentarily cut the displayed stack size until the stock updates come in
             if (countOf(toOrder) == BigItemStack.INF)
                 continue;
             forcedEntries.add(toOrder.stack.copy(), -1 - Math.max(0, countOf(toOrder) - toOrder.count));
-        }*/
+        }
+
+        PackageOrderWithCrafts order = PackageOrderWithCrafts.simple(itemsToOrder);
+
+        if (canRequestCraftingPackage && !itemsToOrder.isEmpty() && !recipesToOrder.isEmpty()) {
+            List<PackageOrderWithCrafts.CraftingEntry> craftList = new ArrayList<>();
+            for (CraftableBigItemStack cbis : recipesToOrder) {
+                if (!(cbis.recipe instanceof CraftingRecipe cr))
+                    continue;
+                PackageOrder pattern =
+                        new PackageOrder(FactoryPanelScreen.convertRecipeToPackageOrderContext(cr, itemsToOrder));
+                int count = cbis.count / cbis.getOutputCount(playerInventory.player.level());
+                craftList.add(new PackageOrderWithCrafts.CraftingEntry(pattern, count));
+            }
+            order = new PackageOrderWithCrafts(order.orderedStacks(), craftList);
+        }
 
         CMPPackets.getChannel()
-                .sendToServer(new SendPackage(new PackageOrder(itemsToOrder),
-                        addressBox.getValue(), false, PackageOrder.empty()));
+                .sendToServer(new SendPackage(order,
+                        addressBox.getValue(), false));
         menu.droneController.previouslyUsedAddress = addressBox.getValue();
 
         itemsToOrder = new ArrayList<>();
+        recipesToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;
         successTicks = 1;
         ClientScreenStorage.manualUpdate();

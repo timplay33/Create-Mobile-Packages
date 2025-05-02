@@ -52,15 +52,15 @@ public class StockCheckingItem extends Item {
         return LogisticsManager.getSummaryOfNetwork(Freq, true);
     }
 
-    public static boolean broadcastPackageRequest(ItemStack stack, RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler, String address) {
+    public static boolean broadcastPackageRequest(ItemStack stack, RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler, String address) {
         Freq = networkFromStack(stack);
-        return LogisticsManager.broadcastPackageRequest(Freq, type, new PackageOrderWithCrafts(order, new ArrayList<PackageOrderWithCrafts.CraftingEntry>()), ignoredHandler, address);
+        return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
     }
 
     // Send a package request
-    public boolean broadcastPackageRequest(RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler,
+    public boolean broadcastPackageRequest(RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler,
                                            String address) {
-        return LogisticsManager.broadcastPackageRequest(Freq, type, new PackageOrderWithCrafts(order, new ArrayList<PackageOrderWithCrafts.CraftingEntry>()), ignoredHandler, address);
+        return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
     }
 
     @Override

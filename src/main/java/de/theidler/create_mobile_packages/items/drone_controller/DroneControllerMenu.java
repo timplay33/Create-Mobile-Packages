@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class DroneControllerMenu extends AbstractContainerMenu {
     public DroneController droneController;
+    public Object screenReference;
 
     public DroneControllerMenu(int id, Inventory playerInventory, DroneController droneController) {
         super(CMPMenuTypes.DRONE_CONTROLLER_MENU.get(), id);
