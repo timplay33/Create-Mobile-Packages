@@ -961,7 +961,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             most = count;
         }
 
-        if (longest.isEmpty())
+        if (longest == null || longest.isEmpty())
             return;
 
         BigItemStack chosen = null;
