@@ -188,7 +188,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
      */
     private void sendDrone(ItemStack itemStack, int slot) {
         sendItemThisTime = 2;
-        RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
+        RoboBeeEntity drone = new RoboBeeEntity(level, itemStack, this.getBlockPos());
         level.addFreshEntity(drone);
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
