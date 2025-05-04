@@ -6,9 +6,9 @@ import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 
 public class CMPBlockEntities {
 
-    public static final BlockEntityEntry<BeePortBlockEntity> DRONE_PORT = CreateMobilePackages.REGISTRATE
-            .blockEntity("drone_port", BeePortBlockEntity::new)
-            .validBlocks(CMPBlocks.DRONE_PORT)
+    public static final BlockEntityEntry<BeePortBlockEntity> BEE_PORT = CreateMobilePackages.REGISTRATE
+            .blockEntity("bee_port", BeePortBlockEntity::new)
+            .validBlocks(CMPBlocks.BEE_PORT)
             .register();
 
     public static void register() {
