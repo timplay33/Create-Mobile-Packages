@@ -247,7 +247,7 @@ public void updatePackageEntity() {
         if (itemStack == null) return;
         this.itemStack = itemStack;
     }
-    public BeePortBlockEntity getStartDronePortBlockEntity() {
+    public BeePortBlockEntity getStartBeePortBlockEntity() {
         return startBeePortBlockEntity;
     }
 
