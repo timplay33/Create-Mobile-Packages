@@ -27,10 +27,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class DronePortBlock extends Block implements IBE<DronePortBlockEntity>, IWrenchable {
+public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWrenchable {
     public static final BooleanProperty IS_OPEN_TEXTURE = BooleanProperty.create("open");
 
-    public DronePortBlock(Properties properties) {
+    public BeePortBlock(Properties properties) {
         super(properties);
     }
 
@@ -51,12 +51,12 @@ public class DronePortBlock extends Block implements IBE<DronePortBlockEntity>, 
     }
 
     @Override
-    public Class<DronePortBlockEntity> getBlockEntityClass() {
-        return DronePortBlockEntity.class;
+    public Class<BeePortBlockEntity> getBlockEntityClass() {
+        return BeePortBlockEntity.class;
     }
 
     @Override
-    public BlockEntityType<? extends DronePortBlockEntity> getBlockEntityType() {
+    public BlockEntityType<? extends BeePortBlockEntity> getBlockEntityType() {
         return CMPBlockEntities.DRONE_PORT.get();
     }
 

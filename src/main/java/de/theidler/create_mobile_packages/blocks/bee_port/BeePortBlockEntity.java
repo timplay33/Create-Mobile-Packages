@@ -23,26 +23,26 @@ import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
 
-import static de.theidler.create_mobile_packages.blocks.bee_port.DronePortBlock.IS_OPEN_TEXTURE;
+import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
 /**
  * Represents a Drone Port block entity that handles the processing and sending of Create Mod packages
  * to players or other drone ports using drones.
  */
-public class DronePortBlockEntity extends PackagePortBlockEntity {
+public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
     private boolean isEntityOnTravel = false;
 
     /**
-     * Constructor for the DronePortBlockEntity.
+     * Constructor for the BeePortBlockEntity.
      *
      * @param pType       The type of the block entity.
      * @param pPos        The position of the block in the world.
      * @param pBlockState The state of the block.
      */
-    public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
+    public BeePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
         itemHandler = LazyOptional.of(() -> inventory);
     }
@@ -199,7 +199,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
      * @param entity The drone port entity.
      * @param open   Whether the port is open.
      */
-    public static void setOpen(DronePortBlockEntity entity, boolean open) {
+    public static void setOpen(BeePortBlockEntity entity, boolean open) {
         if (entity == null || entity.level == null) return;
 
         entity.level.setBlockAndUpdate(entity.getBlockPos(), entity.getBlockState().setValue(IS_OPEN_TEXTURE, open));

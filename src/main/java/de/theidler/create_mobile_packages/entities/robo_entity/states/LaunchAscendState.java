@@ -1,6 +1,6 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
-import de.theidler.create_mobile_packages.blocks.bee_port.DronePortBlockEntity;
+import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import net.minecraft.world.phys.Vec3;
@@ -8,7 +8,7 @@ import net.minecraft.world.phys.Vec3;
 public class LaunchAscendState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
-        DronePortBlockEntity dpbe = re.getStartDronePortBlockEntity();
+        BeePortBlockEntity dpbe = re.getStartDronePortBlockEntity();
         if (dpbe == null) {
             re.setState(new LaunchFinishState());
             return;
