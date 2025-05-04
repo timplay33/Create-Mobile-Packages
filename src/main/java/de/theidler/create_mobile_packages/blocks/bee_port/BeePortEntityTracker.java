@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class DronePortEntityTracker implements IDronePortEntityTracker {
+public class BeePortEntityTracker implements IBeePortEntityTracker {
     private final List<BeePortBlockEntity> list = new ArrayList<>();
 
     @Override

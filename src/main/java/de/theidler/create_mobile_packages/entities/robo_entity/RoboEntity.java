@@ -117,14 +117,14 @@ public class RoboEntity extends Mob {
     private void setTargetFromItemStack(ItemStack itemStack) {
         if (itemStack == null) return;
         if (!PackageItem.isPackage(itemStack)) {
-            this.targetBlockEntity = getClosestDronePort(level(), this.blockPosition());
+            this.targetBlockEntity = getClosestBeePort(level(), this.blockPosition());
             return;
         }
         level().players().stream()
                 .filter(player -> player.getName().getString().equals(PackageItem.getAddress(itemStack)))
                 .findFirst()
                 .ifPresentOrElse(player -> targetPlayer = player,
-                        () -> targetBlockEntity = getClosestDronePort(level(), PackageItem.getAddress(itemStack), this.blockPosition()));
+                        () -> targetBlockEntity = getClosestBeePort(level(), PackageItem.getAddress(itemStack), this.blockPosition()));
     }
 
     /**
@@ -136,7 +136,7 @@ public class RoboEntity extends Mob {
     public BlockPos getTargetPosition() {
         if (targetPlayer != null) return targetPlayer.blockPosition().above();
         if (targetBlockEntity != null) return targetBlockEntity.getBlockPos().above().above();
-        targetBlockEntity = getClosestDronePort(level(), this.blockPosition());
+        targetBlockEntity = getClosestBeePort(level(), this.blockPosition());
         return targetBlockEntity != null ? targetBlockEntity.getBlockPos().above().above() : null;
     }
 
@@ -145,8 +145,8 @@ public class RoboEntity extends Mob {
      *
      * @return The closest BeePortBlockEntity.
      */
-    public static BeePortBlockEntity getClosestDronePort(Level level, BlockPos origin) {
-        return getClosestDronePort(level, null, origin);
+    public static BeePortBlockEntity getClosestBeePort(Level level, BlockPos origin) {
+        return getClosestBeePort(level, null, origin);
     }
 
     /**
@@ -160,9 +160,9 @@ public class RoboEntity extends Mob {
      * @param address The address to filter by, or {@code null} for no filtering.
      * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
-    public static BeePortBlockEntity getClosestDronePort(Level level, String address, BlockPos origin) {
+    public static BeePortBlockEntity getClosestBeePort(Level level, String address, BlockPos origin) {
         final BeePortBlockEntity[] closest = {null};
-        level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
+        level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
             if (address != null) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
