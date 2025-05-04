@@ -11,7 +11,7 @@ public class PortableStockTickerMenu extends AbstractContainerMenu {
     public Object screenReference;
 
     public PortableStockTickerMenu(int id, Inventory playerInventory, PortableStockTicker portableStockTicker) {
-        super(CMPMenuTypes.DRONE_CONTROLLER_MENU.get(), id);
+        super(CMPMenuTypes.PORTABLE_STOCK_TICKER_MENU.get(), id);
         this.portableStockTicker = portableStockTicker;
     }
 

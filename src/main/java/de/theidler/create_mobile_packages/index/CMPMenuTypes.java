@@ -8,10 +8,10 @@ import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableSt
 
 public class CMPMenuTypes {
 
-    public static final MenuEntry<PortableStockTickerMenu> DRONE_CONTROLLER_MENU =
+    public static final MenuEntry<PortableStockTickerMenu> PORTABLE_STOCK_TICKER_MENU =
             CreateMobilePackages.REGISTRATE.menu(
-                    "drone_controller_menu",
-                    (droneControllerMenuMenuType, containerId, playerInventory) -> new PortableStockTickerMenu(containerId, playerInventory, (PortableStockTicker) playerInventory.player.getMainHandItem().getItem()),
+                    "portable_stock_ticker_menu",
+                    (MenuType, containerId, playerInventory) -> new PortableStockTickerMenu(containerId, playerInventory, (PortableStockTicker) playerInventory.player.getMainHandItem().getItem()),
                     () -> PortableStockTickerScreen::new
             ).register();
 
