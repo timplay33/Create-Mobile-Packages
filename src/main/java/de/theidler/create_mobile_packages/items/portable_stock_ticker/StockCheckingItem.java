@@ -65,7 +65,7 @@ public class StockCheckingItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if(!isTuned(stack)) {
-            player.displayClientMessage(Component.translatable("item.create_mobile_packages.drone_controller.not_linked"), true);
+            player.displayClientMessage(Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);
             return super.use(level, player, hand);
         }
         return super.use(level, player, hand);
