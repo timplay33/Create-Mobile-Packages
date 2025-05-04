@@ -8,7 +8,7 @@ import net.minecraft.world.phys.Vec3;
 public class LaunchFinishState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
-        BeePortBlockEntity.setOpen(re.getStartDronePortBlockEntity(), false);
+        BeePortBlockEntity.setOpen(re.getStartBeePortBlockEntity(), false);
         re.setTargetVelocity(Vec3.ZERO);
         re.setState(new AdjustRotationToTarget());
     }
