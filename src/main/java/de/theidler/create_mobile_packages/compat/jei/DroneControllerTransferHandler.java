@@ -6,7 +6,7 @@ import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.DroneControllerMenu;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.DroneControllerScreen;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerScreen;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.recipe.RecipeIngredientRole;
@@ -69,7 +69,7 @@ public class DroneControllerTransferHandler implements IRecipeTransferHandler<Dr
     }
 
     private IRecipeTransferError transferRecipeOnClient(DroneControllerMenu container, Recipe<?> recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
-        if (!(container.screenReference instanceof DroneControllerScreen screen))
+        if (!(container.screenReference instanceof PortableStockTickerScreen screen))
             return null;
 
         for (CraftableBigItemStack cbis : screen.recipesToOrder)
