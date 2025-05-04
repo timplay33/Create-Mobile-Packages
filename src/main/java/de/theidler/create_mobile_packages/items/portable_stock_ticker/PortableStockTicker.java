@@ -58,13 +58,13 @@ public class PortableStockTicker extends StockCheckingItem {
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
             MenuProvider provider = new SimpleMenuProvider(
-                    (id, inv, p) -> new DroneControllerMenu(id, inv, this),
+                    (id, inv, p) -> new PortableStockTickerMenu(id, inv, this),
                     Component.translatable("item.create_mobile_packages.drone_controller")
             );
             NetworkHooks.openScreen((ServerPlayer) pPlayer, provider);
             if (pPlayer instanceof ServerPlayer serverPlayer) {
                 NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
-                        (id, inv, ply) -> new DroneControllerMenu(id, inv, this),
+                        (id, inv, ply) -> new PortableStockTickerMenu(id, inv, this),
                         Component.translatable("item.create_mobile_packages.drone_controller")
                 ), buf -> {});
             }
