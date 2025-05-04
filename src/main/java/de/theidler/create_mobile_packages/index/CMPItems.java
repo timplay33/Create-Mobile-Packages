@@ -2,7 +2,7 @@ package de.theidler.create_mobile_packages.index;
 
 import com.tterrag.registrate.util.entry.ItemEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.items.drone_controller.DroneController;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.DroneController;
 
 
 public class CMPItems {

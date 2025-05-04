@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.items.drone_controller;
+package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import net.minecraft.world.entity.player.Inventory;

@@ -2,9 +2,9 @@ package de.theidler.create_mobile_packages.index;
 
 import com.tterrag.registrate.util.entry.MenuEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.items.drone_controller.DroneController;
-import de.theidler.create_mobile_packages.items.drone_controller.DroneControllerMenu;
-import de.theidler.create_mobile_packages.items.drone_controller.DroneControllerScreen;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.DroneController;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.DroneControllerMenu;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.DroneControllerScreen;
 
 public class CMPMenuTypes {
 
