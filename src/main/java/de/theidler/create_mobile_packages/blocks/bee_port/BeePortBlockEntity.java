@@ -162,7 +162,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to another drone port.
         if (PackageItem.matchAddress(address, addressFilter)) {return;}
-        if (RoboEntity.getClosestDronePort(level, address, this.getBlockPos()) != null) {
+        if (RoboEntity.getClosestBeePort(level, address, this.getBlockPos()) != null) {
             sendDrone(itemStack, slot);
         }
     }
@@ -273,7 +273,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     public void onLoad() {
         super.onLoad();
         if (!level.isClientSide){
-            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
+            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
         }
     }
 
@@ -283,7 +283,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     @Override
     public void remove() {
         if (!level.isClientSide) {
-            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
+            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
         }
         super.remove();
     }
