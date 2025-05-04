@@ -25,11 +25,11 @@ import java.util.List;
 
 import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem.isTuned;
 
-public class DroneController extends StockCheckingItem {
+public class PortableStockTicker extends StockCheckingItem {
 
     protected String previouslyUsedAddress;
 
-    public DroneController(Properties pProperties) {
+    public PortableStockTicker(Properties pProperties) {
         super(pProperties.stacksTo(1));
     }
 
