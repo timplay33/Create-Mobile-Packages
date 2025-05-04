@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks.drone_port;
+package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
@@ -23,7 +23,7 @@ import net.minecraftforge.items.IItemHandler;
 
 import java.util.List;
 
-import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlock.IS_OPEN_TEXTURE;
+import static de.theidler.create_mobile_packages.blocks.bee_port.DronePortBlock.IS_OPEN_TEXTURE;
 
 /**
  * Represents a Drone Port block entity that handles the processing and sending of Create Mod packages
