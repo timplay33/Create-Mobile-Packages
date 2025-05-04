@@ -54,18 +54,18 @@ public class PortableStockTicker extends StockCheckingItem {
             List<BigItemStack> bigItemStacks = summary.getStacks();
 
             if(!isTuned(stack)) {
-                pPlayer.displayClientMessage(Component.translatable("item.create_mobile_packages.drone_controller.not_linked"), true);
+                pPlayer.displayClientMessage(Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
             MenuProvider provider = new SimpleMenuProvider(
                     (id, inv, p) -> new PortableStockTickerMenu(id, inv, this),
-                    Component.translatable("item.create_mobile_packages.drone_controller")
+                    Component.translatable("item.create_mobile_packages.portable_stock_ticker")
             );
             NetworkHooks.openScreen((ServerPlayer) pPlayer, provider);
             if (pPlayer instanceof ServerPlayer serverPlayer) {
                 NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
                         (id, inv, ply) -> new PortableStockTickerMenu(id, inv, this),
-                        Component.translatable("item.create_mobile_packages.drone_controller")
+                        Component.translatable("item.create_mobile_packages.portable_stock_ticker")
                 ), buf -> {});
             }
         }

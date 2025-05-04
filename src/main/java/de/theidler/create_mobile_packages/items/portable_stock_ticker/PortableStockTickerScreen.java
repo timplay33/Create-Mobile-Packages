@@ -354,7 +354,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             AllGuiTextures.STOCK_KEEPER_REQUEST_SEND_HOVER.render(pGuiGraphics, x + windowWidth - 81,
                     y + windowHeight - 41);
 
-        MutableComponent headerTitle = Component.translatable("item.create_mobile_packages.drone_controller.screen_title");
+        MutableComponent headerTitle = Component.translatable("item.create_mobile_packages.portable_stock_ticker.screen_title");
         pGuiGraphics.drawString(font, headerTitle, x + windowWidth / 2 - font.width(headerTitle) / 2, y + 4, 0x714A40,
                 false);
         MutableComponent component =

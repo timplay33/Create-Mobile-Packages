@@ -48,7 +48,7 @@ public class DroneControllerTransferHandler implements IRecipeTransferHandler<Po
 
     @Override
     public Optional<MenuType<PortableStockTickerMenu>> getMenuType() {
-        return Optional.of(CMPMenuTypes.DRONE_CONTROLLER_MENU.get());
+        return Optional.of(CMPMenuTypes.PORTABLE_STOCK_TICKER_MENU.get());
     }
 
     @Override
