@@ -73,7 +73,7 @@ public class CMPCreativeModeTabs {
             }
         }
 
-        List<Item> exclude = List.of();
+        List<Item> exclude = List.of(CMPItems.DRONE_CONTROLLER.get());
 
         @Override
         public void accept(CreativeModeTab.@NotNull ItemDisplayParameters pParameters, CreativeModeTab.@NotNull Output pOutput) {
