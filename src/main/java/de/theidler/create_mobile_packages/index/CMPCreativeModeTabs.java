@@ -73,12 +73,12 @@ public class CMPCreativeModeTabs {
             }
         }
 
-        List<Item> exclude = List.of(CMPItems.DRONE_CONTROLLER.get());
+        List<Item> exclude = List.of(CMPItems.DRONE_CONTROLLER.get(), CMPBlocks.DRONE_PORT.get().asItem());
 
         @Override
         public void accept(CreativeModeTab.@NotNull ItemDisplayParameters pParameters, CreativeModeTab.@NotNull Output pOutput) {
             List<Item> items = new LinkedList<>();
-            items.addAll(collectBlocks((item) -> false));
+            items.addAll(collectBlocks((item) -> exclude.contains(item)));
             items.addAll(collectItems((item) -> exclude.contains(item)));
 
             outputAll(pOutput, items);
