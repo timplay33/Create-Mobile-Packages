@@ -7,12 +7,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 
 public class DroneControllerMenu extends AbstractContainerMenu {
-    public DroneController droneController;
+    public PortableStockTicker portableStockTicker;
     public Object screenReference;
 
-    public DroneControllerMenu(int id, Inventory playerInventory, DroneController droneController) {
+    public DroneControllerMenu(int id, Inventory playerInventory, PortableStockTicker portableStockTicker) {
         super(CMPMenuTypes.DRONE_CONTROLLER_MENU.get(), id);
-        this.droneController = droneController;
+        this.portableStockTicker = portableStockTicker;
     }
 
     @Override

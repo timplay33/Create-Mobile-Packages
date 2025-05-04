@@ -232,7 +232,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         addWidget(searchBox);
 
         boolean initial = addressBox == null;
-        String previouslyUsedAddress = initial ? menu.droneController.previouslyUsedAddress : addressBox.getValue();
+        String previouslyUsedAddress = initial ? menu.portableStockTicker.previouslyUsedAddress : addressBox.getValue();
         addressBox =
                 new AddressEditBox(this, new NoShadowFontWrapper(font), x + 27, y + windowHeight - 36, 92, 10, true);
         addressBox.setTextColor(0x714A40);
@@ -322,7 +322,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                     .component(), addressBox.getX(), addressBox.getY(), 0xff_CDBCA8, false);
         }
 
-        // Render DroneController Item
+        // Render PortableStockTicker Item
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
@@ -1159,7 +1159,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         CMPPackets.getChannel()
                 .sendToServer(new SendPackage(order,
                         addressBox.getValue(), false));
-        menu.droneController.previouslyUsedAddress = addressBox.getValue();
+        menu.portableStockTicker.previouslyUsedAddress = addressBox.getValue();
 
         itemsToOrder = new ArrayList<>();
         recipesToOrder = new ArrayList<>();
