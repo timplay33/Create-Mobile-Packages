@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.items.drone_controller;
+package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
