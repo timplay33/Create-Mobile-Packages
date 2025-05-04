@@ -1,11 +1,11 @@
 {
   "itemGroup.create_mobile_packages": "Create: Mobile Packages",
 
-  "item.create_mobile_packages.drone_controller": "Drohnen Controller",
-  "item.create_mobile_packages.drone_controller.screen_title": "Drohnen Controller",
-  "item.create_mobile_packages.drone_controller.not_linked": "Nicht mit einem Netzwerk verbunden",
-  "item.create_mobile_packages.drone_controller.tooltip.behaviour1": "Controller verbindet sich mit dem Netzwerk",
-  "item.create_mobile_packages.drone_controller.tooltip.condition2": "Wenn benutzt",
+  "item.create_mobile_packages.portable_stock_ticker": "Drohnen Controller",
+  "item.create_mobile_packages.portable_stock_ticker.screen_title": "Drohnen Controller",
+  "item.create_mobile_packages.portable_stock_ticker.not_linked": "Nicht mit einem Netzwerk verbunden",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "Controller verbindet sich mit dem Netzwerk",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "Wenn benutzt",
 
   "create_mobile_packages.ponder.drone_port.text_2": "Setze die Packet-Adresse auf den Spielernamen",
   "create_mobile_packages.ponder.drone_port.text_3": "Das Packet wird zum Spieler geschickt",

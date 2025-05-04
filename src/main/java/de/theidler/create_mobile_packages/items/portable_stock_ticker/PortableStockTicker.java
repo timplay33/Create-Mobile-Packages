@@ -77,12 +77,12 @@ public class PortableStockTicker extends StockCheckingItem {
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
         if (Screen.hasShiftDown()) {
             pTooltip.add(Component.literal(""));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.summary").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.summary").withStyle(ChatFormatting.YELLOW));
             pTooltip.add(Component.literal(""));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.condition1").withStyle(ChatFormatting.GRAY));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.behaviour1").withStyle(ChatFormatting.YELLOW));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.condition2").withStyle(ChatFormatting.GRAY));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.behaviour2").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.condition1").withStyle(ChatFormatting.GRAY));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.condition2").withStyle(ChatFormatting.GRAY));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2").withStyle(ChatFormatting.YELLOW));
         } else {
             pTooltip.add(Component.translatable("create.tooltip.holdForDescription", Component.translatable("create.tooltip.keyShift").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
         }
