@@ -5,7 +5,7 @@ import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.DroneControllerMenu;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerMenu;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerScreen;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IJeiHelpers;
@@ -33,7 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class DroneControllerTransferHandler implements IRecipeTransferHandler<DroneControllerMenu, Object> {
+public class DroneControllerTransferHandler implements IRecipeTransferHandler<PortableStockTickerMenu, Object> {
 
     private IJeiHelpers helpers;
 
@@ -42,12 +42,12 @@ public class DroneControllerTransferHandler implements IRecipeTransferHandler<Dr
     }
 
     @Override
-    public Class<? extends DroneControllerMenu> getContainerClass() {
-        return DroneControllerMenu.class;
+    public Class<? extends PortableStockTickerMenu> getContainerClass() {
+        return PortableStockTickerMenu.class;
     }
 
     @Override
-    public Optional<MenuType<DroneControllerMenu>> getMenuType() {
+    public Optional<MenuType<PortableStockTickerMenu>> getMenuType() {
         return Optional.of(CMPMenuTypes.DRONE_CONTROLLER_MENU.get());
     }
 
@@ -57,7 +57,7 @@ public class DroneControllerTransferHandler implements IRecipeTransferHandler<Dr
     }
 
     @Override
-    public @Nullable IRecipeTransferError transferRecipe(DroneControllerMenu container, Object object, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+    public @Nullable IRecipeTransferError transferRecipe(PortableStockTickerMenu container, Object object, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
         Level level = player.level();
         if (!(object instanceof Recipe<?> recipe))
             return null;
@@ -68,7 +68,7 @@ public class DroneControllerTransferHandler implements IRecipeTransferHandler<Dr
         return result.getValue();
     }
 
-    private IRecipeTransferError transferRecipeOnClient(DroneControllerMenu container, Recipe<?> recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+    private IRecipeTransferError transferRecipeOnClient(PortableStockTickerMenu container, Recipe<?> recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
         if (!(container.screenReference instanceof PortableStockTickerScreen screen))
             return null;
 

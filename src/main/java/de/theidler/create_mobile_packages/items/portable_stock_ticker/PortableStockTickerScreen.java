@@ -48,7 +48,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public class PortableStockTickerScreen extends AbstractSimiContainerScreen<DroneControllerMenu> implements ScreenWithStencils {
+public class PortableStockTickerScreen extends AbstractSimiContainerScreen<PortableStockTickerMenu> implements ScreenWithStencils {
 
     private static final AllGuiTextures NUMBERS = AllGuiTextures.NUMBERS;
     private static final AllGuiTextures HEADER = AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER;
@@ -86,7 +86,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Drone
     public boolean moveToTopNextTick;
     private boolean canRequestCraftingPackage;
 
-    public PortableStockTickerScreen(DroneControllerMenu menu, Inventory playerInventory, Component title) {
+    public PortableStockTickerScreen(PortableStockTickerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         displayedItems = new ArrayList<>();
         itemsToOrder = new ArrayList<>();
