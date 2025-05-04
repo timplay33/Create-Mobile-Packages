@@ -6,13 +6,17 @@ import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockE
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
-import de.theidler.create_mobile_packages.index.CMPEntities;
+import de.theidler.create_mobile_packages.index.CMPItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.List;
 
@@ -34,6 +39,13 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
     private boolean isEntityOnTravel = false;
+    private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1) {
+        @Override
+        public int getSlotLimit(int slot) {
+            // TODO: Fix Limit & dont allow bees to fly to it if full
+            return Integer.MAX_VALUE;
+        }
+    };
 
     /**
      * Constructor for the DronePortBlockEntity.
@@ -45,6 +57,20 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
         itemHandler = LazyOptional.of(() -> inventory);
+    }
+
+    @Override
+    protected void write(CompoundTag tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        tag.put("RoboBeeInventory", roboBeeInventory.serializeNBT());
+    }
+
+    @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        if (tag.contains("RoboBeeInventory")) {
+            roboBeeInventory.deserializeNBT(tag.getCompound("RoboBeeInventory"));
+        }
     }
 
     /**
@@ -285,6 +311,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
         if (!level.isClientSide) {
             level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
         }
+        level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
         super.remove();
     }
 
@@ -325,5 +352,18 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
 
     public void setEntityOnTravel(boolean state) {
         isEntityOnTravel = state;
+    }
+
+    public ItemStackHandler getRoboBeeInventory() {
+        return roboBeeInventory;
+    }
+
+    public void addBeeToRoboBeeInventory(int amount) {
+        roboBeeInventory.insertItem(0, new ItemStack(CMPItems.ROBO_BEE.get(), amount), false);
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
+        return BeePortMenu.create(pContainerId, pPlayerInventory, this);
     }
 }

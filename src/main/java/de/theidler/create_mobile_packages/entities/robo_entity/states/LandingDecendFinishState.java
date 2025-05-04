@@ -16,6 +16,7 @@ public class LandingDecendFinishState implements RoboEntityState {
         if (re.getItemStack().isEmpty()) re.setState(new ShutdownState());
 
         if (re.getTargetBlockEntity() != null) {
+            re.getTargetBlockEntity().addBeeToRoboBeeInventory(1);
             if (re.getTargetBlockEntity().addItemStack(re.getItemStack())){
                 re.setItemStack(ItemStack.EMPTY);
             }
