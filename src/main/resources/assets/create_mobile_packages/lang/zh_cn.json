@@ -4,14 +4,14 @@
   "block.create_mobile_packages.drone_port": "无人机停泊港",
   "item.create_mobile_packages.drone_port": "无人机停泊港",
 
-  "item.create_mobile_packages.drone_controller": "无人机遥控器",
-  "item.create_mobile_packages.drone_controller.screen_title": "无人机遥控器",
-  "item.create_mobile_packages.drone_controller.not_linked": "未连接到物流网络",
-  "item.create_mobile_packages.drone_controller.tooltip.summary": "便携式仓库管理员",
-  "item.create_mobile_packages.drone_controller.tooltip.condition1": "潜行并右键仓储链接站或仓储发报机时",
-  "item.create_mobile_packages.drone_controller.tooltip.behaviour1": "遥控器将会绑定到对应的物流网络",
-  "item.create_mobile_packages.drone_controller.tooltip.condition2": "使用时",
-  "item.create_mobile_packages.drone_controller.tooltip.behaviour2": "遥控器将会打开一个便携式仓库管理员界面",
+  "item.create_mobile_packages.portable_stock_ticker": "无人机遥控器",
+  "item.create_mobile_packages.portable_stock_ticker.screen_title": "无人机遥控器",
+  "item.create_mobile_packages.portable_stock_ticker.not_linked": "未连接到物流网络",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.summary": "便携式仓库管理员",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.condition1": "潜行并右键仓储链接站或仓储发报机时",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "遥控器将会绑定到对应的物流网络",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "使用时",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "遥控器将会打开一个便携式仓库管理员界面",
 
   "create_mobile_packages.drone_port.send_items": "将物品送至玩家",
 
