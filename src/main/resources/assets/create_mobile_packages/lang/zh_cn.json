@@ -1,8 +1,8 @@
 {
   "itemGroup.create_mobile_packages": "机械动力：无人机物流",
-  
-  "block.create_mobile_packages.drone_port": "无人机停泊港",
-  "item.create_mobile_packages.drone_port": "无人机停泊港",
+
+  "block.create_mobile_packages.bee_port": "无人机停泊港",
+  "item.create_mobile_packages.bee_port": "无人机停泊港",
 
   "item.create_mobile_packages.portable_stock_ticker": "无人机遥控器",
   "item.create_mobile_packages.portable_stock_ticker.screen_title": "无人机遥控器",
@@ -13,12 +13,12 @@
   "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "使用时",
   "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "遥控器将会打开一个便携式仓库管理员界面",
 
-  "create_mobile_packages.drone_port.send_items": "将物品送至玩家",
+  "create_mobile_packages.bee_port.send_items": "将物品送至玩家",
 
-  "create_mobile_packages.ponder.drone_port.header": "无人机停泊港",
-  "create_mobile_packages.ponder.drone_port.text_1": "无人机停泊港可将包裹送至玩家",
-  "create_mobile_packages.ponder.drone_port.text_2": "将包裹目的地设置为玩家ID",
-  "create_mobile_packages.ponder.drone_port.text_3": "运输蜂就会将包裹交给对应的玩家",
+  "create_mobile_packages.ponder.bee_port.header": "无人机停泊港",
+  "create_mobile_packages.ponder.bee_port.text_1": "无人机停泊港可将包裹送至玩家",
+  "create_mobile_packages.ponder.bee_port.text_2": "将包裹目的地设置为玩家ID",
+  "create_mobile_packages.ponder.bee_port.text_3": "运输蜂就会将包裹交给对应的玩家",
 
   "create_mobile_packages.robo_entity.death": "携带%4$s下单的包裹的运输蜂在 X=%1$s Y=%2$s Z=%3$s 处连接中断，请及时处理",
   "create_mobile_packages.robo_entity.eta": "包裹将在%1$s秒后抵达"

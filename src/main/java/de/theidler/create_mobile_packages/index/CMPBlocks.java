@@ -15,8 +15,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
+import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
 
 public class CMPBlocks {
@@ -62,6 +64,12 @@ public class CMPBlocks {
 
         public DronePortBlock(Properties pProperties) {
             super(pProperties);
+        }
+
+        @Override
+        protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
+            super.createBlockStateDefinition(pBuilder);
+            pBuilder.add(IS_OPEN_TEXTURE);
         }
 
         @Override
