@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks.drone_port;
+package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import net.minecraft.core.Direction;
