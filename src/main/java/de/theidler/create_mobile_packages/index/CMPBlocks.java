@@ -15,7 +15,7 @@ public class CMPBlocks {
         CreateMobilePackages.REGISTRATE.setCreativeTab(CMPCreativeModeTabs.CREATE_MOBILE_PACKAGES_TAB);
     }
 
-    public static final BlockEntry<BeePortBlock> DRONE_PORT = CreateMobilePackages.REGISTRATE.block("drone_port", BeePortBlock::new)
+    public static final BlockEntry<BeePortBlock> BEE_PORT = CreateMobilePackages.REGISTRATE.block("bee_port", BeePortBlock::new)
                     .initialProperties(SharedProperties::wooden)
                     .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
                     .item()

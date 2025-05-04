@@ -57,7 +57,7 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
 
     @Override
     public BlockEntityType<? extends BeePortBlockEntity> getBlockEntityType() {
-        return CMPBlockEntities.DRONE_PORT.get();
+        return CMPBlockEntities.BEE_PORT.get();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
     public List<ItemStack> getDrops(BlockState pState, LootParams.Builder pParams) {
         List<ItemStack> drops = super.getDrops(pState, pParams);
         if (drops.isEmpty()) {
-            drops.add(new ItemStack(CMPBlocks.DRONE_PORT.asItem(), 1));
+            drops.add(new ItemStack(CMPBlocks.BEE_PORT.asItem(), 1));
         }
         return drops;
     }

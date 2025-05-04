@@ -25,7 +25,7 @@ public class CMPCreativeModeTabs {
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.create_mobile_packages"))
                     .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
-                    .icon(CMPBlocks.DRONE_PORT::asStack)
+                    .icon(CMPBlocks.BEE_PORT::asStack)
                     .displayItems(new RegistrateDisplayItemsGenerator())
                     .build());
 
