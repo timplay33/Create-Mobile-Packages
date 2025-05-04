@@ -1,6 +1,6 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
-import de.theidler.create_mobile_packages.blocks.bee_port.DronePortBlockEntity;
+import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import net.minecraft.world.item.ItemStack;
@@ -10,7 +10,7 @@ public class LandingDecendFinishState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
         if (re.getTargetBlockEntity() != null) {
-            DronePortBlockEntity.setOpen(re.getTargetBlockEntity(), false);
+            BeePortBlockEntity.setOpen(re.getTargetBlockEntity(), false);
         }
 
         if (re.getItemStack().isEmpty()) re.setState(new ShutdownState());

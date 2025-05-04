@@ -5,20 +5,20 @@ import java.util.Collections;
 import java.util.List;
 
 public class DronePortEntityTracker implements IDronePortEntityTracker {
-    private final List<DronePortBlockEntity> list = new ArrayList<>();
+    private final List<BeePortBlockEntity> list = new ArrayList<>();
 
     @Override
-    public void add(DronePortBlockEntity dpbe) {
+    public void add(BeePortBlockEntity dpbe) {
         list.add(dpbe);
     }
 
     @Override
-    public void remove(DronePortBlockEntity dpbe) {
+    public void remove(BeePortBlockEntity dpbe) {
         list.remove(dpbe);
     }
 
     @Override
-    public List<DronePortBlockEntity> getAll() {
+    public List<BeePortBlockEntity> getAll() {
         return Collections.unmodifiableList(list);
     }
 }
