@@ -441,6 +441,7 @@ public void updatePackageEntity() {
         }
         if (!level().isClientSide() && !itemStack.isEmpty() && packageEntity == null) {
             createPackageEntity(itemStack);
+            doPackageEntity = true;
         }
     }
 
