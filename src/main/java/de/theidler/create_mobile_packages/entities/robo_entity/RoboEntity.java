@@ -10,6 +10,8 @@ import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDec
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -42,7 +44,7 @@ public class RoboEntity extends Mob {
     private BeePortBlockEntity startBeePortBlockEntity;
 
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
-    private PackageEntity packageEntity;
+    public PackageEntity packageEntity;
     public boolean doPackageEntity = false;
 
     /**
@@ -91,6 +93,7 @@ public class RoboEntity extends Mob {
         packageEntity = PackageEntity.fromItemStack(level(), this.position(), itemStack);
         packageEntity.noPhysics = true;
         packageEntity.setNoGravity(true);
+        packageEntity.setPos(this.getX(), this.getY(), this.getZ());
 
         int randomAngle = new java.util.Random().nextInt(4) * 90;
         packageEntity.setYRot(randomAngle);
@@ -404,4 +407,41 @@ public void updatePackageEntity() {
         this.packageEntity = null;
         this.itemStack = ItemStack.EMPTY;
     }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag nbt) {
+        super.addAdditionalSaveData(nbt);
+        if (packageEntity != null) {
+            packageEntity.discard();
+            packageEntity = null;
+        }
+        if (!itemStack.isEmpty()) {
+            nbt.put("itemStack", itemStack.save(new CompoundTag()));
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag nbt) {
+        super.readAdditionalSaveData(nbt);
+        if (nbt.contains("itemStack", Tag.TAG_COMPOUND)) {
+            itemStack = ItemStack.of(nbt.getCompound("itemStack"));
+        } else {
+            itemStack = ItemStack.EMPTY;
+        }
+    }
+
+    @Override
+    public void load(CompoundTag pCompound) {
+        super.load(pCompound);
+        if (pCompound.contains("itemStack")) {
+            itemStack = ItemStack.of(pCompound.getCompound("itemStack"));
+        }
+        if (targetPlayer == null && targetBlockEntity == null && itemStack != null) {
+            setTargetFromItemStack(itemStack);
+        }
+        if (!level().isClientSide() && !itemStack.isEmpty() && packageEntity == null) {
+            createPackageEntity(itemStack);
+        }
+    }
+
 }
