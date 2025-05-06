@@ -35,7 +35,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
-    private RoboEntity EntityOnTravel = null;
+    private RoboEntity entityOnTravel = null;
 
     /**
      * Constructor for the BeePortBlockEntity.
@@ -95,11 +95,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     private void tryPullingFromAdjacentInventories() {
-        if (isFull(EntityOnTravel != null ? 1 : 0)) return;
+        if (isFull(entityOnTravel != null ? 1 : 0)) return;
 
         getAdjacentInventories().forEach(( inventory) -> {
             if (inventory == null) return;
-            if (isFull(EntityOnTravel != null  ? 1 : 0)) return;
+            if (isFull(entityOnTravel != null  ? 1 : 0)) return;
             for (int i = 0; i < inventory.getSlots(); i++) {
                 ItemStack itemStack = inventory.getStackInSlot(i);
                 if (!itemStack.isEmpty() && PackageItem.isPackage(itemStack)) {
@@ -286,9 +286,9 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     public void remove() {
         if (!level.isClientSide) {
             level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
-            if (EntityOnTravel != null) {
-                EntityOnTravel.setTargetVelocity(Vec3.ZERO);
-                EntityOnTravel.setState(new AdjustRotationToTarget());
+            if (entityOnTravel != null) {
+                entityOnTravel.setTargetVelocity(Vec3.ZERO);
+                entityOnTravel.setState(new AdjustRotationToTarget());
             }
         }
         super.remove();
@@ -326,11 +326,11 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      */
     public boolean canAcceptEntity(RoboEntity entity) {
         if (entity == null) return !isFull();
-        if (EntityOnTravel != null && EntityOnTravel != entity) return false;
+        if (entityOnTravel != null && entityOnTravel != entity) return false;
         return !isFull();
     }
 
     public void setEntityOnTravel(RoboEntity entity) {
-        EntityOnTravel = entity;
+        entityOnTravel = entity;
     }
 }
