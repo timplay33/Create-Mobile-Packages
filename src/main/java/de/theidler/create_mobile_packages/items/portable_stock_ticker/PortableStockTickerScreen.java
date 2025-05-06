@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.items.drone_controller;
+package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -48,7 +48,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneControllerMenu> implements ScreenWithStencils {
+public class PortableStockTickerScreen extends AbstractSimiContainerScreen<PortableStockTickerMenu> implements ScreenWithStencils {
 
     private static final AllGuiTextures NUMBERS = AllGuiTextures.NUMBERS;
     private static final AllGuiTextures HEADER = AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER;
@@ -86,7 +86,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
     public boolean moveToTopNextTick;
     private boolean canRequestCraftingPackage;
 
-    public DroneControllerScreen(DroneControllerMenu menu, Inventory playerInventory, Component title) {
+    public PortableStockTickerScreen(PortableStockTickerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         displayedItems = new ArrayList<>();
         itemsToOrder = new ArrayList<>();
@@ -232,7 +232,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         addWidget(searchBox);
 
         boolean initial = addressBox == null;
-        String previouslyUsedAddress = initial ? menu.droneController.previouslyUsedAddress : addressBox.getValue();
+        String previouslyUsedAddress = initial ? menu.portableStockTicker.previouslyUsedAddress : addressBox.getValue();
         addressBox =
                 new AddressEditBox(this, new NoShadowFontWrapper(font), x + 27, y + windowHeight - 36, 92, 10, true);
         addressBox.setTextColor(0x714A40);
@@ -322,7 +322,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
                     .component(), addressBox.getX(), addressBox.getY(), 0xff_CDBCA8, false);
         }
 
-        // Render DroneController Item
+        // Render PortableStockTicker Item
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
@@ -354,7 +354,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
             AllGuiTextures.STOCK_KEEPER_REQUEST_SEND_HOVER.render(pGuiGraphics, x + windowWidth - 81,
                     y + windowHeight - 41);
 
-        MutableComponent headerTitle = Component.translatable("item.create_mobile_packages.drone_controller.screen_title");
+        MutableComponent headerTitle = Component.translatable("item.create_mobile_packages.portable_stock_ticker.screen_title");
         pGuiGraphics.drawString(font, headerTitle, x + windowWidth / 2 - font.width(headerTitle) / 2, y + 4, 0x714A40,
                 false);
         MutableComponent component =
@@ -1159,7 +1159,7 @@ public class DroneControllerScreen extends AbstractSimiContainerScreen<DroneCont
         CMPPackets.getChannel()
                 .sendToServer(new SendPackage(order,
                         addressBox.getValue(), false));
-        menu.droneController.previouslyUsedAddress = addressBox.getValue();
+        menu.portableStockTicker.previouslyUsedAddress = addressBox.getValue();
 
         itemsToOrder = new ArrayList<>();
         recipesToOrder = new ArrayList<>();

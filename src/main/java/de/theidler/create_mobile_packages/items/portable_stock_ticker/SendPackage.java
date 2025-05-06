@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.items.drone_controller;
+package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
@@ -59,8 +59,8 @@ public class SendPackage extends SimplePacketBase {
             WiFiEffectPacket.send(player.level(), player.blockPosition());
         }
 
-        if (player.getMainHandItem().getItem() instanceof DroneController) {
-            ((DroneController) player.getMainHandItem().getItem()).broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address);
+        if (player.getMainHandItem().getItem() instanceof PortableStockTicker) {
+            ((PortableStockTicker) player.getMainHandItem().getItem()).broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address);
         }
     }
 }

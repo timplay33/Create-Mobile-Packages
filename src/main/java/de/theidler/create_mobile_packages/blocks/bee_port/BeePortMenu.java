@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks.drone_port;
+package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import com.simibubi.create.content.logistics.packagePort.PackagePortMenu;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
@@ -17,29 +17,29 @@ public class BeePortMenu extends PackagePortMenu {
         super(type, id, inv, extraData);
     }
 
-    public BeePortMenu(MenuType<?> type, int id, Inventory inv, DronePortBlockEntity be) {
-        super(type, id, inv, be);
+    public BeePortMenu(MenuType<?> type, int id, Inventory inv, BeePortBlockEntity beePortBlockEntity) {
+        super(type, id, inv, beePortBlockEntity);
     }
 
     @Override
-    protected DronePortBlockEntity createOnClient(FriendlyByteBuf extraData) {
+    protected BeePortBlockEntity createOnClient(FriendlyByteBuf extraData) {
         BlockPos readBlockPos = extraData.readBlockPos();
         ClientLevel world = Minecraft.getInstance().level;
         BlockEntity blockEntity = world.getBlockEntity(readBlockPos);
-        if (blockEntity instanceof DronePortBlockEntity bpbe)
-            return bpbe;
+        if (blockEntity instanceof BeePortBlockEntity beePortBlockEntity)
+            return beePortBlockEntity;
         return null;
     }
 
-    public static BeePortMenu create(int id, Inventory inv, DronePortBlockEntity be) {
-        return new BeePortMenu(CMPMenuTypes.BEE_PORT_MENU.get(), id, inv, be);
+    public static BeePortMenu create(int id, Inventory inv, BeePortBlockEntity beePortBlockEntity) {
+        return new BeePortMenu(CMPMenuTypes.BEE_PORT_MENU.get(), id, inv, beePortBlockEntity);
     }
 
     @Override
     protected void addSlots() {
         super.addSlots();
-        if (contentHolder instanceof DronePortBlockEntity dpbe) {
-            addSlot(new SlotItemHandler(dpbe.getRoboBeeInventory(), 0, 10, 58));
+        if (contentHolder instanceof BeePortBlockEntity beePortBlockEntity) {
+            addSlot(new SlotItemHandler(beePortBlockEntity.getRoboBeeInventory(), 0, 10, 58));
         }
 
     }

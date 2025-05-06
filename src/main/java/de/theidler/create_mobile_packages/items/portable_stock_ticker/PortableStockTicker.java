@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.items.drone_controller;
+package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
@@ -25,11 +25,11 @@ import java.util.List;
 
 import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem.isTuned;
 
-public class DroneController extends StockCheckingItem {
+public class PortableStockTicker extends StockCheckingItem {
 
     protected String previouslyUsedAddress;
 
-    public DroneController(Properties pProperties) {
+    public PortableStockTicker(Properties pProperties) {
         super(pProperties.stacksTo(1));
     }
 
@@ -54,18 +54,18 @@ public class DroneController extends StockCheckingItem {
             List<BigItemStack> bigItemStacks = summary.getStacks();
 
             if(!isTuned(stack)) {
-                pPlayer.displayClientMessage(Component.translatable("item.create_mobile_packages.drone_controller.not_linked"), true);
+                pPlayer.displayClientMessage(Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
             MenuProvider provider = new SimpleMenuProvider(
-                    (id, inv, p) -> new DroneControllerMenu(id, inv, this),
-                    Component.translatable("item.create_mobile_packages.drone_controller")
+                    (id, inv, p) -> new PortableStockTickerMenu(id, inv, this),
+                    Component.translatable("item.create_mobile_packages.portable_stock_ticker")
             );
             NetworkHooks.openScreen((ServerPlayer) pPlayer, provider);
             if (pPlayer instanceof ServerPlayer serverPlayer) {
                 NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
-                        (id, inv, ply) -> new DroneControllerMenu(id, inv, this),
-                        Component.translatable("item.create_mobile_packages.drone_controller")
+                        (id, inv, ply) -> new PortableStockTickerMenu(id, inv, this),
+                        Component.translatable("item.create_mobile_packages.portable_stock_ticker")
                 ), buf -> {});
             }
         }
@@ -77,12 +77,12 @@ public class DroneController extends StockCheckingItem {
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
         if (Screen.hasShiftDown()) {
             pTooltip.add(Component.literal(""));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.summary").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.summary").withStyle(ChatFormatting.YELLOW));
             pTooltip.add(Component.literal(""));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.condition1").withStyle(ChatFormatting.GRAY));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.behaviour1").withStyle(ChatFormatting.YELLOW));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.condition2").withStyle(ChatFormatting.GRAY));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.drone_controller.tooltip.behaviour2").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.condition1").withStyle(ChatFormatting.GRAY));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1").withStyle(ChatFormatting.YELLOW));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.condition2").withStyle(ChatFormatting.GRAY));
+            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2").withStyle(ChatFormatting.YELLOW));
         } else {
             pTooltip.add(Component.translatable("create.tooltip.holdForDescription", Component.translatable("create.tooltip.keyShift").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
         }

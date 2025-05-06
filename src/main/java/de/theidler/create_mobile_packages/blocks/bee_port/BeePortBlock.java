@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks.drone_port;
+package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
@@ -27,10 +27,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class DronePortBlock extends Block implements IBE<DronePortBlockEntity>, IWrenchable {
+public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWrenchable {
     public static final BooleanProperty IS_OPEN_TEXTURE = BooleanProperty.create("open");
 
-    public DronePortBlock(Properties properties) {
+    public BeePortBlock(Properties properties) {
         super(properties);
     }
 
@@ -51,13 +51,13 @@ public class DronePortBlock extends Block implements IBE<DronePortBlockEntity>, 
     }
 
     @Override
-    public Class<DronePortBlockEntity> getBlockEntityClass() {
-        return DronePortBlockEntity.class;
+    public Class<BeePortBlockEntity> getBlockEntityClass() {
+        return BeePortBlockEntity.class;
     }
 
     @Override
-    public BlockEntityType<? extends DronePortBlockEntity> getBlockEntityType() {
-        return CMPBlockEntities.DRONE_PORT.get();
+    public BlockEntityType<? extends BeePortBlockEntity> getBlockEntityType() {
+        return CMPBlockEntities.BEE_PORT.get();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class DronePortBlock extends Block implements IBE<DronePortBlockEntity>, 
     public List<ItemStack> getDrops(BlockState pState, LootParams.Builder pParams) {
         List<ItemStack> drops = super.getDrops(pState, pParams);
         if (drops.isEmpty()) {
-            drops.add(new ItemStack(CMPBlocks.DRONE_PORT.asItem(), 1));
+            drops.add(new ItemStack(CMPBlocks.BEE_PORT.asItem(), 1));
         }
         return drops;
     }

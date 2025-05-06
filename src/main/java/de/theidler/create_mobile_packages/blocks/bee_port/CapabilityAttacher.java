@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks.drone_port;
+package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import net.minecraft.core.Direction;
@@ -19,13 +19,13 @@ public class CapabilityAttacher {
     public static void onAttachCapabilitiesLevel(AttachCapabilitiesEvent<Level> event) {
         // Only attach on the server side
         if (!event.getObject().isClientSide()) {
-            DronePortEntityTracker tracker = new DronePortEntityTracker();
+            BeePortEntityTracker tracker = new BeePortEntityTracker();
             event.addCapability(TRACKER_ID, new ICapabilityProvider() {
-                private final LazyOptional<IDronePortEntityTracker> opt = LazyOptional.of(() -> tracker);
+                private final LazyOptional<IBeePortEntityTracker> opt = LazyOptional.of(() -> tracker);
 
                 @Override
                 public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-                    return cap == ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP ? opt.cast() : LazyOptional.empty();
+                    return cap == ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP ? opt.cast() : LazyOptional.empty();
                 }
             });
         }

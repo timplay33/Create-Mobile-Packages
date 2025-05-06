@@ -2,8 +2,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"0": "create_mobile_packages:block/drone_port",
-		"particle": "create_mobile_packages:block/drone_port"
+		"0": "create_mobile_packages:block/bee_port",
+		"particle": "create_mobile_packages:block/bee_port"
 	},
 	"elements": [
 		{

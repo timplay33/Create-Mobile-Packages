@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks.drone_port;
+package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -9,11 +9,11 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModCapabilities {
-    public static final Capability<IDronePortEntityTracker> DRONE_PORT_ENTITY_TRACKER_CAP = CapabilityManager.get(new CapabilityToken<IDronePortEntityTracker>(){});
+    public static final Capability<IBeePortEntityTracker> BEE_PORT_ENTITY_TRACKER_CAP = CapabilityManager.get(new CapabilityToken<IBeePortEntityTracker>(){});
 
     @SubscribeEvent
     public static void onRegisterCaps(RegisterCapabilitiesEvent event) {
-        event.register(IDronePortEntityTracker.class);
+        event.register(IBeePortEntityTracker.class);
     }
 }
 

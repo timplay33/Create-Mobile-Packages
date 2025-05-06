@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks.drone_port;
+package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import com.simibubi.create.content.logistics.packagePort.PackagePortMenu;
 import com.simibubi.create.content.logistics.packagePort.PackagePortScreen;

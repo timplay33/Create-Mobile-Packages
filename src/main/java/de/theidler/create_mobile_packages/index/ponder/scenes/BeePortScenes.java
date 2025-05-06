@@ -11,10 +11,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 
-public class DronePortScenes {
-    public static void dronePortScene(SceneBuilder builder, SceneBuildingUtil util) {
+public class BeePortScenes {
+    public static void beePortScene(SceneBuilder builder, SceneBuildingUtil util) {
         CreateSceneBuilder scene = new CreateSceneBuilder(builder);
-        scene.title("drone_port", "Drone Port");
+        scene.title("bee_port", "Bee Port");
         scene.configureBasePlate(0, 0, 7);
         scene.showBasePlate();
 
@@ -30,7 +30,7 @@ public class DronePortScenes {
 
         scene.overlay()
                 .showText(90)
-                .text("The Drone Port can send a Package to a Player")
+                .text("The Bee Port can send a Package to a Player")
                 .attachKeyFrame()
                 .placeNearTarget()
                 .pointAt(util.vector()

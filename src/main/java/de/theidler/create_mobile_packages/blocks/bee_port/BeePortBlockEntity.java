@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks.drone_port;
+package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
@@ -6,6 +6,7 @@ import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockE
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
+import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
@@ -28,17 +30,17 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.List;
 
-import static de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlock.IS_OPEN_TEXTURE;
+import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
 /**
  * Represents a Drone Port block entity that handles the processing and sending of Create Mod packages
  * to players or other drone ports using drones.
  */
-public class DronePortBlockEntity extends PackagePortBlockEntity {
+public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
-    private boolean isEntityOnTravel = false;
+    private RoboEntity entityOnTravel = null;
     private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1) {
         @Override
         public int getSlotLimit(int slot) {
@@ -48,13 +50,13 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     };
 
     /**
-     * Constructor for the DronePortBlockEntity.
+     * Constructor for the BeePortBlockEntity.
      *
      * @param pType       The type of the block entity.
      * @param pPos        The position of the block in the world.
      * @param pBlockState The state of the block.
      */
-    public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
+    public BeePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
         itemHandler = LazyOptional.of(() -> inventory);
     }
@@ -119,11 +121,11 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
     }
 
     private void tryPullingFromAdjacentInventories() {
-        if (isFull(isEntityOnTravel ? 1 : 0)) return;
+        if (isFull(entityOnTravel != null ? 1 : 0)) return;
 
         getAdjacentInventories().forEach(( inventory) -> {
             if (inventory == null) return;
-            if (isFull(isEntityOnTravel ? 1 : 0)) return;
+            if (isFull(entityOnTravel != null  ? 1 : 0)) return;
             for (int i = 0; i < inventory.getSlots(); i++) {
                 ItemStack itemStack = inventory.getStackInSlot(i);
                 if (!itemStack.isEmpty() && PackageItem.isPackage(itemStack)) {
@@ -188,7 +190,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to another drone port.
         if (PackageItem.matchAddress(address, addressFilter)) {return;}
-        if (RoboEntity.getClosestDronePort(level, address, this.getBlockPos()) != null) {
+        if (RoboEntity.getClosestBeePort(level, address, this.getBlockPos(), null) != null) {
             sendDrone(itemStack, slot);
         }
     }
@@ -225,7 +227,7 @@ public class DronePortBlockEntity extends PackagePortBlockEntity {
      * @param entity The drone port entity.
      * @param open   Whether the port is open.
      */
-    public static void setOpen(DronePortBlockEntity entity, boolean open) {
+    public static void setOpen(BeePortBlockEntity entity, boolean open) {
         if (entity == null || entity.level == null) return;
 
         entity.level.setBlockAndUpdate(entity.getBlockPos(), entity.getBlockState().setValue(IS_OPEN_TEXTURE, open));
@@ -299,7 +301,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     public void onLoad() {
         super.onLoad();
         if (!level.isClientSide){
-            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
+            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
         }
     }
 
@@ -309,9 +311,12 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     @Override
     public void remove() {
         if (!level.isClientSide) {
-            level.getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
+            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
+            if (entityOnTravel != null) {
+                entityOnTravel.setTargetVelocity(Vec3.ZERO);
+                entityOnTravel.setState(new AdjustRotationToTarget());
+            }
         }
-        level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
         super.remove();
     }
 
@@ -345,13 +350,14 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      *
      * @return True if the drone port can accept a package, false otherwise.
      */
-    public boolean canAcceptEntity() {
-        if (isEntityOnTravel) return false;
+    public boolean canAcceptEntity(RoboEntity entity) {
+        if (entity == null) return !isFull();
+        if (entityOnTravel != null && entityOnTravel != entity) return false;
         return !isFull();
     }
 
-    public void setEntityOnTravel(boolean state) {
-        isEntityOnTravel = state;
+    public void setEntityOnTravel(RoboEntity entity) {
+        entityOnTravel = entity;
     }
 
     public ItemStackHandler getRoboBeeInventory() {
