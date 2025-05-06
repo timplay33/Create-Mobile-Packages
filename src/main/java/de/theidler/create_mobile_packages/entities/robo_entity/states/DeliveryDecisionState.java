@@ -7,8 +7,7 @@ public class DeliveryDecisionState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
         if (re.getItemStack().isEmpty()) {
-            re.setTargetBlockEntity(RoboEntity.getClosestBeePort(re.level(), re.blockPosition()));
-            re.setTargetPlayer(null);
+            re.setTargetAddress("");
             re.setState(new AdjustRotationToTarget());
             return;
         }
