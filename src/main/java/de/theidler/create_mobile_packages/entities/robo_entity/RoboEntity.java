@@ -394,10 +394,6 @@ public void updatePackageEntity() {
         packageEntity.remove(Entity.RemovalReason.DISCARDED);
     }
 
-    public void setPackageEntity(PackageEntity packageEntity) {
-        this.packageEntity = packageEntity;
-    }
-
     public void packageDelivered() {
         this.packageEntity = null;
         this.itemStack = ItemStack.EMPTY;
