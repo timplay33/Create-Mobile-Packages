@@ -63,7 +63,7 @@ public class RoboEntity extends Mob {
         createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
-        if (targetBlockEntity != null) {targetBlockEntity.setEntityOnTravel(this);}
+        if (targetBlockEntity != null) {targetBlockEntity.trySetEntityOnTravel(this);}
         if (level().getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
             startBeePortBlockEntity = dpbe;
         }
@@ -135,7 +135,18 @@ public class RoboEntity extends Mob {
         if (level().isClientSide) { return; }
         targetPlayer = getTargetPlayerFromAddress();
         if (targetPlayer != null) { return; }
-        targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this)) {
+            BeePortBlockEntity oldTarget = targetBlockEntity;
+            targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+            if (oldTarget != targetBlockEntity) {
+                if (oldTarget != null) {
+                    oldTarget.trySetEntityOnTravel(null);
+                }
+                if (targetBlockEntity != null) {
+                    targetBlockEntity.trySetEntityOnTravel(this);
+                }
+            }
+        }
     }
 
     /**
@@ -288,7 +299,7 @@ public void updatePackageEntity() {
     public void remove(RemovalReason pReason) {
 
         if (getTargetBlockEntity() != null) {
-            getTargetBlockEntity().setEntityOnTravel(null);
+            getTargetBlockEntity().trySetEntityOnTravel(null);
         }
 
         if (pReason == RemovalReason.KILLED && packageEntity != null) {

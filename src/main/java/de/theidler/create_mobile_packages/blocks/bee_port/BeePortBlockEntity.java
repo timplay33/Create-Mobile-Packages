@@ -14,7 +14,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -41,13 +40,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
     private RoboEntity entityOnTravel = null;
-    private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1) {
-        @Override
-        public int getSlotLimit(int slot) {
-            // TODO: Fix Limit & dont allow bees to fly to it if full
-            return Integer.MAX_VALUE;
-        }
-    };
+    private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
 
     /**
      * Constructor for the BeePortBlockEntity.
@@ -121,11 +114,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     private void tryPullingFromAdjacentInventories() {
-        if (isFull(entityOnTravel != null ? 1 : 0)) return;
+        if (hasFullInventory(entityOnTravel != null ? 1 : 0)) return;
 
         getAdjacentInventories().forEach(( inventory) -> {
             if (inventory == null) return;
-            if (isFull(entityOnTravel != null  ? 1 : 0)) return;
+            if (hasFullInventory(entityOnTravel != null  ? 1 : 0)) return;
             for (int i = 0; i < inventory.getSlots(); i++) {
                 ItemStack itemStack = inventory.getStackInSlot(i);
                 if (!itemStack.isEmpty() && PackageItem.isPackage(itemStack)) {
@@ -190,7 +183,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to another drone port.
         if (PackageItem.matchAddress(address, addressFilter)) {return;}
-        if (RoboEntity.getClosestBeePort(level, address, this.getBlockPos(), null) != null) {
+        BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, this.getBlockPos(), null);
+        if (beePortBlockEntity != null && !beePortBlockEntity.isFull()) {
             sendDrone(itemStack, slot);
         }
     }
@@ -326,7 +320,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      * @param slotsToLeaveEmpty The number of slots that should remain empty.
      * @return True if the number of empty slots is less than or equal to the specified slots to leave empty, false otherwise.
      */
-    public boolean isFull(int slotsToLeaveEmpty) {
+    public boolean hasFullInventory(int slotsToLeaveEmpty) {
         int emptySlots = 0;
         for (int i = 0; i < inventory.getSlots(); i++) {
             if (inventory.getStackInSlot(i).isEmpty()) {
@@ -336,6 +330,10 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
         return emptySlots <= slotsToLeaveEmpty;
     }
 
+    public boolean hasFullRoboSlot(int leaveEmpty) {
+        return roboBeeInventory.getStackInSlot(0).getCount() >= roboBeeInventory.getSlotLimit(0) - leaveEmpty;
+    }
+
     /**
      * Checks if the drone port is full.
      *
@@ -343,6 +341,10 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      */
     public boolean isFull() {
         return isFull(0);
+    }
+
+    public boolean isFull(int slotsToLeaveEmpty) {
+        return hasFullInventory(slotsToLeaveEmpty) || hasFullRoboSlot(1);
     }
 
     /**
@@ -356,8 +358,12 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
         return !isFull();
     }
 
-    public void setEntityOnTravel(RoboEntity entity) {
-        entityOnTravel = entity;
+    public synchronized boolean trySetEntityOnTravel(RoboEntity entity) {
+        if (entityOnTravel == null || entity == null) {
+            entityOnTravel = entity;
+            return true;
+        }
+        return false;
     }
 
     public ItemStackHandler getRoboBeeInventory() {
