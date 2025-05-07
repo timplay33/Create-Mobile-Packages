@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "FCF",
+    "HVH",
+    "   "
+  ],
+  "key": {
+    "F": {
+      "item": "create:propeller"
+    },
+    "C": {
+      "item": "create:andesite_alloy"
+    },
+    "H": {
+      "item": "minecraft:honeycomb"
+    },
+    "V": {
+      "item": "create:item_vault"
+    }
+  },
+  "result": {
+    "item": "create_mobile_packages:robo_bee",
+    "count": 1
+  }
+}
