@@ -14,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -170,6 +171,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @param slot      The inventory slot of the item.
      */
     private void sendItem(ItemStack itemStack, int slot) {
+        if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) { return; }
         if (level == null || !PackageItem.isPackage(itemStack)) return;
         String address = PackageItem.getAddress(itemStack);
 
@@ -212,6 +214,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         sendItemThisTime = 2;
         RoboBeeEntity drone = new RoboBeeEntity(level, itemStack, this.getBlockPos());
         level.addFreshEntity(drone);
+        roboBeeInventory.getStackInSlot(0).shrink(1);
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
 
@@ -309,6 +312,9 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
             if (entityOnTravel != null) {
                 entityOnTravel.setTargetVelocity(Vec3.ZERO);
                 entityOnTravel.setState(new AdjustRotationToTarget());
+            }
+            if (roboBeeInventory.getStackInSlot(0).getCount() > 0) {
+                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
             }
         }
         super.remove();
