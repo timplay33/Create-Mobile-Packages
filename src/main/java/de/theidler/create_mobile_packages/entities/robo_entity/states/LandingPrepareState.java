@@ -15,7 +15,7 @@ public class LandingPrepareState implements RoboEntityState {
                 init = false;
             }
             if (re.rotateToSnap() == 0) {
-                re.setState(new LandingDecendStartState());
+                re.setState(new LandingDescendStartState());
             }
         }
     }

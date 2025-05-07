@@ -13,8 +13,8 @@ import net.minecraft.world.level.Level;
 
 public class RoboBeeEntity extends RoboEntity {
 
-    public RoboBeeEntity(Level level, ItemStack itemStack, BlockPos tagetPos, BlockPos spawnPos) {
-        super(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, tagetPos, spawnPos);
+    public RoboBeeEntity(Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
+        super(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, targetPos, spawnPos);
         this.setNoGravity(true);
         this.noPhysics = true;
         this.setNoAi(true);

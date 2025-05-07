@@ -4,7 +4,7 @@ import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import net.minecraft.world.phys.Vec3;
 
-public class LandingDecendStartState implements RoboEntityState {
+public class LandingDescendStartState implements RoboEntityState {
     private int wait = 0;
 
     @Override
@@ -25,7 +25,7 @@ public class LandingDecendStartState implements RoboEntityState {
             if (wait++ < 10) {
                 return;
             }
-            re.setState(new LandingDecendFinishState());
+            re.setState(new LandingDescendFinishState());
         }
 
         if (distanceToTarget < 1.0) {

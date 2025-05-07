@@ -5,7 +5,7 @@ import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import net.minecraft.world.item.ItemStack;
 
-public class LandingDecendFinishState implements RoboEntityState {
+public class LandingDescendFinishState implements RoboEntityState {
     boolean init = true;
 
     @Override

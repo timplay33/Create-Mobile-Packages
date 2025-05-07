@@ -6,7 +6,7 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.ModCapabilities;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
-import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDecendFinishState;
+import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDescendFinishState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
@@ -78,7 +78,7 @@ public class RoboEntity extends Mob {
         }
         // don't fly out of the port if target is origin
         if (targetBlockEntity != null && targetBlockEntity.equals(startBeePortBlockEntity)) {
-            setState(new LandingDecendFinishState());
+            setState(new LandingDescendFinishState());
             return;
         }
         if (startBeePortBlockEntity == null) {
