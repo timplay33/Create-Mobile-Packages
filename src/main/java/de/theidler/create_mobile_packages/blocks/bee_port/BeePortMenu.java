@@ -13,7 +13,6 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.items.SlotItemHandler;
 
 public class BeePortMenu extends PackagePortMenu {
 
@@ -43,7 +42,7 @@ public class BeePortMenu extends PackagePortMenu {
     protected void addSlots() {
         super.addSlots();
         if (contentHolder instanceof BeePortBlockEntity beePortBlockEntity) {
-            addSlot(new SlotItemHandler(beePortBlockEntity.getRoboBeeInventory(), 0, 12, 60));
+            addSlot(new BeePortBeeStackHandler(beePortBlockEntity.getRoboBeeInventory(), 0, 12, 60));
         }
 
     }
