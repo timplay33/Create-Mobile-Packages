@@ -43,7 +43,7 @@ public class BeePortMenu extends PackagePortMenu {
     protected void addSlots() {
         super.addSlots();
         if (contentHolder instanceof BeePortBlockEntity beePortBlockEntity) {
-            addSlot(new SlotItemHandler(beePortBlockEntity.getRoboBeeInventory(), 0, 10, 58));
+            addSlot(new SlotItemHandler(beePortBlockEntity.getRoboBeeInventory(), 0, 12, 60));
         }
 
     }
