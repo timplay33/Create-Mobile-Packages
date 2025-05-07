@@ -7,14 +7,19 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
-import de.theidler.create_mobile_packages.index.CMPEntities;
+import de.theidler.create_mobile_packages.index.CMPItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,7 +27,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
@@ -36,6 +44,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
     private RoboEntity entityOnTravel = null;
+    private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
 
     /**
      * Constructor for the BeePortBlockEntity.
@@ -47,6 +56,20 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public BeePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
         itemHandler = LazyOptional.of(() -> inventory);
+    }
+
+    @Override
+    protected void write(CompoundTag tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        tag.put("RoboBeeInventory", roboBeeInventory.serializeNBT());
+    }
+
+    @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        if (tag.contains("RoboBeeInventory")) {
+            roboBeeInventory.deserializeNBT(tag.getCompound("RoboBeeInventory"));
+        }
     }
 
     /**
@@ -95,11 +118,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     private void tryPullingFromAdjacentInventories() {
-        if (isFull(entityOnTravel != null ? 1 : 0)) return;
+        if (hasFullInventory(entityOnTravel != null ? 1 : 0)) return;
 
         getAdjacentInventories().forEach(( inventory) -> {
             if (inventory == null) return;
-            if (isFull(entityOnTravel != null  ? 1 : 0)) return;
+            if (hasFullInventory(entityOnTravel != null  ? 1 : 0)) return;
             for (int i = 0; i < inventory.getSlots(); i++) {
                 ItemStack itemStack = inventory.getStackInSlot(i);
                 if (!itemStack.isEmpty() && PackageItem.isPackage(itemStack)) {
@@ -164,9 +187,24 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to another drone port.
         if (PackageItem.matchAddress(address, addressFilter)) {return;}
-        if (RoboEntity.getClosestBeePort(level, address, this.getBlockPos(), null) != null) {
+        BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, this.getBlockPos(), null);
+        if (beePortBlockEntity != null && !beePortBlockEntity.isFull()) {
             sendDrone(itemStack, slot);
         }
+    }
+
+    private static void requestRoboEntity(Level level, BlockPos blockPos) {
+        level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
+            List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            allBEs.removeIf(be -> be.getBlockPos().equals(blockPos));
+            allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
+            BeePortBlockEntity target = allBEs.stream()
+                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(blockPos)))
+                    .orElse(null);
+            if (target != null) {
+                target.sendDrone(blockPos);
+            }
+        });
     }
 
     /**
@@ -177,6 +215,13 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @param slot      The inventory slot of the item.
      */
     private void sendToPlayer(Player player, ItemStack itemStack, int slot) {
+        if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
+            if (this.entityOnTravel == null) {
+                requestRoboEntity(level, this.getBlockPos());
+                return;
+            }
+            return;
+        }
         sendItemThisTime = 2;
         CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
         sendDrone(itemStack, slot);
@@ -189,10 +234,27 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @param slot      The inventory slot of the item.
      */
     private void sendDrone(ItemStack itemStack, int slot) {
+        if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
+            if (this.entityOnTravel == null) {
+                requestRoboEntity(level, this.getBlockPos());
+                return;
+            }
+            return;
+        }
         sendItemThisTime = 2;
-        RoboBeeEntity drone = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, this.getBlockPos());
+        RoboBeeEntity drone = new RoboBeeEntity(level, itemStack, null, this.getBlockPos());
         level.addFreshEntity(drone);
+        roboBeeInventory.getStackInSlot(0).shrink(1);
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
+    }
+    private void sendDrone(BlockPos tagetPos) {
+        if (this.roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
+            return;
+        }
+        sendItemThisTime = 2;
+        RoboBeeEntity drone = new RoboBeeEntity(level, ItemStack.EMPTY, tagetPos, this.getBlockPos());
+        level.addFreshEntity(drone);
+        roboBeeInventory.getStackInSlot(0).shrink(1);
     }
 
     /**
@@ -290,6 +352,9 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
                 entityOnTravel.setTargetVelocity(Vec3.ZERO);
                 entityOnTravel.setState(new AdjustRotationToTarget());
             }
+            if (roboBeeInventory.getStackInSlot(0).getCount() > 0) {
+                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
+            }
         }
         super.remove();
     }
@@ -300,7 +365,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      * @param slotsToLeaveEmpty The number of slots that should remain empty.
      * @return True if the number of empty slots is less than or equal to the specified slots to leave empty, false otherwise.
      */
-    public boolean isFull(int slotsToLeaveEmpty) {
+    public boolean hasFullInventory(int slotsToLeaveEmpty) {
         int emptySlots = 0;
         for (int i = 0; i < inventory.getSlots(); i++) {
             if (inventory.getStackInSlot(i).isEmpty()) {
@@ -310,6 +375,10 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
         return emptySlots <= slotsToLeaveEmpty;
     }
 
+    public boolean hasFullRoboSlot(int leaveEmpty) {
+        return roboBeeInventory.getStackInSlot(0).getCount() >= roboBeeInventory.getSlotLimit(0) - leaveEmpty;
+    }
+
     /**
      * Checks if the drone port is full.
      *
@@ -317,6 +386,10 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      */
     public boolean isFull() {
         return isFull(0);
+    }
+
+    public boolean isFull(int slotsToLeaveEmpty) {
+        return hasFullInventory(slotsToLeaveEmpty) || hasFullRoboSlot(1);
     }
 
     /**
@@ -330,7 +403,24 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
         return !isFull();
     }
 
-    public void setEntityOnTravel(RoboEntity entity) {
-        entityOnTravel = entity;
+    public synchronized boolean trySetEntityOnTravel(RoboEntity entity) {
+        if (entityOnTravel == null || entity == null) {
+            entityOnTravel = entity;
+            return true;
+        }
+        return false;
+    }
+
+    public ItemStackHandler getRoboBeeInventory() {
+        return roboBeeInventory;
+    }
+
+    public void addBeeToRoboBeeInventory(int amount) {
+        roboBeeInventory.insertItem(0, new ItemStack(CMPItems.ROBO_BEE.get(), amount), false);
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
+        return BeePortMenu.create(pContainerId, pPlayerInventory, this);
     }
 }

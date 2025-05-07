@@ -6,7 +6,7 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.ModCapabilities;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
-import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDecendFinishState;
+import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDescendFinishState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
@@ -57,13 +57,19 @@ public class RoboEntity extends Mob {
      * @param itemStack The ItemStack (package) used to determine the target.
      * @param spawnPos  The spawn position of the entity.
      */
-    public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos spawnPos) {
+    public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
         super(type, level);
+        if (targetPos != null) {
+            this.targetBlockEntity = level.getBlockEntity(targetPos) instanceof BeePortBlockEntity dpbe ? dpbe : null;
+            if (this.targetBlockEntity != null) {
+                setState(new LaunchPrepareState());
+            }
+        }
         setItemStack(itemStack);
         createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
-        if (targetBlockEntity != null) {targetBlockEntity.setEntityOnTravel(this);}
+        if (targetBlockEntity != null) {targetBlockEntity.trySetEntityOnTravel(this);}
         if (level().getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
             startBeePortBlockEntity = dpbe;
         }
@@ -72,7 +78,7 @@ public class RoboEntity extends Mob {
         }
         // don't fly out of the port if target is origin
         if (targetBlockEntity != null && targetBlockEntity.equals(startBeePortBlockEntity)) {
-            setState(new LandingDecendFinishState());
+            setState(new LandingDescendFinishState());
             return;
         }
         if (startBeePortBlockEntity == null) {
@@ -135,7 +141,18 @@ public class RoboEntity extends Mob {
         if (level().isClientSide) { return; }
         targetPlayer = getTargetPlayerFromAddress();
         if (targetPlayer != null) { return; }
-        targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this)) {
+            BeePortBlockEntity oldTarget = targetBlockEntity;
+            targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+            if (oldTarget != targetBlockEntity) {
+                if (oldTarget != null) {
+                    oldTarget.trySetEntityOnTravel(null);
+                }
+                if (targetBlockEntity != null) {
+                    targetBlockEntity.trySetEntityOnTravel(this);
+                }
+            }
+        }
     }
 
     /**
@@ -288,7 +305,7 @@ public void updatePackageEntity() {
     public void remove(RemovalReason pReason) {
 
         if (getTargetBlockEntity() != null) {
-            getTargetBlockEntity().setEntityOnTravel(null);
+            getTargetBlockEntity().trySetEntityOnTravel(null);
         }
 
         if (pReason == RemovalReason.KILLED && packageEntity != null) {

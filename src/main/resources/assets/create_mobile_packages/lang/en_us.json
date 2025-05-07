@@ -13,6 +13,9 @@
   "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "When used",
   "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "Portable Stock Ticker will open a mobile Stock Keeper menu",
 
+  "item.create_mobile_packages.robo_bee": "Robo Bee",
+  "entity.create_mobile_packages.robo_bee": "Robo Bee",
+
   "create_mobile_packages.bee_port.send_items": "Sent Items to Player",
 
   "create_mobile_packages.ponder.bee_port.header": "Bee Port",
