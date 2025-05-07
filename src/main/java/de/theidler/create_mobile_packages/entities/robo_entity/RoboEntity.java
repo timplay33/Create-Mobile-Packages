@@ -57,8 +57,14 @@ public class RoboEntity extends Mob {
      * @param itemStack The ItemStack (package) used to determine the target.
      * @param spawnPos  The spawn position of the entity.
      */
-    public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos spawnPos) {
+    public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
         super(type, level);
+        if (targetPos != null) {
+            this.targetBlockEntity = level.getBlockEntity(targetPos) instanceof BeePortBlockEntity dpbe ? dpbe : null;
+            if (this.targetBlockEntity != null) {
+                setState(new LaunchPrepareState());
+            }
+        }
         setItemStack(itemStack);
         createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);

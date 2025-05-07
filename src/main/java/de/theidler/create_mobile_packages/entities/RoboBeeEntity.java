@@ -13,8 +13,8 @@ import net.minecraft.world.level.Level;
 
 public class RoboBeeEntity extends RoboEntity {
 
-    public RoboBeeEntity(Level level, ItemStack itemStack, BlockPos spawnPos) {
-        super(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, spawnPos);
+    public RoboBeeEntity(Level level, ItemStack itemStack, BlockPos tagetPos, BlockPos spawnPos) {
+        super(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, tagetPos, spawnPos);
         this.setNoGravity(true);
         this.noPhysics = true;
         this.setNoAi(true);
@@ -22,7 +22,7 @@ public class RoboBeeEntity extends RoboEntity {
     }
 
     public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
-        return new RoboBeeEntity(level, ItemStack.EMPTY, new BlockPos(0, 0, 0));
+        return new RoboBeeEntity(level, ItemStack.EMPTY, null, new BlockPos(0, 0, 0));
     }
 
     // No AI goals; movement is entirely controlled via tick().

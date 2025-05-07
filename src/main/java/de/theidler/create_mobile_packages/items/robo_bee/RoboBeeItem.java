@@ -21,7 +21,7 @@ public class RoboBeeItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
         ItemStack itemStack = pPlayer.getItemInHand(pUsedHand);
         if (itemStack.getItem() instanceof RoboBeeItem) {
-            pLevel.addFreshEntity(new RoboBeeEntity(pLevel, ItemStack.EMPTY, getTargetPos(pPlayer)));
+            pLevel.addFreshEntity(new RoboBeeEntity(pLevel, ItemStack.EMPTY, null, getTargetPos(pPlayer)));
             itemStack.setCount(itemStack.getCount() - 1);
         }
         return super.use(pLevel, pPlayer, pUsedHand);
