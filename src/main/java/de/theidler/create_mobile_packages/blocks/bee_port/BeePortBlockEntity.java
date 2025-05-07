@@ -174,13 +174,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @param slot      The inventory slot of the item.
      */
     private void sendItem(ItemStack itemStack, int slot) {
-        if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
-            if (this.entityOnTravel == null) {
-                requestRoboEntity(level, this.getBlockPos());
-                return;
-            }
-            return;
-        }
         if (level == null || !PackageItem.isPackage(itemStack)) return;
         String address = PackageItem.getAddress(itemStack);
 
@@ -222,6 +215,13 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @param slot      The inventory slot of the item.
      */
     private void sendToPlayer(Player player, ItemStack itemStack, int slot) {
+        if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
+            if (this.entityOnTravel == null) {
+                requestRoboEntity(level, this.getBlockPos());
+                return;
+            }
+            return;
+        }
         sendItemThisTime = 2;
         CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
         sendDrone(itemStack, slot);
@@ -234,6 +234,13 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @param slot      The inventory slot of the item.
      */
     private void sendDrone(ItemStack itemStack, int slot) {
+        if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
+            if (this.entityOnTravel == null) {
+                requestRoboEntity(level, this.getBlockPos());
+                return;
+            }
+            return;
+        }
         sendItemThisTime = 2;
         RoboBeeEntity drone = new RoboBeeEntity(level, itemStack, null, this.getBlockPos());
         level.addFreshEntity(drone);
