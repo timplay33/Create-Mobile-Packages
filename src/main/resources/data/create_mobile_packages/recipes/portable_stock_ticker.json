@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "create:transmitter"
+    },
+    {
+      "item": "create:stock_link"
+    },
+    {
+      "item": "create:stock_ticker"
+    },
+    {
+      "item": "create:brass_casing"
+    }
+  ],
+  "result": {
+    "item": "create_mobile_packages:portable_stock_ticker"
+  }
+}

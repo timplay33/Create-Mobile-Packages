@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "open=false": { "model": "create_mobile_packages:block/bee_port" },
+    "open=true": { "model": "create_mobile_packages:block/bee_port_open" }
+  }
+}

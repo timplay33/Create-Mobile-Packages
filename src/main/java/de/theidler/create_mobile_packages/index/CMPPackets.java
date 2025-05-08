@@ -2,9 +2,9 @@ package de.theidler.create_mobile_packages.index;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.items.drone_controller.BigItemStackListPacket;
-import de.theidler.create_mobile_packages.items.drone_controller.RequestStockUpdate;
-import de.theidler.create_mobile_packages.items.drone_controller.SendPackage;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.BigItemStackListPacket;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
 import de.theidler.create_mobile_packages.items.mobile_packager.ConfirmAddressPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

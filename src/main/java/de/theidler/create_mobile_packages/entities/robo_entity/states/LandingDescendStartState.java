@@ -1,28 +1,35 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
-import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import net.minecraft.world.phys.Vec3;
 
-public class LaunchAscendState implements RoboEntityState {
+public class LandingDescendStartState implements RoboEntityState {
+    private int wait = 0;
+
     @Override
     public void tick(RoboEntity re) {
-        BeePortBlockEntity bpbe = re.getStartBeePortBlockEntity();
-        if (bpbe == null) {
-            re.setState(new LaunchFinishState());
+        if (re.getTargetBlockEntity() != null && re.getTargetBlockEntity().isFull()) {
             return;
         }
-
-        Vec3 target = bpbe.getBlockPos().getCenter().add(0, 2, 0);
+        if (re.getTargetBlockEntity() == null) {
+            return;
+        }
+        Vec3 target = re.getTargetBlockEntity().getBlockPos().getCenter().subtract(0, 0.5, 0);
         Vec3 direction = target.subtract(re.position()).normalize();
         re.setTargetVelocity(direction.scale(1 / 20.0)); // fixed speed of 1 block per second
 
         double distanceToTarget = re.position().distanceToSqr(target);
+
         if (distanceToTarget < 0.2) {
-            re.setState(new LaunchFinishState());
-        } else if (distanceToTarget < 1.8) {
-            re.doPackageEntity = true;
+            if (wait++ < 10) {
+                return;
+            }
+            re.setState(new LandingDescendFinishState());
+        }
+
+        if (distanceToTarget < 1.0) {
+            re.doPackageEntity = false;
         }
     }
 }

@@ -3,18 +3,18 @@ loaderVersion = "${loader_version_range}"
 license="${mod_license}"
 
 [[mods]]
-modId = "${mod_id}"
-version = "${mod_version}"
-displayName = "${mod_name}"
-authors = "${mod_authors}"
-logoFile = "${mod_logo}"
-displayURL = "${mod_display_url}"
+    modId = "${mod_id}"
+    version = "${mod_version}"
+    displayName = "${mod_name}"
+    authors = "${mod_authors}"
+    logoFile = "${mod_logo}"
+    displayURL = "${mod_display_url}"
+    description='''${mod_description}'''
 
-description='''${mod_description}'''
 [[dependencies.${ mod_id }]]
-modId = "forge"
-mandatory = true
-versionRange = "${forge_version_range}"
+    modId = "forge"
+    mandatory = true
+    versionRange = "${forge_version_range}"
     ordering="NONE"
     side="BOTH"
 [[dependencies.${mod_id}]]
@@ -27,6 +27,12 @@ versionRange = "${forge_version_range}"
 [[dependencies.${mod_id}]]
     modId="create"
     mandatory=true
-versionRange = "[6.0.4,6.1.0)"
+    versionRange = "[6.0.4,6.1.0)"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId = "jei"
+    mandatory = false
+    versionRange = "[15.19.0,)"
+    ordering = "NONE"

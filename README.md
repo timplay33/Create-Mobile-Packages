@@ -16,18 +16,20 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 - Curseforge: https://www.curseforge.com/minecraft/mc-mods/create-mobile-packages
 
 ## Items
-### Drone Port
-The Drone Port is a specialized block that automates the delivery of Create mod Packages to players or other Drone Ports. It now features a menu with an inventory, where packages can be inserted manually or automatically using devices like Funnels, Chutes, or Hoppers. The station reads the address label on each package and dispatches it accordingly — either delivering the package to a player whose name matches the address or forwarding it to another Drone Port.
+### Bee Port
+The Bee Port is a specialized block that automates the delivery of Create mod Packages to players or other Bee Ports. It features a menu with an inventory, where packages can be inserted manually or automatically using devices like Funnels, Chutes, or Hoppers. The station reads the address label on each package and dispatches it accordingly — either delivering the package to a player whose name matches the address or forwarding it to another Bee Port.
 
-![drone Port](https://github.com/user-attachments/assets/3b15287e-44fc-4ebc-9e59-a38fc2a5da49)
+As of version 0.5.0, the Port can now pull packages from adjacent inventories. It can also push packages to adjacent inventories if their address matches the port's addresses and it is powered by a redstone signal.
 
-#### RoboBee
-The RoboBee is an entity spawned by the Drone Port to carry packages to their destination. It follows the address on the package, delivering directly to players or between Drone Ports as needed.
+![bee Port](https://github.com/user-attachments/assets/3b15287e-44fc-4ebc-9e59-a38fc2a5da49)
+
+#### Robo Bee
+The Robo Bee is an entity spawned by the Bee Port to carry packages to their destination. It follows the address on the package, delivering directly to players or between Bee Ports as needed.
 
 ![robo_bee](https://github.com/user-attachments/assets/9b78670f-a2f8-4343-bd58-5936103a9596)
 
-### Drone Controller
-The Drone Controller is a handheld device that integrates with a Create mod network, allowing players to request packages remotely. Once linked to a Stock Ticker, it provides a Stockkeeper interface, enabling players to request items on the go without needing direct access to a Stockkeeper.
+### Portable Stock Ticker
+The Portable Stock Ticker is a handheld device that integrates with a Create mod network, allowing players to request packages remotely. Once linked to a Stock Ticker, it provides a Stockkeeper interface, enabling players to request items on the go without needing direct access to a Stockkeeper.
 
 ![Controller](https://github.com/user-attachments/assets/d8a85e58-3ffa-4c2a-8b74-48f6c2b76642)
 

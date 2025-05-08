@@ -1,26 +1,29 @@
 {
   "itemGroup.create_mobile_packages": "Create: Mobile Packages",
   
-  "block.create_mobile_packages.drone_port": "Drone Port",
-  "item.create_mobile_packages.drone_port": "Drone Port",
+  "block.create_mobile_packages.bee_port": "Bee Port",
+  "item.create_mobile_packages.bee_port": "Bee Port",
 
-  "item.create_mobile_packages.drone_controller": "Drone Controller",
-  "item.create_mobile_packages.drone_controller.screen_title": "Drone Controller",
-  "item.create_mobile_packages.drone_controller.not_linked": "Not linked to Network",
-  "item.create_mobile_packages.drone_controller.tooltip.summary": "A Mobile Stock Keeper",
-  "item.create_mobile_packages.drone_controller.tooltip.condition1": "When sneak clicked on a Stock Link or Stock Ticker",
-  "item.create_mobile_packages.drone_controller.tooltip.behaviour1": "Controller will bind to the Network",
-  "item.create_mobile_packages.drone_controller.tooltip.condition2": "When used",
-  "item.create_mobile_packages.drone_controller.tooltip.behaviour2": "Controller will open a mobile Stock Keeper menu",
+  "item.create_mobile_packages.portable_stock_ticker": "Portable Stock Ticker",
+  "item.create_mobile_packages.portable_stock_ticker.screen_title": "Portable Stock Ticker",
+  "item.create_mobile_packages.portable_stock_ticker.not_linked": "Not linked to Network",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.summary": "A Mobile Stock Keeper",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.condition1": "When sneak clicked on a Stock Link or Stock Ticker",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "Portable Stock Ticker will bind to the Network",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "When used",
+  "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "Portable Stock Ticker will open a mobile Stock Keeper menu",
 
-  "item.create_mobile_packages.mobile_packager": "Mobile Packager",
+  "item.create_mobile_packages.robo_bee": "Robo Bee",
+  "entity.create_mobile_packages.robo_bee": "Robo Bee",
   
-  "create_mobile_packages.drone_port.send_items": "Sent Items to Player",
+  "item.create_mobile_packages.mobile_packager": "Mobile Packager",
 
-  "create_mobile_packages.ponder.drone_port.header": "Drone Port",
-  "create_mobile_packages.ponder.drone_port.text_1": "The Drone Port sends Packages to Players",
-  "create_mobile_packages.ponder.drone_port.text_2": "Set the Package address to the Player's name",
-  "create_mobile_packages.ponder.drone_port.text_3": "The Package will be sent to the Player",
+  "create_mobile_packages.bee_port.send_items": "Sent Items to Player",
+
+  "create_mobile_packages.ponder.bee_port.header": "Bee Port",
+  "create_mobile_packages.ponder.bee_port.text_1": "The Bee Port sends Packages to Players",
+  "create_mobile_packages.ponder.bee_port.text_2": "Set the Package address to the Player's name",
+  "create_mobile_packages.ponder.bee_port.text_3": "The Package will be sent to the Player",
 
   "create_mobile_packages.robo_entity.death": "Robo Bee died at X %1$s Y %2$s Z %3$s with a Package for %4$s",
   "create_mobile_packages.robo_entity.eta": "Package will arrive in %1$s seconds"

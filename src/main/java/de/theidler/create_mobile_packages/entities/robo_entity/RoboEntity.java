@@ -3,13 +3,15 @@ package de.theidler.create_mobile_packages.entities.robo_entity;
 import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.blocks.drone_port.DronePortBlockEntity;
-import de.theidler.create_mobile_packages.blocks.drone_port.ModCapabilities;
+import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import de.theidler.create_mobile_packages.blocks.bee_port.ModCapabilities;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
-import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDecendFinishState;
+import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDescendFinishState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -27,7 +29,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.world.ForgeChunkManager;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public class RoboEntity extends Mob {
 
@@ -37,11 +41,12 @@ public class RoboEntity extends Mob {
     private Vec3 targetVelocity = Vec3.ZERO;
     private ItemStack itemStack;
     private Player targetPlayer;
-    private DronePortBlockEntity targetBlockEntity;
-    private DronePortBlockEntity startDronePortBlockEntity;
+    private BeePortBlockEntity targetBlockEntity;
+    private BeePortBlockEntity startBeePortBlockEntity;
+    private String targetAddress = "";
 
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
-    private PackageEntity packageEntity;
+    public PackageEntity packageEntity;
     public boolean doPackageEntity = false;
 
     /**
@@ -52,24 +57,33 @@ public class RoboEntity extends Mob {
      * @param itemStack The ItemStack (package) used to determine the target.
      * @param spawnPos  The spawn position of the entity.
      */
-    public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos spawnPos) {
+    public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
         super(type, level);
+        if (targetPos != null) {
+            this.targetBlockEntity = level.getBlockEntity(targetPos) instanceof BeePortBlockEntity dpbe ? dpbe : null;
+            if (this.targetBlockEntity != null) {
+                setState(new LaunchPrepareState());
+            }
+        }
         setItemStack(itemStack);
         createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
-        if (level().getBlockEntity(spawnPos) instanceof DronePortBlockEntity dpbe) {
-            startDronePortBlockEntity = dpbe;
+        if (targetBlockEntity != null) {targetBlockEntity.trySetEntityOnTravel(this);}
+        if (level().getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
+            startBeePortBlockEntity = dpbe;
         }
         if (!level().isClientSide()) {
             this.entityData.set(ROT_YAW, (float) getSnapAngle(getAngleToTarget()));
         }
         // don't fly out of the port if target is origin
-        if (targetBlockEntity != null && targetBlockEntity.equals(startDronePortBlockEntity)) {
-            setState(new LandingDecendFinishState());
+        if (targetBlockEntity != null && targetBlockEntity.equals(startBeePortBlockEntity)) {
+            setState(new LandingDescendFinishState());
+            return;
         }
-        if (startDronePortBlockEntity == null) {
+        if (startBeePortBlockEntity == null) {
             setState(new AdjustRotationToTarget());
+            return;
         }
         setState(new LaunchPrepareState());
     }
@@ -87,6 +101,7 @@ public class RoboEntity extends Mob {
         packageEntity = PackageEntity.fromItemStack(level(), this.position(), itemStack);
         packageEntity.noPhysics = true;
         packageEntity.setNoGravity(true);
+        packageEntity.setPos(this.getX(), this.getY(), this.getZ());
 
         int randomAngle = new java.util.Random().nextInt(4) * 90;
         packageEntity.setYRot(randomAngle);
@@ -112,15 +127,32 @@ public class RoboEntity extends Mob {
      */
     private void setTargetFromItemStack(ItemStack itemStack) {
         if (itemStack == null) return;
-        if (!PackageItem.isPackage(itemStack)) {
-            this.targetBlockEntity = getClosestDronePort();
-            return;
+        targetAddress = PackageItem.getAddress(itemStack);
+        updateTarget();
+    }
+
+    private Player getTargetPlayerFromAddress() {
+        return level().players().stream()
+                .filter(player -> player.getName().getString().equals(targetAddress))
+                .findFirst().orElse(null);
+    }
+
+    private void updateTarget() {
+        if (level().isClientSide) { return; }
+        targetPlayer = getTargetPlayerFromAddress();
+        if (targetPlayer != null) { return; }
+        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this)) {
+            BeePortBlockEntity oldTarget = targetBlockEntity;
+            targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+            if (oldTarget != targetBlockEntity) {
+                if (oldTarget != null) {
+                    oldTarget.trySetEntityOnTravel(null);
+                }
+                if (targetBlockEntity != null) {
+                    targetBlockEntity.trySetEntityOnTravel(this);
+                }
+            }
         }
-        level().players().stream()
-                .filter(player -> player.getName().getString().equals(PackageItem.getAddress(itemStack)))
-                .findFirst()
-                .ifPresentOrElse(player -> targetPlayer = player,
-                        () -> targetBlockEntity = getClosestDronePort(PackageItem.getAddress(itemStack)));
     }
 
     /**
@@ -130,41 +162,40 @@ public class RoboEntity extends Mob {
      * @return The block position of the target.
      */
     public BlockPos getTargetPosition() {
-        if (targetPlayer != null) return targetPlayer.blockPosition().above();
-        if (targetBlockEntity != null) return targetBlockEntity.getBlockPos().above().above();
-        targetBlockEntity = getClosestDronePort();
-        return targetBlockEntity != null ? targetBlockEntity.getBlockPos().above().above() : null;
+        updateTarget();
+        BlockPos targetPos = null;
+        if (targetPlayer != null) {
+            targetPos = targetPlayer.blockPosition();
+        } else if (targetBlockEntity != null) {
+            targetPos = targetBlockEntity.getBlockPos();
+        }
+        return targetPos != null ? targetPos.above().above() : null;
     }
 
     /**
-     * Finds the closest drone port to the RoboEntity.
+     * Finds the closest BeePortBlockEntity to this RoboEntity, optionally filtered by an address.
+     * <p>
+     * This method searches for all available BeePortBlockEntity instances in the current level.
+     * If an address is provided, only ports matching the address filter are considered.
+     * All full ports are removed from the selection.
+     * Finally, the closest port to this RoboEntity's position is determined.
      *
-     * @return The closest DronePortBlockEntity.
+     * @param address The address to filter by, or {@code null} for no filtering.
+     * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
-    public DronePortBlockEntity getClosestDronePort() {
-        return getClosestDronePort(null);
-    }
-
-    /**
-     * Finds the closest drone port to the RoboEntity, filtered by an address.
-     *
-     * @param address The address filter to apply, or null for no filtering.
-     * @return The closest DronePortBlockEntity matching the filter, or null if none found.
-     */
-    public DronePortBlockEntity getClosestDronePort(String address) {
-        final DronePortBlockEntity[] closestDronePort = {null};
-        level().getCapability(ModCapabilities.DRONE_PORT_ENTITY_TRACKER_CAP)
-                .ifPresent(tracker -> {
-                    List<DronePortBlockEntity> allBEs = tracker.getAll();
-                    closestDronePort[0] = allBEs.stream()
-                            .filter(dpbe -> address == null || PackageItem.matchAddress(address, dpbe.addressFilter))
-                            .min((dpbe1, dpbe2) -> Double.compare(
-                                    dpbe1.getBlockPos().distSqr(this.blockPosition()),
-                                    dpbe2.getBlockPos().distSqr(this.blockPosition())
-                            ))
-                            .orElse(null);
-                });
-        return closestDronePort[0];
+    public static BeePortBlockEntity getClosestBeePort(Level level, String address, BlockPos origin, RoboEntity entity) {
+        final BeePortBlockEntity[] closest = {null};
+        level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
+            List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            if (address != null) {
+                allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
+            }
+            allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity));
+            closest[0] = allBEs.stream()
+                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin)))
+                    .orElse(null);
+        });
+        return closest[0];
     }
 
     @Override
@@ -239,8 +270,8 @@ public void updatePackageEntity() {
         if (itemStack == null) return;
         this.itemStack = itemStack;
     }
-    public DronePortBlockEntity getStartDronePortBlockEntity() {
-        return startDronePortBlockEntity;
+    public BeePortBlockEntity getStartBeePortBlockEntity() {
+        return startBeePortBlockEntity;
     }
 
     public void setTargetVelocity(Vec3 targetVelocity) {
@@ -272,6 +303,11 @@ public void updatePackageEntity() {
 
     @Override
     public void remove(RemovalReason pReason) {
+
+        if (getTargetBlockEntity() != null) {
+            getTargetBlockEntity().trySetEntityOnTravel(null);
+        }
+
         if (pReason == RemovalReason.KILLED && packageEntity != null) {
             if (this.targetPlayer != null) {
                 targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);
@@ -289,16 +325,8 @@ public void updatePackageEntity() {
     public Player getTargetPlayer() {
         return targetPlayer;
     }
-    public DronePortBlockEntity getTargetBlockEntity() {
+    public BeePortBlockEntity getTargetBlockEntity() {
         return targetBlockEntity;
-    }
-
-    public void setTargetPlayer(Player targetPlayer) {
-        this.targetPlayer = targetPlayer;
-    }
-
-    public void setTargetBlockEntity(DronePortBlockEntity targetBlockEntity) {
-        this.targetBlockEntity = targetBlockEntity;
     }
 
     /**
@@ -383,12 +411,50 @@ public void updatePackageEntity() {
         packageEntity.remove(Entity.RemovalReason.DISCARDED);
     }
 
-    public void setPackageEntity(PackageEntity packageEntity) {
-        this.packageEntity = packageEntity;
-    }
-
     public void packageDelivered() {
         this.packageEntity = null;
         this.itemStack = ItemStack.EMPTY;
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag nbt) {
+        super.addAdditionalSaveData(nbt);
+        if (packageEntity != null) {
+            packageEntity.discard();
+            packageEntity = null;
+        }
+        if (!itemStack.isEmpty()) {
+            nbt.put("itemStack", itemStack.save(new CompoundTag()));
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag nbt) {
+        super.readAdditionalSaveData(nbt);
+        if (nbt.contains("itemStack", Tag.TAG_COMPOUND)) {
+            itemStack = ItemStack.of(nbt.getCompound("itemStack"));
+        } else {
+            itemStack = ItemStack.EMPTY;
+        }
+    }
+
+    @Override
+    public void load(CompoundTag pCompound) {
+        super.load(pCompound);
+        if (pCompound.contains("itemStack")) {
+            itemStack = ItemStack.of(pCompound.getCompound("itemStack"));
+        }
+        if (!itemStack.isEmpty()) {
+            setTargetFromItemStack(itemStack);
+        }
+        if (!level().isClientSide() && !itemStack.isEmpty() && packageEntity == null) {
+            createPackageEntity(itemStack);
+            doPackageEntity = true;
+        }
+    }
+
+    public void setTargetAddress(String address) {
+        this.targetAddress = address;
+        updateTarget();
     }
 }
