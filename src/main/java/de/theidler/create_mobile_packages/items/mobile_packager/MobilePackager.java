@@ -1,6 +1,5 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
-import com.simibubi.create.content.logistics.BigItemStack;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.SimpleMenuProvider;
@@ -8,9 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MobilePackager extends Item {
 
@@ -26,9 +22,5 @@ public class MobilePackager extends Item {
             pPlayer.openMenu(new SimpleMenuProvider((id, inv, player) -> new MobilePackagerMenu(id, inv, this), stack.getDisplayName()));
         }
         return super.use(pLevel, pPlayer, pUsedHand);
-    }
-
-    public List<BigItemStack> getStacks() {
-        return new ArrayList<>();
     }
 }

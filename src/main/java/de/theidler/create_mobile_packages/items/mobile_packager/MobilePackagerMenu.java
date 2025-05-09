@@ -1,10 +1,10 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
-import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,13 +14,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     public ItemStackHandler proxyInventory;
     public ItemStackHandler packageInventory;
+    public boolean hasEditMenu = false;
 
     public MobilePackagerMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
         super(CMPMenuTypes.MOBILE_PACKAGER_MENU.get(), id, inv, extraData);
@@ -38,28 +36,27 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
     @Override
     public void initAndReadInventory(MobilePackager contentHolder) {
         proxyInventory = new ItemStackHandler(1);
-        packageInventory = new ItemStackHandler(9);
+        packageInventory = getContents();
     }
 
     @Override
     public void addSlots() {
         int slotX = 27;
         int slotY = 28;
-        for (int i = 0; i < 9; i++)
-            addSlot(new SlotItemHandler(packageInventory, i, slotX + 20 * i, slotY));
-        addPlayerSlots(33, 142);
+        slots.removeIf(slot -> true);
+        if (hasEditMenu) {
+            for (int i = 0; i < 9; i++)
+                addSlot(new SlotItemHandler(packageInventory, i, slotX + 20 * i, slotY));
+            addPlayerSlots(33, 142);
+        } else {
+            addSlot(new SlotItemHandler(proxyInventory, 0, 74, 28));
+            addPlayerSlots(13, 112);
+        }
     }
 
     @Override
-    public void saveData(MobilePackager contentHolder) {
-        List<BigItemStack> stacks = contentHolder.getStacks();
-        ArrayList<BigItemStack> list = new ArrayList<>();
-        for (int i = 0; i < proxyInventory.getSlots(); i++) {
-            ItemStack stackInSlot = proxyInventory.getStackInSlot(i);
-            if (stackInSlot.isEmpty())
-                continue;
-            list.add(new BigItemStack(stackInSlot.copyWithCount(1), i < stacks.size() ? stacks.get(i).count : 1));
-        }
+    protected void saveData(MobilePackager contentHolder) {
+        writeContents();
     }
 
     @Override
@@ -127,5 +124,14 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
             return PackageItem.getContents(stack);
         }
         return new ItemStackHandler(9);
+    }
+
+    public void writeContents() {
+        ItemStack stack = proxyInventory.getStackInSlot(0);
+        if (PackageItem.isPackage(stack)){
+            CompoundTag nbt = new CompoundTag();
+            nbt.put("Items", packageInventory.serializeNBT());
+            stack.setTag(nbt);
+        }
     }
 }
