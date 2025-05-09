@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
+import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
@@ -12,6 +13,9 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
@@ -39,16 +43,23 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     @Override
     public void addSlots() {
-        addSlot(new SlotItemHandler(proxyInventory, 0, 16, 24));
-        for (int i = 0; i < 9; i++) {
-            addSlot(new SlotItemHandler(packageInventory, i, 16 + i * 18, 50));
-        }
-        addPlayerSlots(18, 118);
+        int slotX = 27;
+        int slotY = 28;
+        for (int i = 0; i < 9; i++)
+            addSlot(new SlotItemHandler(packageInventory, i, slotX + 20 * i, slotY));
+        addPlayerSlots(33, 142);
     }
 
     @Override
     public void saveData(MobilePackager contentHolder) {
-
+        List<BigItemStack> stacks = contentHolder.getStacks();
+        ArrayList<BigItemStack> list = new ArrayList<>();
+        for (int i = 0; i < proxyInventory.getSlots(); i++) {
+            ItemStack stackInSlot = proxyInventory.getStackInSlot(i);
+            if (stackInSlot.isEmpty())
+                continue;
+            list.add(new BigItemStack(stackInSlot.copyWithCount(1), i < stacks.size() ? stacks.get(i).count : 1));
+        }
     }
 
     @Override
