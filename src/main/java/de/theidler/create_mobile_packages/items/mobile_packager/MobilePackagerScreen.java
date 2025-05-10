@@ -42,6 +42,7 @@ public class MobilePackagerScreen extends AbstractSimiContainerScreen<MobilePack
     }
 
     private void openEditScreen() {
+        menu.firstConfirmClicked = true;
         if (!menu.proxyInventory.getStackInSlot(0).isEmpty()) {
             for (int i = 0; i < menu.getContents().getSlots(); i++) {
                 menu.packageInventory.setStackInSlot(i, menu.getContents().getStackInSlot(i).copy());
@@ -73,13 +74,12 @@ public class MobilePackagerScreen extends AbstractSimiContainerScreen<MobilePack
 
 class MobilePackagerEditScreen extends AbstractSimiContainerScreen<MobilePackagerMenu> {
 
+    private EditBox addressBox;
+    private IconButton confirmButton;
+
     public MobilePackagerEditScreen(MobilePackagerMenu container, Inventory inv, Component title) {
         super(container, inv, title);
     }
-    private String address = "";
-
-    private EditBox addressBox;
-    private IconButton confirmButton;
 
     @Override
     protected void init() {
