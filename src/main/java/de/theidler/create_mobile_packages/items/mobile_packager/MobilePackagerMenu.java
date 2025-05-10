@@ -11,7 +11,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
@@ -20,8 +19,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
-    public ItemStackHandler proxyInventory;
-    public ItemStackHandler packageInventory;
+    public ItemStackHandler packageSlotInventory;
+    public ItemStackHandler packageContentsInventory;
     public boolean hasEditMenu = false;
     public boolean firstConfirmClicked = false;
 
@@ -40,8 +39,8 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     @Override
     public void initAndReadInventory(MobilePackager contentHolder) {
-        proxyInventory = new ItemStackHandler(1);
-        packageInventory = getContents();
+        packageSlotInventory = new ItemStackHandler(1);
+        packageContentsInventory = getContents();
     }
 
     @Override
@@ -51,10 +50,10 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
         slots.removeIf(slot -> true);
         if (hasEditMenu) {
             for (int i = 0; i < 9; i++)
-                addSlot(new SlotItemHandler(packageInventory, i, slotX + 20 * i, slotY));
+                addSlot(new SlotItemHandler(packageContentsInventory, i, slotX + 20 * i, slotY));
             addPlayerSlots(33, 142);
         } else {
-            addSlot(new MobilePackagerStackHandler(proxyInventory, 0, 74, 28));
+            addSlot(new MobilePackagerStackHandler(packageSlotInventory, 0, 74, 28));
             addPlayerSlots(13, 112);
         }
     }
@@ -86,7 +85,7 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
     public void removed(Player playerIn) {
         if (Minecraft.getInstance().screen instanceof MobilePackagerEditScreen || !firstConfirmClicked) {
             boolean success = false;
-            ItemStack stack = proxyInventory.getStackInSlot(0);
+            ItemStack stack = packageSlotInventory.getStackInSlot(0);
             if (!stack.isEmpty()) {
                 success= !moveItemStackTo(stack, 0, playerInventory.getContainerSize()-1, false);
             }
@@ -101,7 +100,7 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
     }
 
     public String getAddress() {
-        ItemStack stack = proxyInventory.getStackInSlot(0);
+        ItemStack stack = packageSlotInventory.getStackInSlot(0);
         if (PackageItem.isPackage(stack)){
             return PackageItem.getAddress(stack);
         }
@@ -115,22 +114,22 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
     }
 
     public void serverConfirm(String value) {
-        ItemStack stack = proxyInventory.getStackInSlot(0);
+        ItemStack stack = packageSlotInventory.getStackInSlot(0);
         if (PackageItem.isPackage(stack)) {
             PackageItem.addAddress(stack, value);
         } else {
-            ItemStack newStack = PackageItem.containing(packageInventory);
+            ItemStack newStack = PackageItem.containing(packageContentsInventory);
             PackageItem.addAddress(newStack, value);
-            proxyInventory.setStackInSlot(0, newStack);
-            for (int i = 0; i < packageInventory.getSlots(); i++) {
-                packageInventory.setStackInSlot(i, ItemStack.EMPTY);
+            packageSlotInventory.setStackInSlot(0, newStack);
+            for (int i = 0; i < packageContentsInventory.getSlots(); i++) {
+                packageContentsInventory.setStackInSlot(i, ItemStack.EMPTY);
             }
         }
 
     }
 
     public ItemStackHandler getContents() {
-        ItemStack stack = proxyInventory.getStackInSlot(0);
+        ItemStack stack = packageSlotInventory.getStackInSlot(0);
         if (PackageItem.isPackage(stack)){
             return PackageItem.getContents(stack);
         }
@@ -144,10 +143,10 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
             //CMPPackets.getChannel().sendToServer(new WriteContentsPacket());
         }
         CreateMobilePackages.LOGGER.info("Serverside WriteContentsPacket");
-        ItemStack stack = proxyInventory.getStackInSlot(0);
+        ItemStack stack = packageSlotInventory.getStackInSlot(0);
         if (PackageItem.isPackage(stack)){
             CompoundTag nbt = new CompoundTag();
-            nbt.put("Items", packageInventory.serializeNBT());
+            nbt.put("Items", packageContentsInventory.serializeNBT());
             stack.setTag(nbt);
         }
     }

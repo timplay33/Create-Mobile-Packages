@@ -1,11 +1,9 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
-import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
-import com.simibubi.create.foundation.gui.ScreenWithStencils;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -43,9 +41,9 @@ public class MobilePackagerScreen extends AbstractSimiContainerScreen<MobilePack
 
     private void openEditScreen() {
         menu.firstConfirmClicked = true;
-        if (!menu.proxyInventory.getStackInSlot(0).isEmpty()) {
+        if (!menu.packageSlotInventory.getStackInSlot(0).isEmpty()) {
             for (int i = 0; i < menu.getContents().getSlots(); i++) {
-                menu.packageInventory.setStackInSlot(i, menu.getContents().getStackInSlot(i).copy());
+                menu.packageContentsInventory.setStackInSlot(i, menu.getContents().getStackInSlot(i).copy());
             }
             Minecraft.getInstance().setScreen(new MobilePackagerEditScreen(menu, menu.player.getInventory(), Component.translatable("item.create_mobile_packages.mobile_packager")));
         } else {
