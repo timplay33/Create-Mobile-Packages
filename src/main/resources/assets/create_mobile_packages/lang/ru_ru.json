@@ -1,1 +1,22 @@
-{}
+{
+    "create_mobile_packages.robo_entity.death": "Дрон погиб на X %1$s Y %2$s Z %3$s с коробкой для %4$s",
+    "block.create_mobile_packages.bee_port": "Дронопорт",
+    "item.create_mobile_packages.portable_stock_ticker.tooltip.condition1": "При ПКМ по складскому передатчику или складскому контроллеру крадучись",
+    "item.create_mobile_packages.robo_bee": "Дрон",
+    "itemGroup.create_mobile_packages": "Create: Мобильные Посылки",
+    "create_mobile_packages.bee_port.send_items": "Предметы отправлены игроку",
+    "create_mobile_packages.robo_entity.eta": "Коробка прибудет через %1$s секунд",
+    "item.create_mobile_packages.portable_stock_ticker.screen_title": "Портативный складской контроллер",
+    "entity.create_mobile_packages.robo_bee": "Дрон",
+    "item.create_mobile_packages.portable_stock_ticker": "Портативный складской контроллер",
+    "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "Портативный складской контроллер откроет мобильное меню кладовщика.",
+    "item.create_mobile_packages.bee_port": "Дронопорт",
+    "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "Портативный складской контроллер привяжется к сети.",
+    "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "При использовании",
+    "create_mobile_packages.ponder.bee_port.text_2": "Установите адрес коробки на имя игрока",
+    "item.create_mobile_packages.portable_stock_ticker.tooltip.summary": "Мобильный кладовщик.",
+    "item.create_mobile_packages.portable_stock_ticker.not_linked": "Не подключен к сети",
+    "create_mobile_packages.ponder.bee_port.header": "Дронопорте",
+    "create_mobile_packages.ponder.bee_port.text_1": "Дронопорт отправляет коробки игрокам",
+    "create_mobile_packages.ponder.bee_port.text_3": "Коробка будет отправлена игроку"
+}
