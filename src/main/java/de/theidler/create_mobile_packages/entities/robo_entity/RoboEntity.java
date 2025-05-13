@@ -8,8 +8,10 @@ import de.theidler.create_mobile_packages.blocks.bee_port.ModCapabilities;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDescendFinishState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
+import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -17,6 +19,8 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -48,6 +52,7 @@ public class RoboEntity extends Mob {
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
     public PackageEntity packageEntity;
     public boolean doPackageEntity = false;
+    private int damageCounter;
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
@@ -59,6 +64,7 @@ public class RoboEntity extends Mob {
      */
     public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
         super(type, level);
+        this.damageCounter = 0;
         if (targetPos != null) {
             this.targetBlockEntity = level.getBlockEntity(targetPos) instanceof BeePortBlockEntity dpbe ? dpbe : null;
             if (this.targetBlockEntity != null) {
@@ -456,5 +462,42 @@ public void updatePackageEntity() {
     public void setTargetAddress(String address) {
         this.targetAddress = address;
         updateTarget();
+    }
+
+    @Override
+    public void kill() {
+        this.level().broadcastEntityEvent(this, (byte) 60);
+        if (this.level() instanceof ServerLevel serverLevel) {
+            ItemStack drop = new ItemStack(CMPItems.ROBO_BEE.get());
+            Containers.dropItemStack(serverLevel, this.getX(), this.getY(), this.getZ(), drop);
+        }
+        this.discard();
+    }
+
+    @Override
+    public void handleEntityEvent(byte pId) {
+        if (pId == 60) {
+            for (int i = 0; i < 3; i++) {
+                this.level().addParticle(ParticleTypes.POOF, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
+            }
+        } else {
+            super.handleEntityEvent(pId);
+        }
+    }
+
+    @Override
+    public boolean hurt(DamageSource pSource, float pAmount) {
+        if (this.isInvulnerableTo(pSource)) return false;
+
+        if (!this.level().isClientSide && !this.isRemoved()) {
+            this.markHurt();
+            this.damageCounter += pAmount * 10;
+            if (this.damageCounter > 40) {
+                this.discard();
+                this.kill();
+            }
+        }
+
+        return true;
     }
 }
