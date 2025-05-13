@@ -15,6 +15,15 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 - Modrinth: https://modrinth.com/mod/create-mobile-packages
 - Curseforge: https://www.curseforge.com/minecraft/mc-mods/create-mobile-packages
 
+## Translations 
+This project is translated using Hosted Weblate. https://hosted.weblate.org/engage/create-mobile-packages/
+
+You're welcome to contribute to the translations or add your language.
+
+<a href="https://hosted.weblate.org/engage/create-mobile-packages/">
+<img src="https://hosted.weblate.org/widget/create-mobile-packages/mc1-20-1dev/multi-auto.svg" alt="Übersetzungsstatus" />
+</a>
+
 ## Items
 ### Bee Port
 The Bee Port is a specialized block that automates the delivery of Create mod Packages to players or other Bee Ports. It features a menu with an inventory, where packages can be inserted manually or automatically using devices like Funnels, Chutes, or Hoppers. The station reads the address label on each package and dispatches it accordingly — either delivering the package to a player whose name matches the address or forwarding it to another Bee Port.
