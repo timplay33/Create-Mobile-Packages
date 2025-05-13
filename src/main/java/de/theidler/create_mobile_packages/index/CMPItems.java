@@ -6,6 +6,7 @@ import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableSt
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -23,6 +24,7 @@ public class CMPItems {
 
     public static final ItemEntry<DroneController> DRONE_CONTROLLER =
             CreateMobilePackages.REGISTRATE.item("drone_controller", DroneController::new)
+                    .removeTab(CreativeModeTabs.SEARCH)
                     .register();
 
     public static final ItemEntry<RoboBeeItem> ROBO_BEE =
