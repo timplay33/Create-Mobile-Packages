@@ -11,7 +11,7 @@
     "item.create_mobile_packages.portable_stock_ticker": "Портативный складской контроллер",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "Открывает мобильное меню кладовщика.",
     "item.create_mobile_packages.bee_port": "Дронопорт",
-    "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "Портативный складской контроллер привяжется к сети.",
+    "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "Подключается к складской сети.",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "ПКМ с предметом",
     "create_mobile_packages.ponder.bee_port.text_2": "Установите адрес отправления на имя игрока...",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.summary": "Удобное устройство для доступа к содержимому склада в любое время.",
