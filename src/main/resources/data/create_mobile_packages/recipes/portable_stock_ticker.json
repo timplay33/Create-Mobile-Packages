@@ -2,16 +2,16 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
-      "item": "create:transmitter"
+      "item": "create:clipboard"
     },
     {
-      "item": "create:stock_link"
+      "item": "create:redstone_link"
     },
     {
       "item": "create:stock_ticker"
     },
     {
-      "item": "create:brass_casing"
+      "item": "create:andesite_casing"
     }
   ],
   "result": {

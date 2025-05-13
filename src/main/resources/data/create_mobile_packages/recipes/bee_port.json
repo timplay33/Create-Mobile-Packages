@@ -1,16 +1,19 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "   ",
-    " T ",
-    "BBB"
+    "AAA",
+    "ATA",
+    "CCC"
   ],
   "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
     "T": {
       "item": "create:transmitter"
     },
-    "B": {
-      "item": "create:brass_casing"
+    "C": {
+      "item": "create:andesite_casing"
     }
   },
   "result": {
