@@ -423,4 +423,8 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
         return BeePortMenu.create(pContainerId, pPlayerInventory, this);
     }
+
+    public RoboEntity getRoboEntity(){
+        return entityOnTravel;
+    }
 }

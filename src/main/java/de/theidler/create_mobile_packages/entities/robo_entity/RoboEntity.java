@@ -345,9 +345,14 @@ public void updatePackageEntity() {
      * @param player The player to calculate the ETA for.
      * @return The ETA in seconds.
      */
-    private int calcETA(Player player) {
+    public int calcETA(Player player) {
         if (player == null) return Integer.MAX_VALUE;
         double distance = player.position().distanceTo(this.position());
+        return (int) (distance / CMPConfigs.server().droneSpeed.get()) + 1;
+    }
+    public int calcETA(BeePortBlockEntity beePortBlockEntity) {
+        if (beePortBlockEntity == null) return Integer.MAX_VALUE;
+        double distance = beePortBlockEntity.getBlockPos().above(2).getCenter().distanceTo(this.position());
         return (int) (distance / CMPConfigs.server().droneSpeed.get()) + 1;
     }
 
