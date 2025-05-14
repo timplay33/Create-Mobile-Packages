@@ -169,13 +169,20 @@ public class RoboEntity extends Mob {
      */
     public BlockPos getTargetPosition() {
         updateTarget();
-        BlockPos targetPos = null;
         if (targetPlayer != null) {
-            targetPos = targetPlayer.blockPosition();
-        } else if (targetBlockEntity != null) {
-            targetPos = targetBlockEntity.getBlockPos();
+            return isWithinRange(targetPlayer.blockPosition(), this.blockPosition()) ? targetPlayer.blockPosition().above().above() : null;
         }
-        return targetPos != null ? targetPos.above().above() : null;
+        if (targetBlockEntity != null) {
+            return isWithinRange(targetBlockEntity.getBlockPos(), this.blockPosition()) ? targetBlockEntity.getBlockPos().above().above() : null;
+        }
+        return null;
+    }
+
+    public static boolean isWithinRange(BlockPos targetPos, BlockPos originPos) {
+        int maxDistance = CMPConfigs.server().beeMaxDistance.get();
+        if (targetPos == null || originPos == null) return false;
+        if (maxDistance == -1) return true;
+        return targetPos.distSqr(originPos) <= maxDistance * maxDistance;
     }
 
     /**
@@ -193,6 +200,7 @@ public class RoboEntity extends Mob {
         final BeePortBlockEntity[] closest = {null};
         level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            allBEs.removeIf(dpbe -> !isWithinRange(dpbe.getBlockPos(), origin));
             if (address != null) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
             }
@@ -354,7 +362,7 @@ public void updatePackageEntity() {
     private int calcETA(Player player) {
         if (player == null) return Integer.MAX_VALUE;
         double distance = player.position().distanceTo(this.position());
-        return (int) (distance / CMPConfigs.server().droneSpeed.get()) + 1;
+        return (int) (distance / CMPConfigs.server().beeSpeed.get()) + 1;
     }
 
     /**
@@ -398,7 +406,7 @@ public void updatePackageEntity() {
         float currentYaw = this.entityData.get(ROT_YAW);
         float deltaYaw = targetYaw - currentYaw;
         deltaYaw = (deltaYaw > 180) ? deltaYaw - 360 : (deltaYaw < -180) ? deltaYaw + 360 : deltaYaw;
-        float rotationSpeed = CMPConfigs.server().droneRotationSpeed.get();
+        float rotationSpeed = CMPConfigs.server().beeRotationSpeed.get();
         if (Math.abs(deltaYaw) > rotationSpeed) {
             currentYaw += (deltaYaw > 0) ? rotationSpeed : -rotationSpeed;
         } else {

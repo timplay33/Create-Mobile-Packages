@@ -11,7 +11,7 @@ public class FlyToTargetState implements RoboEntityState {
     public void tick(RoboEntity re) {
         BlockPos targetPos = re.getTargetPosition();
         if (targetPos == null) { return; }
-        if (re.position().distanceTo(targetPos.getCenter()) <= CMPConfigs.server().droneSpeed.get()/12.0) {
+        if (re.position().distanceTo(targetPos.getCenter()) <= CMPConfigs.server().beeSpeed.get()/12.0) {
             if (re.getTargetBlockEntity() != null) {
                 re.setState(new LandingPrepareState());
             } else if (re.getTargetPlayer() != null) {
@@ -23,7 +23,7 @@ public class FlyToTargetState implements RoboEntityState {
                 re.updateDisplay(re.getTargetPlayer());
             }
             Vec3 direction = targetPos.getCenter().subtract(re.position()).normalize();
-            double speed = CMPConfigs.server().droneSpeed.get() / 20.0;
+            double speed = CMPConfigs.server().beeSpeed.get() / 20.0;
             re.setTargetVelocity(direction.scale(speed));
             if (re.position().distanceTo(targetPos.getCenter()) > 2.5) { // entity rotation starts drifting
                 re.lookAtTarget();

@@ -1,15 +1,17 @@
 package de.theidler.create_mobile_packages.index.config;
 
-import com.google.common.collect.Multimap;
 import net.createmod.catnip.config.ConfigBase;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class CMPServer extends ConfigBase {
 
-    public final ConfigInt droneSpeed = i(6, 1, Integer.MAX_VALUE, "droneSpeed",
-            CMPServer.Comments.droneSpeed);
-    public final ConfigInt droneRotationSpeed = i(45, 1, Integer.MAX_VALUE, "droneRotationSpeed",
-            CMPServer.Comments.droneRotationSpeed);
+    public final ConfigInt beeSpeed = i(6, 1, Integer.MAX_VALUE, "beeSpeed",
+            CMPServer.Comments.beeSpeed);
+    public final ConfigInt beeRotationSpeed = i(45, 1, Integer.MAX_VALUE, "beeRotationSpeed",
+            CMPServer.Comments.beeRotationSpeed);
+    public final ConfigBool portToPort = b(true, "portToPort",
+            CMPServer.Comments.portToPort);
+    public final ConfigInt beeMaxDistance = i(-1, -1, Integer.MAX_VALUE, "beeMaxDistance",
+            CMPServer.Comments.beeMaxDistance);
 
     @Override
     public String getName() {
@@ -17,7 +19,9 @@ public class CMPServer extends ConfigBase {
     }
 
     private static class Comments {
-        static String droneSpeed = "The Speed of a Package Delivery Drone in Blocks per Second. Default: 6";
-        static String droneRotationSpeed = "The Speed of the rotation of a Package Delivery Drone in degrees per Second. Default: 45";
+        static String beeSpeed = "The Speed of a Robo Bee in Blocks per Second. Default: 6";
+        static String beeRotationSpeed = "The Speed of the rotation of a Robo Bee in degrees per Second. Default: 45";
+        static String portToPort = "If true, the Robo Bee will be able to deliver packages from one port to another. Default: true";
+        static String beeMaxDistance = "The maximum distance a Robo Bee can travel. Default: -1 (unlimited)";
     }
 }
