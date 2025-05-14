@@ -8,6 +8,7 @@ import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
 import de.theidler.create_mobile_packages.index.CMPItems;
+import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -187,10 +188,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
 
         // Check if the item can be sent to another drone port.
-        if (PackageItem.matchAddress(address, addressFilter)) {return;}
-        BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, this.getBlockPos(), null);
-        if (beePortBlockEntity != null && !beePortBlockEntity.isFull()) {
-            sendDrone(itemStack, slot);
+        if (CMPConfigs.server().portToPort.get() && !PackageItem.matchAddress(address, addressFilter)) {
+            BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, this.getBlockPos(), null);
+            if (beePortBlockEntity != null && !beePortBlockEntity.isFull()) {
+                sendDrone(itemStack, slot);
+            }
         }
     }
 
