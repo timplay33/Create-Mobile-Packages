@@ -10,13 +10,13 @@
     "item.create_mobile_packages.portable_stock_ticker.not_linked": "Non lié au réseau",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "Le Téléscripteur de Stock Portable sera lié au réseau",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.summary": "Un Magasinier Mobile",
-    "item.create_mobile_packages.robo_bee": "Robo Abeille",
-    "entity.create_mobile_packages.robo_bee": "Robo Abeille",
+    "item.create_mobile_packages.robo_bee": "Robeille",
+    "entity.create_mobile_packages.robo_bee": "Robeille",
     "create_mobile_packages.bee_port.send_items": "Objets envoyés au joueur",
     "create_mobile_packages.ponder.bee_port.header": "Abeiport",
     "create_mobile_packages.ponder.bee_port.text_1": "L'Abeiport envoie des colis aux joueurs",
     "create_mobile_packages.ponder.bee_port.text_2": "Définissez l'adresse du colis sur le nom du joueur",
-    "create_mobile_packages.robo_entity.death": "Un Robo Abeille est mort en X %1$s Y %2$s Z %3$s avec un colis pour %4$s",
+    "create_mobile_packages.robo_entity.death": "Un Robeille est mort en X %1$s Y %2$s Z %3$s avec un colis pour %4$s",
     "create_mobile_packages.robo_entity.eta": "Le colis arrivera dans %1$s secondes",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "Lorsqu'il est utilisé"
 }
