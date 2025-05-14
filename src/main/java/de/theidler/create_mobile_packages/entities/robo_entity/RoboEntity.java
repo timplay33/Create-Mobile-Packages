@@ -169,13 +169,20 @@ public class RoboEntity extends Mob {
      */
     public BlockPos getTargetPosition() {
         updateTarget();
-        BlockPos targetPos = null;
         if (targetPlayer != null) {
-            targetPos = targetPlayer.blockPosition();
-        } else if (targetBlockEntity != null) {
-            targetPos = targetBlockEntity.getBlockPos();
+            return isWithinRange(targetPlayer.blockPosition(), this.blockPosition()) ? targetPlayer.blockPosition().above().above() : null;
         }
-        return targetPos != null ? targetPos.above().above() : null;
+        if (targetBlockEntity != null) {
+            return isWithinRange(targetBlockEntity.getBlockPos(), this.blockPosition()) ? targetBlockEntity.getBlockPos().above().above() : null;
+        }
+        return null;
+    }
+
+    public static boolean isWithinRange(BlockPos targetPos, BlockPos originPos) {
+        int maxDistance = CMPConfigs.server().droneMaxDistance.get();
+        if (targetPos == null || originPos == null) return false;
+        if (maxDistance == -1) return true;
+        return targetPos.distSqr(originPos) <= maxDistance * maxDistance;
     }
 
     /**
@@ -193,6 +200,7 @@ public class RoboEntity extends Mob {
         final BeePortBlockEntity[] closest = {null};
         level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            allBEs.removeIf(dpbe -> !isWithinRange(dpbe.getBlockPos(), origin));
             if (address != null) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
             }

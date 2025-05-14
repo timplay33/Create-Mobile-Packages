@@ -1,8 +1,6 @@
 package de.theidler.create_mobile_packages.index.config;
 
-import com.google.common.collect.Multimap;
 import net.createmod.catnip.config.ConfigBase;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class CMPServer extends ConfigBase {
 

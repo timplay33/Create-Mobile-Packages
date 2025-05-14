@@ -179,7 +179,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to a player.
         for (Player player : level.players()) {
-            if (player.getName().getString().equals(address)) {
+            if (player.getName().getString().equals(address)
+                    && RoboEntity.isWithinRange(player.blockPosition(), this.getBlockPos())) {
                 sendToPlayer(player, itemStack, slot);
                 return;
             }
