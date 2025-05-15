@@ -38,17 +38,25 @@ public class PortableStockTicker extends StockCheckingItem {
         return Rarity.UNCOMMON;
     }
 
-    @Override
     public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, IdentifiedInventory ignoredHandler,
-                                           String address) {
+                                           String address, Player player) {
         boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address);
         previouslyUsedAddress = address;
+
+        if (player instanceof ServerPlayer) {
+            for (ItemStack itemStack : player.getInventory().items) {
+                if (itemStack.getItem() instanceof PortableStockTicker) {
+                    saveAddressToStack(itemStack, address);
+                }
+            }
+        }
         return result;
     }
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
         if (!pLevel.isClientSide) {
             ItemStack stack = pPlayer.getItemInHand(pUsedHand);
+            previouslyUsedAddress = loadAddressFromStack(stack);
             InventorySummary summary = getAccurateSummary(stack);
 
             List<BigItemStack> bigItemStacks = summary.getStacks();
@@ -86,7 +94,19 @@ public class PortableStockTicker extends StockCheckingItem {
         } else {
             pTooltip.add(Component.translatable("create.tooltip.holdForDescription", Component.translatable("create.tooltip.keyShift").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
         }
+    }
+    private static final String ADDRESS_TAG = "PreviousAddress";
 
+    public void saveAddressToStack(ItemStack stack, String address) {
+        if (address != null && !address.isEmpty()) {
+            stack.getOrCreateTag().putString(ADDRESS_TAG, address);
+        }
+    }
 
+    public String loadAddressFromStack(ItemStack stack) {
+        if (stack.hasTag() && stack.getTag().contains(ADDRESS_TAG)) {
+            return stack.getTag().getString(ADDRESS_TAG);
+        }
+        return null;
     }
 }

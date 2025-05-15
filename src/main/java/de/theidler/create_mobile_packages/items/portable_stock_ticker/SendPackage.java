@@ -60,7 +60,7 @@ public class SendPackage extends SimplePacketBase {
         }
 
         if (player.getMainHandItem().getItem() instanceof PortableStockTicker) {
-            ((PortableStockTicker) player.getMainHandItem().getItem()).broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address);
+            ((PortableStockTicker) player.getMainHandItem().getItem()).broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address, player);
         }
     }
 }
