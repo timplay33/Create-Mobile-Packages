@@ -20,7 +20,8 @@
   "create_mobile_packages.ponder.drone_port.text_2": "Set the Package address to the Player's name",
   "create_mobile_packages.ponder.drone_port.text_3": "The Package will be sent to the Player",
 
+  "entity.create_mobile_packages.robo_bee": "Robo Bee",
+  
   "create_mobile_packages.robo_entity.death": "Robo Bee died at X %1$s Y %2$s Z %3$s with a Package for %4$s",
   "create_mobile_packages.robo_entity.eta": "Package will arrive in %1$s seconds"
-  
 }
