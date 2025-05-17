@@ -19,6 +19,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -35,6 +37,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
+import static de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity.calcETA;
 
 /**
  * Represents a Drone Port block entity that handles the processing and sending of Create Mod packages
@@ -45,6 +48,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
     private RoboEntity entityOnTravel = null;
+    private final ContainerData data = new SimpleContainerData(2);
     private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
 
     /**
@@ -82,6 +86,12 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         super.tick();
         if (++tickCounter % 20 == 0) {
             processItems();
+        }
+        //Update Client Data
+        if (!level.isClientSide()) {
+            if (this.getRoboEntity() != null)
+                this.data.set(0, calcETA(this.getBlockPos().getCenter(), this.getRoboEntity().position()));
+            this.data.set(1, this.entityOnTravel != null ? 1 : 0);
         }
     }
 
@@ -425,5 +435,13 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     @Override
     public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
         return BeePortMenu.create(pContainerId, pPlayerInventory, this);
+    }
+
+    public RoboEntity getRoboEntity(){
+        return entityOnTravel;
+    }
+
+    public ContainerData getData() {
+        return data;
     }
 }

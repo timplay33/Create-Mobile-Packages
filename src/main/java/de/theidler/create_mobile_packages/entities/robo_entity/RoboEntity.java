@@ -350,19 +350,19 @@ public void updatePackageEntity() {
      */
     public void updateDisplay(Player player) {
         if (player == null) return;
-        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player)), true);
+        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player.position(), this.position())), true);
     }
 
     /**
-     * Calculates the estimated time of arrival (ETA) to the specified player.
+     * Calculates the estimated time of arrival (ETA) to the specified targetPosition.
      *
-     * @param player The player to calculate the ETA for.
+     * @param targetPosition The Vec3 to calculate the ETA for.
      * @return The ETA in seconds.
      */
-    private int calcETA(Player player) {
-        if (player == null) return Integer.MAX_VALUE;
-        double distance = player.position().distanceTo(this.position());
-        return (int) (distance / CMPConfigs.server().beeSpeed.get()) + 1;
+    public static int calcETA(Vec3 targetPosition, Vec3 currentPosition) {
+        if (targetPosition == null || currentPosition == null) return Integer.MAX_VALUE;
+        double distance = targetPosition.distanceTo(currentPosition);
+        return (int) (distance / CMPConfigs.server().droneSpeed.get()) + 1;
     }
 
     /**
