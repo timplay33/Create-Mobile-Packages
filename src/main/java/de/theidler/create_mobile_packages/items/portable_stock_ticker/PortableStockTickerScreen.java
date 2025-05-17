@@ -170,12 +170,13 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     }
 
     private List<List<BigItemStack>> convertToCategoryList(List<BigItemStack> stacks) {
+        List<BigItemStack> stacksCopy = new ArrayList<>(stacks); // Copy to avoid side effects
         List<List<BigItemStack>> output = new ArrayList<>();
         for (ItemStack filter : menu.portableStockTicker.categories) {
             List<BigItemStack> inCategory = new ArrayList<>();
             if (!filter.isEmpty()) {
                 FilterItemStack filterItemStack = FilterItemStack.of(filter);
-                for (Iterator<BigItemStack> iterator = stacks.iterator(); iterator.hasNext(); ) {
+                for (Iterator<BigItemStack> iterator = stacksCopy.iterator(); iterator.hasNext(); ) {
                     BigItemStack bigStack = iterator.next();
                     if (!filterItemStack.test(playerInventory.player.level(), bigStack.stack))
                         continue;
@@ -185,7 +186,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             }
             output.add(inCategory);
         }
-        List<BigItemStack> unsorted = new ArrayList<>(stacks);
+        List<BigItemStack> unsorted = new ArrayList<>(stacksCopy);
         output.add(unsorted);
         return output;
     }
