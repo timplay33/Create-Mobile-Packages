@@ -7,6 +7,7 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
+import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
@@ -38,6 +39,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -49,6 +51,20 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PortableStockTickerScreen extends AbstractSimiContainerScreen<PortableStockTickerMenu> implements ScreenWithStencils {
+
+    public static class CategoryEntry {
+        boolean hidden;
+        String name;
+        int y;
+        int targetBECategory;
+
+        public CategoryEntry(int targetBECategory, String name, int y) {
+            this.targetBECategory = targetBECategory;
+            this.name = name;
+            hidden = false;
+            this.y = y;
+        }
+    }
 
     private static final AllGuiTextures NUMBERS = AllGuiTextures.NUMBERS;
     private static final AllGuiTextures HEADER = AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER;
@@ -75,12 +91,14 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     int successTicks = 0;
 
     Inventory playerInventory;
-    public List<BigItemStack> currentItemSource;
-    public List<BigItemStack> displayedItems;
+    public List<List<BigItemStack>> currentItemSource;
+    public List<List<BigItemStack>> displayedItems;
+    public List<CategoryEntry> categories;
     public List<BigItemStack> itemsToOrder;
     public List<CraftableBigItemStack> recipesToOrder;
     private boolean scrollHandleActive;
     private InventorySummary forcedEntries;
+    private Set<Integer> hiddenCategories;
 
     public boolean refreshSearchNextTick;
     public boolean moveToTopNextTick;
@@ -91,12 +109,14 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         displayedItems = new ArrayList<>();
         itemsToOrder = new ArrayList<>();
         recipesToOrder = new ArrayList<>();
+        categories = new ArrayList<>();
         itemScroll = LerpedFloat.linear()
                 .startWithValue(0);
         canRequestCraftingPackage = false;
         menu.screenReference = this;
         forcedEntries = new InventorySummary();
         this.playerInventory = playerInventory;
+        hiddenCategories = new HashSet<>(menu.portableStockTicker.hiddenCategoriesByPlayer.getOrDefault(menu.player.getUUID(), List.of()));
     }
 
     @Override
@@ -105,14 +125,18 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         addressBox.tick();
         ClientScreenStorage.tick();
 
-        if (forcedEntries != null) {
-            if (!forcedEntries.isEmpty()) {
-                for (BigItemStack stack : forcedEntries.getStacks()) {
-                    int limitedAmount = -stack.count - 1;
-                    int actualAmount = countOf(stack);
-                    if (actualAmount <= limitedAmount)
-                        forcedEntries.erase(stack.stack);
+        if (forcedEntries != null && !forcedEntries.isEmpty()) {
+            InventorySummary summary = new InventorySummary();
+            for (List<BigItemStack> stackList : displayedItems) {
+                for (BigItemStack stack : stackList) {
+                    summary.add(stack);
                 }
+            }
+            for (BigItemStack stack : forcedEntries.getStacks()) {
+                int limitedAmount = -stack.count - 1;
+                int actualAmount = summary.getCountOf(stack.stack);
+                if (actualAmount <= limitedAmount)
+                    forcedEntries.erase(stack.stack);
             }
         }
 
@@ -127,7 +151,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        List<BigItemStack> clientStockSnapshot = ClientScreenStorage.stacks;
+        List<List<BigItemStack>> clientStockSnapshot = convertToCategoryList(ClientScreenStorage.stacks);
         if (clientStockSnapshot != currentItemSource) {
             currentItemSource = clientStockSnapshot;
             refreshSearchResults(false);
@@ -145,17 +169,73 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             itemScroll.setValue(itemScroll.getChaseTarget());
     }
 
+    private List<List<BigItemStack>> convertToCategoryList(List<BigItemStack> stacks) {
+        List<List<BigItemStack>> output = new ArrayList<>();
+        for (ItemStack filter : menu.portableStockTicker.categories) {
+            List<BigItemStack> inCategory = new ArrayList<>();
+            if (!filter.isEmpty()) {
+                FilterItemStack filterItemStack = FilterItemStack.of(filter);
+                for (Iterator<BigItemStack> iterator = stacks.iterator(); iterator.hasNext(); ) {
+                    BigItemStack bigStack = iterator.next();
+                    if (!filterItemStack.test(playerInventory.player.level(), bigStack.stack))
+                        continue;
+                    inCategory.add(bigStack);
+                    iterator.remove();
+                }
+            }
+            output.add(inCategory);
+        }
+        List<BigItemStack> unsorted = new ArrayList<>(stacks);
+        output.add(unsorted);
+        return output;
+    }
+
     private void refreshSearchResults(boolean scrollBackUp) {
         if (scrollBackUp)
             itemScroll.startWithValue(0);
 
+        categories = new ArrayList<>();
+        for (int i = 0; i < menu.portableStockTicker.categories.size(); i++) {
+            ItemStack stack = menu.portableStockTicker.categories.get(i);
+            CategoryEntry entry = new CategoryEntry(i, stack.isEmpty() ? ""
+                    : stack.getHoverName()
+                    .getString(),
+                    0);
+            entry.hidden = hiddenCategories.contains(i);
+            categories.add(entry);
+        }
+
+        CategoryEntry unsorted = new CategoryEntry(-1, CreateLang.translate("gui.stock_keeper.unsorted_category")
+                .string(), 0);
+        unsorted.hidden = hiddenCategories.contains(-1);
+        categories.add(unsorted);
+
         String valueWithPrefix = searchBox.getValue();
+        boolean anyItemsInCategory = false;
 
         // Nothing is being filtered out
-        if (valueWithPrefix.isBlank()) {
-            if (currentItemSource != null) {
-                displayedItems = new ArrayList<>(currentItemSource);
+        if (valueWithPrefix.isBlank() && currentItemSource != null) {
+            displayedItems = new ArrayList<>(currentItemSource);
+
+            int categoryY = 0;
+            for (int categoryIndex = 0; categoryIndex < currentItemSource.size(); categoryIndex++) {
+                categories.get(categoryIndex).y = categoryY;
+                List<BigItemStack> displayedItemsInCategory = displayedItems.get(categoryIndex);
+                if (displayedItemsInCategory.isEmpty())
+                    continue;
+                if (categoryIndex < currentItemSource.size() - 1)
+                    anyItemsInCategory = true;
+
+                categoryY += rowHeight;
+                if (!categories.get(categoryIndex).hidden)
+                    categoryY += Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight;
             }
+
+            if (!anyItemsInCategory)
+                categories.clear();
+
+            updateCraftableAmounts();
+            return;
         }
 
         // Filter by search string
@@ -165,42 +245,67 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             valueWithPrefix = valueWithPrefix.substring(1);
         final String value = valueWithPrefix.toLowerCase(Locale.ROOT);
 
-        if (currentItemSource == null) {return;}
-        displayedItems.clear();
-
-        for (BigItemStack entry : currentItemSource) {
-            ItemStack stack = entry.stack;
-
-            if (modSearch) {
-                if (ForgeRegistries.ITEMS.getKey(stack.getItem())
-                        .getNamespace()
-                        .contains(value)) {
-                    displayedItems.add(entry);
-                }
-                continue;
-            }
-
-            if (tagSearch) {
-                if (stack.getTags()
-                        .anyMatch(key -> key.location()
-                                .toString()
-                                .contains(value)))
-                    displayedItems.add(entry);
-                continue;
-            }
-
-            if (stack.getHoverName()
-                    .getString()
-                    .toLowerCase(Locale.ROOT)
-                    .contains(value)
-                    || ForgeRegistries.ITEMS.getKey(stack.getItem())
-                    .getPath()
-                    .contains(value)) {
-                displayedItems.add(entry);
-                continue;
-            }
+        if (currentItemSource == null) {
+            return;
         }
+        displayedItems = new ArrayList<>();
+        currentItemSource.forEach($ -> displayedItems.add(new ArrayList<>()));
 
+        int categoryY = 0;
+        for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
+            List<BigItemStack> category = currentItemSource.get(categoryIndex);
+            categories.get(categoryIndex).y = categoryY;
+
+            if (displayedItems.size() <= categoryIndex)
+                break;
+
+            List<BigItemStack> displayedItemsInCategory = displayedItems.get(categoryIndex);
+            for (BigItemStack entry : category) {
+                ItemStack stack = entry.stack;
+
+                if (modSearch) {
+                    if (ForgeRegistries.ITEMS.getKey(stack.getItem())
+                            .getNamespace()
+                            .contains(value)) {
+                        displayedItemsInCategory.add(entry);
+                    }
+                    continue;
+                }
+
+                if (tagSearch) {
+                    if (stack.getTags()
+                            .anyMatch(key -> key.location()
+                                    .toString()
+                                    .contains(value)))
+                        displayedItemsInCategory.add(entry);
+                    continue;
+                }
+
+                if (stack.getHoverName()
+                        .getString()
+                        .toLowerCase(Locale.ROOT)
+                        .contains(value)
+                        || ForgeRegistries.ITEMS.getKey(stack.getItem())
+                        .getPath()
+                        .contains(value)) {
+                    displayedItemsInCategory.add(entry);
+                    continue;
+                }
+            }
+            if (displayedItemsInCategory.isEmpty())
+                continue;
+            if (categoryIndex < currentItemSource.size() - 1)
+                anyItemsInCategory = true;
+
+            categoryY += rowHeight;
+
+            if (!categories.get(categoryIndex).hidden)
+                categoryY += Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight;
+        }
+        if (!anyItemsInCategory)
+            categories.clear();
+
+        updateCraftableAmounts();
     }
 
     @Override
@@ -276,8 +381,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         int localY = y - itemsY;
 
         for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
+            CategoryEntry entry = categories.isEmpty() ? new CategoryEntry(0, "", 0) : categories.get(categoryIndex);
+            if (entry.hidden)
+                continue;
 
-            int row = Mth.floor((localY - (4)) / (float) rowHeight
+            int row = Mth.floor((localY - (categories.isEmpty() ? 4 : rowHeight) - entry.y) / (float) rowHeight
                     + itemScroll.getChaseTarget());
 
             int col = (x - itemsX) / colWidth;
@@ -285,6 +393,9 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
             if (slot < 0)
                 return noneHovered;
+            if (displayedItems.get(categoryIndex)
+                    .size() <= slot)
+                continue;
 
             return Couple.create(categoryIndex, slot);
         }
@@ -448,25 +559,39 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         }
 
         // Items
-        List<BigItemStack> category = displayedItems;
-        int categoryY = 0;
-
-        for (int index = 0; index < category.size(); index++) {
-            int pY = itemsY + categoryY + (4) + (index / cols) * rowHeight;
-            float cullY = pY - currentScroll * rowHeight;
-
-            if (cullY < y)
+        for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
+            List<BigItemStack> category = displayedItems.get(categoryIndex);
+            CategoryEntry categoryEntry = categories.isEmpty() ? null : categories.get(categoryIndex);
+            int categoryY = categories.isEmpty() ? 0 : categoryEntry.y;
+            if (category.isEmpty())
                 continue;
-            if (cullY > y + windowHeight - 72)
-                break;
 
-            boolean isStackHovered = index == hoveredSlot.getSecond();
-            BigItemStack entry = category.get(index);
+            if (!categories.isEmpty()) {
+                (categoryEntry.hidden ? AllGuiTextures.STOCK_KEEPER_CATEGORY_HIDDEN
+                        : AllGuiTextures.STOCK_KEEPER_CATEGORY_SHOWN).render(pGuiGraphics, itemsX, itemsY + categoryY + 6);
+                pGuiGraphics.drawString(font, categoryEntry.name, itemsX + 10, itemsY + categoryY + 8, 0x4A2D31, false);
+                pGuiGraphics.drawString(font, categoryEntry.name, itemsX + 9, itemsY + categoryY + 7, 0xF8F8EC, false);
+                if (categoryEntry.hidden)
+                    continue;
+            }
 
-            ms.pushPose();
-            ms.translate(itemsX + (index % cols) * colWidth, pY, 0);
-            renderItemEntry(pGuiGraphics, 1, entry, isStackHovered, false);
-            ms.popPose();
+            for (int index = 0; index < category.size(); index++) {
+                int pY = itemsY + categoryY + (categories.isEmpty() ? 4 : rowHeight) + (index / cols) * rowHeight;
+                float cullY = pY - currentScroll * rowHeight;
+
+                if (cullY < y)
+                    continue;
+                if (cullY > y + windowHeight - 72)
+                    break;
+
+                boolean isStackHovered = index == hoveredSlot.getSecond() && categoryIndex == hoveredSlot.getFirst();
+                BigItemStack entry = category.get(index);
+
+                ms.pushPose();
+                ms.translate(itemsX + (index % cols) * colWidth, pY, 0);
+                renderItemEntry(pGuiGraphics, 1, entry, isStackHovered, false);
+                ms.popPose();
+            }
         }
 
         ms.popPose();
@@ -524,10 +649,17 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private int getMaxScroll() {
         int visibleHeight = windowHeight - 84;
         int totalRows = 2;
-        List<BigItemStack> list = displayedItems;
-        totalRows++;
-        totalRows += (int) Math.ceil(list.size() / (float) cols);
-        return Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
+        for (int i = 0; i < displayedItems.size(); i++) {
+            List<BigItemStack> list = displayedItems.get(i);
+            if (list.isEmpty())
+                continue;
+            totalRows++;
+            if (categories.size() > i && categories.get(i).hidden)
+                continue;
+            totalRows += Math.ceil(list.size() / (float) cols);
+        }
+        int maxScroll = (int) Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
+        return maxScroll;
     }
 
     private void renderItemEntry(GuiGraphics graphics, float scale, BigItemStack entry, boolean isStackHovered,
@@ -633,13 +765,20 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             int slot = hoveredSlot.getSecond();
             boolean recipeHovered = hoveredSlot.getFirst() == -2;
             boolean orderHovered = hoveredSlot.getFirst() == -1;
-            try {
-                BigItemStack entry = recipeHovered ? recipesToOrder.get(slot)
-                        : orderHovered ? itemsToOrder.get(slot)
-                        : displayedItems.get(slot);
+            BigItemStack entry = recipeHovered ? recipesToOrder.get(slot)
+                    : orderHovered ? itemsToOrder.get(slot)
+                    : displayedItems.get(hoveredSlot.getFirst())
+                    .get(slot);
+
+            if (recipeHovered) {
+                ArrayList<Component> lines =
+                        new ArrayList<>(entry.stack.getTooltipLines(minecraft.player, TooltipFlag.NORMAL));
+                if (lines.size() > 0)
+                    lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.get(0)
+                            .copy()));
+                graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+            } else
                 graphics.renderTooltip(font, entry.stack, mouseX, mouseY);
-            } catch (Exception ignored) {
-            }
         }
 
         // Render tooltip of address input
@@ -712,6 +851,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             return true;
         }
 
+        Couple<Integer> hoveredSlot = getHoveredSlot((int) pMouseX, (int) pMouseY);
+
         // Confirm
         if (lmb && isConfirmHovered((int) pMouseX, (int) pMouseY)) {
             sendIt();
@@ -719,61 +860,84 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             return true;
         }
 
-        Couple<Integer> hoveredSlot = getHoveredSlot((int) pMouseX, (int) pMouseY);
+        // Category hiding
+        int localY = (int) (pMouseY - itemsY);
+        if (itemScroll.settled() && lmb && !categories.isEmpty() && pMouseX >= itemsX
+                && pMouseX < itemsX + cols * colWidth && pMouseY >= getGuiTop() + 16
+                && pMouseY <= getGuiTop() + windowHeight - 80) {
+            for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
+                CategoryEntry entry = categories.get(categoryIndex);
+                if (Mth.floor((localY - entry.y) / (float) rowHeight + itemScroll.getChaseTarget()) != 0)
+                    continue;
+                if (displayedItems.get(categoryIndex)
+                        .isEmpty())
+                    continue;
+                int indexOf = entry.targetBECategory;
+                if (indexOf >= menu.portableStockTicker.categories.size())
+                    continue;
+
+                if (!entry.hidden) {
+                    hiddenCategories.add(indexOf);
+                    playUiSound(SoundEvents.ITEM_FRAME_ROTATE_ITEM, 1f, 1.5f);
+                } else {
+                    hiddenCategories.remove(indexOf);
+                    playUiSound(SoundEvents.ITEM_FRAME_ROTATE_ITEM, 1f, 0.675f);
+                }
+
+                refreshSearchNextTick = true;
+                moveToTopNextTick = false;
+                return true;
+            }
+        }
+
+
         if (hoveredSlot == noneHovered || !lmb && !rmb)
             return super.mouseClicked(pMouseX, pMouseY, pButton);
 
         // Items
-        try {
-            boolean orderClicked = hoveredSlot.getFirst() == -1;
-            boolean recipeClicked = hoveredSlot.getFirst() == -2;
-            if (hoveredSlot.getSecond() > displayedItems.size()) {
-                return false;
-            }
-            BigItemStack entry = recipeClicked ? recipesToOrder.get(hoveredSlot.getSecond())
-                    : orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
-                    : displayedItems
-                    .get(hoveredSlot.getSecond());
+        boolean orderClicked = hoveredSlot.getFirst() == -1;
+        boolean recipeClicked = hoveredSlot.getFirst() == -2;
+        BigItemStack entry = recipeClicked ? recipesToOrder.get(hoveredSlot.getSecond())
+                : orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
+                : displayedItems.get(hoveredSlot.getFirst())
+                .get(hoveredSlot.getSecond());
 
-            ItemStack itemStack = entry.stack;
-            int transfer = hasShiftDown() ? itemStack.getMaxStackSize() : hasControlDown() ? 10 : 1;
 
-            if (recipeClicked) {
-                CraftableBigItemStack cbis = (CraftableBigItemStack) entry;
-                if (rmb && cbis.count == 0) {
-                    recipesToOrder.remove(cbis);
-                    return true;
-                }
-                requestCraftable(cbis, rmb ? -transfer : transfer);
+        ItemStack itemStack = entry.stack;
+        int transfer = hasShiftDown() ? itemStack.getMaxStackSize() : hasControlDown() ? 10 : 1;
+
+        if (recipeClicked && entry instanceof CraftableBigItemStack cbis) {
+            if (rmb && cbis.count == 0) {
+                recipesToOrder.remove(cbis);
                 return true;
             }
-
-            BigItemStack existingOrder = getOrderForItem(entry.stack);
-            if (existingOrder == null) {
-                if (itemsToOrder.size() >= cols || rmb)
-                    return true;
-                itemsToOrder.add(existingOrder = new BigItemStack(itemStack.copyWithCount(1), 0));
-                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
-                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
-            }
-
-            int current = existingOrder.count;
-
-            if (rmb || orderClicked) {
-                existingOrder.count = current - transfer;
-                if (existingOrder.count <= 0) {
-                    itemsToOrder.remove(existingOrder);
-                    playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
-                    playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
-                }
-                return true;
-            }
-
-            existingOrder.count = current + Math.min(transfer, entry.count - current);
+            requestCraftable(cbis, rmb ? -transfer : transfer);
             return true;
-        } catch (Exception ignored) {
-            return false;
         }
+
+        BigItemStack existingOrder = getOrderForItem(entry.stack);
+        if (existingOrder == null) {
+            if (itemsToOrder.size() >= cols || rmb)
+                return true;
+            itemsToOrder.add(existingOrder = new BigItemStack(itemStack.copyWithCount(1), 0));
+            playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
+            playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
+        }
+
+        int current = existingOrder.count;
+
+        if (rmb || orderClicked) {
+            existingOrder.count = current - transfer;
+            if (existingOrder.count <= 0) {
+                itemsToOrder.remove(existingOrder);
+                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
+                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+            }
+            return true;
+        }
+
+        existingOrder.count = current + Math.min(transfer, entry.count - current);
+        return true;
     }
 
     public void requestCraftable(CraftableBigItemStack cbis, int requestedDifference) {
@@ -784,7 +948,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             return;
 
         InventorySummary availableItems = new InventorySummary();
-        for (BigItemStack stack : displayedItems) {availableItems.add(stack);}
+        for (List<BigItemStack> stackList : displayedItems) {
+            for (BigItemStack stack : stackList) {
+                availableItems.add(stack);
+            }
+        }
         Function<ItemStack, Integer> countModifier = stack -> {
             BigItemStack ordered = getOrderForItem(stack);
             return ordered == null ? 0 : -ordered.count;
@@ -1008,7 +1176,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             boolean recipeClicked = hoveredSlot.getFirst() == -2;
             BigItemStack entry = recipeClicked ? recipesToOrder.get(hoveredSlot.getSecond())
                     : orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
-                    : displayedItems
+                    : displayedItems.get(hoveredSlot.getFirst())
                     .get(hoveredSlot.getSecond());
 
             boolean remove = delta < 0;
@@ -1036,7 +1204,13 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 return true;
             }
 
-            existingOrder.count = current + Math.min(transfer, countOf(entry) - current);
+            InventorySummary summary = new InventorySummary();
+            for (List<BigItemStack> stackList : displayedItems) {
+                for (BigItemStack stack : stackList) {
+                    summary.add(stack);
+                }
+            }
+            existingOrder.count = current + Math.min(transfer, summary.getCountOf(entry.stack) - current);
 
             if (existingOrder.count != current && current != 0)
                 playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
@@ -1045,14 +1219,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         } catch (Exception ignored) {
             return false;
         }
-    }
-
-    private int countOf(BigItemStack entry) {
-        for (BigItemStack bigItemStack : displayedItems)
-            if (bigItemStack.stack.getItem() == entry.stack.getItem()) {
-                return bigItemStack.count;
-            }
-        return 0;
     }
 
     @Override
@@ -1134,11 +1300,18 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             return;
 
         forcedEntries = new InventorySummary();
+        InventorySummary summary = new InventorySummary();
+        for (List<BigItemStack> stackList : displayedItems) {
+            for (BigItemStack stack : stackList) {
+                summary.add(stack);
+            }
+        }
         for (BigItemStack toOrder : itemsToOrder) {
             // momentarily cut the displayed stack size until the stock updates come in
-            if (countOf(toOrder) == BigItemStack.INF)
+            int countOf = summary.getCountOf(toOrder.stack);
+            if (countOf == BigItemStack.INF)
                 continue;
-            forcedEntries.add(toOrder.stack.copy(), -1 - Math.max(0, countOf(toOrder) - toOrder.count));
+            forcedEntries.add(toOrder.stack.copy(), -1 - Math.max(0, countOf - toOrder.count));
         }
 
         PackageOrderWithCrafts order = PackageOrderWithCrafts.simple(itemsToOrder);

@@ -9,10 +9,12 @@ import net.minecraft.world.item.ItemStack;
 public class PortableStockTickerMenu extends AbstractContainerMenu {
     public PortableStockTicker portableStockTicker;
     public Object screenReference;
+    public Player player;
 
     public PortableStockTickerMenu(int id, Inventory playerInventory, PortableStockTicker portableStockTicker) {
         super(CMPMenuTypes.PORTABLE_STOCK_TICKER_MENU.get(), id);
         this.portableStockTicker = portableStockTicker;
+        this.player = playerInventory.player;
     }
 
     @Override
