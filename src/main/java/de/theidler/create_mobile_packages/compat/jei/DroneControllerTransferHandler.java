@@ -10,9 +10,8 @@ import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableSt
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
-import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
+import mezz.jei.api.recipe.transfer.IUniversalRecipeTransferHandler;
 import mezz.jei.common.transfer.RecipeTransferOperationsResult;
 import mezz.jei.common.transfer.RecipeTransferUtil;
 import mezz.jei.library.transfer.RecipeTransferErrorMissingSlots;
@@ -33,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class DroneControllerTransferHandler implements IRecipeTransferHandler<PortableStockTickerMenu, Object> {
+public class DroneControllerTransferHandler implements IUniversalRecipeTransferHandler<PortableStockTickerMenu> {
 
     private IJeiHelpers helpers;
 
@@ -49,11 +48,6 @@ public class DroneControllerTransferHandler implements IRecipeTransferHandler<Po
     @Override
     public Optional<MenuType<PortableStockTickerMenu>> getMenuType() {
         return Optional.of(CMPMenuTypes.PORTABLE_STOCK_TICKER_MENU.get());
-    }
-
-    @Override
-    public RecipeType<Object> getRecipeType() {
-        return null;
     }
 
     @Override
