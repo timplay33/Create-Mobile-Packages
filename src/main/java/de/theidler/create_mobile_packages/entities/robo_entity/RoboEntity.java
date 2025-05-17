@@ -224,19 +224,31 @@ public class RoboEntity extends Mob {
         this.setYHeadRot(rotYaw);
         this.yBodyRot = rotYaw;
         updatePackageEntity();
+        updateNametag();
     }
 
-public void updatePackageEntity() {
-    if (packageEntity == null) return;
-
-    if (doPackageEntity) {
-        packageEntity.setPos(this.getX(), this.getY() - 0.8, this.getZ());
+    private void updateNametag() {
+        if (level().isClientSide) return;
+        if (!CMPConfigs.server().displayNametag.get() || targetAddress == null || targetAddress.isBlank()) {
+            setCustomName(null);
+            setCustomNameVisible(false);
+        } else {
+            setCustomName(Component.literal("-> " + targetAddress));
+            setCustomNameVisible(true);
+        }
     }
 
-    if (packageEntity.isRemoved()) {
-        packageDelivered();
+    public void updatePackageEntity() {
+        if (packageEntity == null) return;
+
+        if (doPackageEntity) {
+            packageEntity.setPos(this.getX(), this.getY() - 0.8, this.getZ());
+        }
+
+        if (packageEntity.isRemoved()) {
+            packageDelivered();
+        }
     }
-}
 
     public void tickEntity(Level world, BlockPos ownerPos, double x, double z) {
         if (!(world instanceof ServerLevel serverLevel) || ownerPos == null) return;
@@ -362,7 +374,7 @@ public void updatePackageEntity() {
     public static int calcETA(Vec3 targetPosition, Vec3 currentPosition) {
         if (targetPosition == null || currentPosition == null) return Integer.MAX_VALUE;
         double distance = targetPosition.distanceTo(currentPosition);
-        return (int) (distance / CMPConfigs.server().droneSpeed.get()) + 1;
+        return (int) (distance / CMPConfigs.server().beeSpeed.get()) + 1;
     }
 
     /**

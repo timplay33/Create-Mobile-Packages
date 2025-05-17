@@ -12,6 +12,8 @@ public class CMPServer extends ConfigBase {
             CMPServer.Comments.portToPort);
     public final ConfigInt beeMaxDistance = i(-1, -1, Integer.MAX_VALUE, "beeMaxDistance",
             CMPServer.Comments.beeMaxDistance);
+    public final ConfigBool displayNametag = b(true, "displayNametag",
+            Comments.displayNametag);
 
     @Override
     public String getName() {
@@ -23,5 +25,6 @@ public class CMPServer extends ConfigBase {
         static String beeRotationSpeed = "The Speed of the rotation of a Robo Bee in degrees per Second. Default: 45";
         static String portToPort = "If true, the Robo Bee will be able to deliver packages from one port to another. Default: true";
         static String beeMaxDistance = "The maximum distance a Robo Bee can travel. Default: -1 (unlimited)";
+        static String displayNametag = "If true, the Robo Bee will display a nametag with the address of the package it is carrying. Default: true";
     }
 }
