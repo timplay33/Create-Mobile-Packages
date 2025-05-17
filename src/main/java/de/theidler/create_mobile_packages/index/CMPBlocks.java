@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
+import static com.simibubi.create.api.behaviour.display.DisplaySource.displaySource;
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
@@ -30,6 +31,8 @@ public class CMPBlocks {
     public static final BlockEntry<BeePortBlock> BEE_PORT = CreateMobilePackages.REGISTRATE.block("bee_port", BeePortBlock::new)
                     .initialProperties(SharedProperties::wooden)
                     .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
+                    .transform(displaySource(CMPDisplaySources.BEE_COUNT))
+                    .transform(displaySource(CMPDisplaySources.BEE_ETA))
                     .item()
                     .transform(customItemModel())
                     .register();

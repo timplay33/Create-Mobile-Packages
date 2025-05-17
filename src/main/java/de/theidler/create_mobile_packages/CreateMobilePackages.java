@@ -39,6 +39,7 @@ public class CreateMobilePackages
         CMPPackets.registerPackets();
         CMPConfigs.register(modLoadingContext);
         CMPEntities.register();
+        CMPDisplaySources.register();
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> {
             return () -> {
