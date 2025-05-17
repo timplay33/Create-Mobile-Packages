@@ -17,8 +17,11 @@ public class BeePortScreen extends PackagePortScreen {
     protected void renderBg(GuiGraphics graphics, float pPartialTick, int pMouseX, int pMouseY) {
         super.renderBg(graphics, pPartialTick, pMouseX, pMouseY);
         graphics.blit(new ResourceLocation(CreateMobilePackages.MODID,"textures/gui/bee_port.png"), getGuiLeft(), getGuiTop(), 0, 47, 220, 82);
-        if (menu.contentHolder instanceof BeePortBlockEntity beePortBlockEntity && beePortBlockEntity.getRoboEntity() != null) {
-            graphics.drawString(font, String.valueOf(beePortBlockEntity.getRoboEntity().calcETA(beePortBlockEntity)), 0, 11, 0x3D3C48, false);
+
+        if (menu instanceof BeePortMenu beePortMenu) {
+            int eta = beePortMenu.getETA();
+            String text = beePortMenu.isBeeOnTravel() ? "Bee will arrive in: " + eta + "s" : "No Bee on Travel"; //TODO: translatable
+            graphics.drawString(font, text, getGuiLeft() + 34, getGuiTop() + 64, 0x3D3C48, false);
         }
     }
 }
