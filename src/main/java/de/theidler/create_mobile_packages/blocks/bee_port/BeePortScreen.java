@@ -20,7 +20,9 @@ public class BeePortScreen extends PackagePortScreen {
 
         if (menu instanceof BeePortMenu beePortMenu) {
             int eta = beePortMenu.getETA();
-            String text = beePortMenu.isBeeOnTravel() ? "Bee will arrive in: " + eta + "s" : "No Bee on Travel"; //TODO: translatable
+            Component text = beePortMenu.isBeeOnTravel()
+                    ? Component.translatable("create_mobile_packages.bee_port.screen.arrival_time", eta)
+                    : Component.translatable("create_mobile_packages.bee_port.screen.no_bee_on_travel");
             graphics.drawString(font, text, getGuiLeft() + 34, getGuiTop() + 64, 0x3D3C48, false);
         }
     }
