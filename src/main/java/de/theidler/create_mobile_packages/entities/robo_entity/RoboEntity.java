@@ -40,10 +40,10 @@ import java.util.Objects;
 public class RoboEntity extends Mob {
 
     private static final EntityDataAccessor<Float> ROT_YAW = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.ITEM_STACK);
 
     private RoboEntityState state;
     private Vec3 targetVelocity = Vec3.ZERO;
-    private ItemStack itemStack;
     private Player targetPlayer;
     private BeePortBlockEntity targetBlockEntity;
     private BeePortBlockEntity startBeePortBlockEntity;
@@ -72,7 +72,7 @@ public class RoboEntity extends Mob {
             }
         }
         setItemStack(itemStack);
-        createPackageEntity(itemStack);
+        //createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
         if (targetBlockEntity != null) {targetBlockEntity.trySetEntityOnTravel(this);}
@@ -121,6 +121,7 @@ public class RoboEntity extends Mob {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(ROT_YAW, getYRot());
+        this.entityData.define(DATA_ITEM_STACK, ItemStack.EMPTY);
     }
 
     /**
@@ -289,12 +290,12 @@ public class RoboEntity extends Mob {
     }
 
     public ItemStack getItemStack() {
-        return itemStack;
+        return this.entityData.get(DATA_ITEM_STACK);
     }
 
     public void setItemStack(ItemStack itemStack) {
         if (itemStack == null) return;
-        this.itemStack = itemStack;
+        this.entityData.set(DATA_ITEM_STACK, itemStack);
     }
     public BeePortBlockEntity getStartBeePortBlockEntity() {
         return startBeePortBlockEntity;
@@ -439,7 +440,7 @@ public class RoboEntity extends Mob {
 
     public void packageDelivered() {
         this.packageEntity = null;
-        this.itemStack = ItemStack.EMPTY;
+        setItemStack(ItemStack.EMPTY);
     }
 
     @Override
@@ -449,8 +450,8 @@ public class RoboEntity extends Mob {
             packageEntity.discard();
             packageEntity = null;
         }
-        if (!itemStack.isEmpty()) {
-            nbt.put("itemStack", itemStack.save(new CompoundTag()));
+        if (!getItemStack().isEmpty()) {
+            nbt.put("itemStack", getItemStack().save(new CompoundTag()));
         }
     }
 
@@ -458,9 +459,9 @@ public class RoboEntity extends Mob {
     public void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
         if (nbt.contains("itemStack", Tag.TAG_COMPOUND)) {
-            itemStack = ItemStack.of(nbt.getCompound("itemStack"));
+            setItemStack(ItemStack.of(nbt.getCompound("itemStack")));
         } else {
-            itemStack = ItemStack.EMPTY;
+            setItemStack(ItemStack.EMPTY);
         }
     }
 
@@ -468,13 +469,13 @@ public class RoboEntity extends Mob {
     public void load(CompoundTag pCompound) {
         super.load(pCompound);
         if (pCompound.contains("itemStack")) {
-            itemStack = ItemStack.of(pCompound.getCompound("itemStack"));
+            setItemStack(ItemStack.of(pCompound.getCompound("itemStack")));
         }
-        if (!itemStack.isEmpty()) {
-            setTargetFromItemStack(itemStack);
+        if (!getItemStack().isEmpty()) {
+            setTargetFromItemStack(getItemStack());
         }
-        if (!level().isClientSide() && !itemStack.isEmpty() && packageEntity == null) {
-            createPackageEntity(itemStack);
+        if (!level().isClientSide() && !getItemStack().isEmpty() && packageEntity == null) {
+            //createPackageEntity(itemStack);
             doPackageEntity = true;
         }
     }
