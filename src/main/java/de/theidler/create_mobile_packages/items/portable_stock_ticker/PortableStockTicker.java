@@ -5,6 +5,7 @@ import com.simibubi.create.content.logistics.filter.FilterItem;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
+import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
 import net.createmod.catnip.nbt.NBTHelper;
@@ -74,10 +75,14 @@ public class PortableStockTicker extends StockCheckingItem {
         if (player == null)
             return InteractionResult.FAIL;
 
-        if (level.getBlockEntity(pos) instanceof StockTickerBlockEntity stbe) {
-            CompoundTag tag = new CompoundTag();
-            stbe.saveAdditional(tag);
-            categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND));
+        if (!level.isClientSide()) {
+            if (level.getBlockEntity(pos) instanceof StockTickerBlockEntity stbe) {
+                CompoundTag tag = new CompoundTag();
+                stbe.saveAdditional(tag);
+                categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND));
+            } else if (level.getBlockEntity(pos) instanceof PackagerLinkBlockEntity) {
+                    categories = new ArrayList<>();
+            }
             saveCategoriesToStack(stack, categories);
             saveHiddenCategoriesByPlayerToStack(stack , hiddenCategoriesByPlayer);
         }
@@ -87,11 +92,11 @@ public class PortableStockTicker extends StockCheckingItem {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
+        ItemStack stack = pPlayer.getItemInHand(pUsedHand);
+        previouslyUsedAddress = loadAddressFromStack(stack);
+        categories = loadCategoriesFromStack(stack);
+        hiddenCategoriesByPlayer = getHiddenCategoriesByPlayerFromStack(stack);
         if (!pLevel.isClientSide) {
-            ItemStack stack = pPlayer.getItemInHand(pUsedHand);
-            previouslyUsedAddress = loadAddressFromStack(stack);
-            categories = loadCategoriesFromStack(stack);
-            hiddenCategoriesByPlayer = getHiddenCategoriesByPlayerFromStack(stack);
             InventorySummary summary = getAccurateSummary(stack);
 
             List<BigItemStack> bigItemStacks = summary.getStacks();
@@ -146,7 +151,7 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     public void saveCategoriesToStack(ItemStack stack, List<ItemStack> categories) {
-        if (categories != null && !categories.isEmpty()) {
+        if (categories != null) {
             stack.getOrCreateTag().put("Categories", NBTHelper.writeItemList(categories));
         }
     }
@@ -161,7 +166,7 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     public void saveHiddenCategoriesByPlayerToStack(ItemStack stack, Map<UUID, List<Integer>> hiddenCategoriesByPlayer) {
-        if (hiddenCategoriesByPlayer != null && !hiddenCategoriesByPlayer.isEmpty()) {
+        if (hiddenCategoriesByPlayer != null) {
             CompoundTag tag = new CompoundTag();
             tag.put("HiddenCategories", NBTHelper.writeCompoundList(hiddenCategoriesByPlayer.entrySet(), e -> {
                 CompoundTag c = new CompoundTag();
