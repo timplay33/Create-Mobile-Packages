@@ -1361,4 +1361,10 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (Mods.JEI.isLoaded() && AllConfigs.client().syncJeiSearch.get())
             CMPJEI.runtime.getIngredientFilter().setFilterText(searchBox.getValue());
     }
+
+    @Override
+    public void removed() {
+        CMPPackets.getChannel().sendToServer(new HiddenCategoriesPacket(new ArrayList<>(hiddenCategories)));
+        super.removed();
+    }
 }

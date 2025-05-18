@@ -169,14 +169,15 @@ public class PortableStockTicker extends StockCheckingItem {
                 c.putIntArray("Indices", e.getValue());
                 return c;
             }));
-            stack.getOrCreateTag().put("HiddenCategoriesByPlayer", tag);
+            stack.getOrCreateTag().put("HiddenCategories", tag);
         }
     }
 
     public Map<UUID, List<Integer>> getHiddenCategoriesByPlayerFromStack(ItemStack stack) {
         Map<UUID, List<Integer>> hiddenCategoriesByPlayer = new HashMap<>();
-        if (stack.hasTag() && stack.getTag().contains("HiddenCategoriesByPlayer")) {
-            NBTHelper.iterateCompoundList(stack.getTag().getList("HiddenCategories", Tag.TAG_COMPOUND),
+        if (stack.hasTag() && stack.getTag().contains("HiddenCategories")) {
+            CompoundTag tag = stack.getTag().getCompound("HiddenCategories");
+            NBTHelper.iterateCompoundList(tag.getList("HiddenCategories", Tag.TAG_COMPOUND),
                     c -> hiddenCategoriesByPlayer.put(c.getUUID("Id"), IntStream.of(c.getIntArray("Indices"))
                             .boxed()
                             .toList()));
