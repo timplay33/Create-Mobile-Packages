@@ -22,6 +22,7 @@ public class LandingDescendStartState implements RoboEntityState {
         double distanceToTarget = re.position().distanceToSqr(target);
 
         if (distanceToTarget < 0.2) {
+            re.setPackageHeightScale(0.0f);
             if (wait++ < 10) {
                 return;
             }
@@ -29,7 +30,7 @@ public class LandingDescendStartState implements RoboEntityState {
         }
 
         if (distanceToTarget < 1.0) {
-            re.doPackageEntity = false;
+            re.setPackageHeightScale((float) distanceToTarget);
         }
     }
 }

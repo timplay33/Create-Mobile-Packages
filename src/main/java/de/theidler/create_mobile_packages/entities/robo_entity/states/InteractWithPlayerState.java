@@ -11,7 +11,6 @@ public class InteractWithPlayerState implements RoboEntityState {
         if (sendPackageToPlayer(re.getTargetPlayer(), re.getItemStack())){
             re.removePackageEntity();
         }
-        re.doPackageEntity = false;
         re.packageDelivered();
         //TODO: check if player has toBeSendPackages
         re.setState(new DeliveryDecisionState());

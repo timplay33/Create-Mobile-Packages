@@ -41,6 +41,7 @@ public class RoboEntity extends Mob {
 
     private static final EntityDataAccessor<Float> ROT_YAW = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<Float> PACKAGE_HEIGHT_SCALE = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
 
     private RoboEntityState state;
     private Vec3 targetVelocity = Vec3.ZERO;
@@ -51,7 +52,6 @@ public class RoboEntity extends Mob {
 
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
     public PackageEntity packageEntity;
-    public boolean doPackageEntity = false;
     private int damageCounter;
 
     /**
@@ -122,6 +122,7 @@ public class RoboEntity extends Mob {
         super.defineSynchedData();
         this.entityData.define(ROT_YAW, getYRot());
         this.entityData.define(DATA_ITEM_STACK, ItemStack.EMPTY);
+        this.entityData.define(PACKAGE_HEIGHT_SCALE, 0.0f);
     }
 
     /**
@@ -224,7 +225,6 @@ public class RoboEntity extends Mob {
         this.setYRot(rotYaw);
         this.setYHeadRot(rotYaw);
         this.yBodyRot = rotYaw;
-        updatePackageEntity();
         updateNametag();
     }
 
@@ -236,18 +236,6 @@ public class RoboEntity extends Mob {
         } else {
             setCustomName(Component.literal("-> " + targetAddress));
             setCustomNameVisible(true);
-        }
-    }
-
-    public void updatePackageEntity() {
-        if (packageEntity == null) return;
-
-        if (doPackageEntity) {
-            packageEntity.setPos(this.getX(), this.getY() - 0.8, this.getZ());
-        }
-
-        if (packageEntity.isRemoved()) {
-            packageDelivered();
         }
     }
 
@@ -297,6 +285,16 @@ public class RoboEntity extends Mob {
         if (itemStack == null) return;
         this.entityData.set(DATA_ITEM_STACK, itemStack);
     }
+
+    public Float getPackageHeightScale() {
+        return this.entityData.get(PACKAGE_HEIGHT_SCALE);
+    }
+
+    public void setPackageHeightScale(float scale) {
+        if (scale < 0.0f || scale > 1.0f) return;
+        this.entityData.set(PACKAGE_HEIGHT_SCALE, scale);
+    }
+
     public BeePortBlockEntity getStartBeePortBlockEntity() {
         return startBeePortBlockEntity;
     }
@@ -347,6 +345,7 @@ public class RoboEntity extends Mob {
     private void handleItemStackOnRemove() {
         if (!this.getItemStack().isEmpty()) {
             level().addFreshEntity(PackageEntity.fromItemStack(level(), this.position(), getItemStack()));
+            setItemStack(ItemStack.EMPTY);
             if (targetPlayer != null) {
                 targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);
             }
@@ -479,8 +478,7 @@ public class RoboEntity extends Mob {
             setTargetFromItemStack(getItemStack());
         }
         if (!level().isClientSide() && !getItemStack().isEmpty() && packageEntity == null) {
-            //createPackageEntity(itemStack);
-            doPackageEntity = true;
+            setPackageHeightScale(0.0f);
         }
     }
 

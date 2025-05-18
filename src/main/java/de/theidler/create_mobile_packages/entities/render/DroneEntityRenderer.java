@@ -36,10 +36,11 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
         if (style != null) {
             ResourceLocation riggingModel = style.getRiggingModel();
             float riggingOffset = style.riggingOffset();
+            float heightScale = entity.getPackageHeightScale();
 
             poseStack.pushPose();
-            poseStack.translate(-0.5D, 0 - (riggingOffset - 5) / 16, -0.5D);
-            poseStack.scale(1F, 1F, 1F);
+            poseStack.translate(-0.5D, 0 - (riggingOffset - 5) / 16 * heightScale, -0.5D);
+            poseStack.scale(1F, heightScale * 1F, 1F);
             var modelManager = Minecraft.getInstance().getModelManager();
             var bakedModel = modelManager.getModel(riggingModel);
             Minecraft.getInstance().getItemRenderer().renderModelLists(
@@ -54,8 +55,8 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
 
             if (!stack.isEmpty() && PackageItem.isPackage(stack)) {
                 poseStack.pushPose();
-                poseStack.translate(0.0D, 0-(riggingOffset-1) / 16, 0.0D);
-                poseStack.scale(4F, 4F, 4F);
+                poseStack.translate(0.0D, 0-(riggingOffset-1) / 16 * heightScale, 0.0D);
+                poseStack.scale(4F, heightScale * 4F, 4F);
                 Minecraft.getInstance().getItemRenderer().renderStatic(
                         stack,
                         net.minecraft.world.item.ItemDisplayContext.GROUND,
