@@ -31,6 +31,11 @@ import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLin
 public class StockCheckingItem extends Item {
     protected static UUID Freq;
 
+    @Override
+    public boolean isFoil(ItemStack pStack) {
+        return isTuned(pStack);
+    }
+
     public StockCheckingItem(Properties pProperties) {
         super(pProperties);
     }
