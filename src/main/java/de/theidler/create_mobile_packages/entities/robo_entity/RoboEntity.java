@@ -51,7 +51,6 @@ public class RoboEntity extends Mob {
     private String targetAddress = "";
 
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
-    public PackageEntity packageEntity;
     private int damageCounter;
 
     /**
@@ -92,29 +91,6 @@ public class RoboEntity extends Mob {
             return;
         }
         setState(new LaunchPrepareState());
-    }
-
-    /**
-     * Creates a `PackageEntity` from the given `ItemStack` and initializes its properties.
-     * The created entity is added to the level.
-     *
-     * @param itemStack The `ItemStack` used to create the `PackageEntity`.
-     *                  If null or not a package, the method returns without action.
-     */
-    public void createPackageEntity(ItemStack itemStack) {
-        if (itemStack == null || !PackageItem.isPackage(itemStack)) return;
-
-        packageEntity = PackageEntity.fromItemStack(level(), this.position(), itemStack);
-        packageEntity.noPhysics = true;
-        packageEntity.setNoGravity(true);
-        packageEntity.setPos(this.getX(), this.getY(), this.getZ());
-
-        int randomAngle = new java.util.Random().nextInt(4) * 90;
-        packageEntity.setYRot(randomAngle);
-        packageEntity.setYHeadRot(randomAngle);
-        packageEntity.setYBodyRot(randomAngle);
-
-        level().addFreshEntity(packageEntity);
     }
 
     @Override
@@ -432,27 +408,9 @@ public class RoboEntity extends Mob {
         return (int) Math.ceil(Math.abs(deltaYaw) / rotationSpeed);
     }
 
-    public boolean hasPackageEntity() {
-        return packageEntity != null;
-    }
-
-    public void removePackageEntity() {
-        if (packageEntity == null) return;
-        packageEntity.remove(Entity.RemovalReason.DISCARDED);
-    }
-
-    public void packageDelivered() {
-        this.packageEntity = null;
-        setItemStack(ItemStack.EMPTY);
-    }
-
     @Override
     public void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
-        if (packageEntity != null) {
-            packageEntity.discard();
-            packageEntity = null;
-        }
         if (!getItemStack().isEmpty()) {
             nbt.put("itemStack", getItemStack().save(new CompoundTag()));
         }
@@ -477,8 +435,8 @@ public class RoboEntity extends Mob {
         if (!getItemStack().isEmpty()) {
             setTargetFromItemStack(getItemStack());
         }
-        if (!level().isClientSide() && !getItemStack().isEmpty() && packageEntity == null) {
-            setPackageHeightScale(0.0f);
+        if (!level().isClientSide() && !getItemStack().isEmpty()) {
+            setPackageHeightScale(1.0f);
         }
     }
 
