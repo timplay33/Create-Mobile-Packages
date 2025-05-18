@@ -76,8 +76,11 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
                     .component());
 
         InventorySummary summary = new InventorySummary();
-        for (BigItemStack stack: screen.displayedItems) {summary.add(stack);}
-
+        for (List<BigItemStack> stackList : screen.displayedItems) {
+            for (BigItemStack stack : stackList) {
+                summary.add(stack);
+            }
+        }
         Container outputDummy = new RecipeWrapper(new ItemStackHandler(9));
         List<Slot> craftingSlots = new ArrayList<>();
         for (int i = 0; i < outputDummy.getContainerSize(); i++)
