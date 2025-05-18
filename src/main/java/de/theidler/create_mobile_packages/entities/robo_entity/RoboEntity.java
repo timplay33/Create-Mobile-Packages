@@ -330,16 +330,11 @@ public class RoboEntity extends Mob {
 
     @Override
     public void remove(RemovalReason pReason) {
-
+        handleItemStackOnRemove();
         if (getTargetBlockEntity() != null) {
             getTargetBlockEntity().trySetEntityOnTravel(null);
         }
 
-        if (pReason == RemovalReason.KILLED && packageEntity != null) {
-            if (this.targetPlayer != null) {
-                targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);
-            }
-        }
         // unload all chunks
         loadedChunks.forEach(chunkPos -> {
             if (level() instanceof ServerLevel serverLevel) {
@@ -347,6 +342,15 @@ public class RoboEntity extends Mob {
             }
         });
         super.remove(pReason);
+    }
+
+    private void handleItemStackOnRemove() {
+        if (!this.getItemStack().isEmpty()) {
+            level().addFreshEntity(PackageEntity.fromItemStack(level(), this.position(), getItemStack()));
+            if (targetPlayer != null) {
+                targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);
+            }
+        }
     }
 
     public Player getTargetPlayer() {
@@ -514,6 +518,7 @@ public class RoboEntity extends Mob {
             this.markHurt();
             this.damageCounter += pAmount * 10;
             if (this.damageCounter > 40) {
+                handleItemStackOnRemove();
                 this.discard();
                 this.kill();
             }
