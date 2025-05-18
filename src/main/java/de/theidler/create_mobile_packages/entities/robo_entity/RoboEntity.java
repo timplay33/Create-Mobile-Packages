@@ -40,18 +40,17 @@ import java.util.Objects;
 public class RoboEntity extends Mob {
 
     private static final EntityDataAccessor<Float> ROT_YAW = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<Float> PACKAGE_HEIGHT_SCALE = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
 
     private RoboEntityState state;
     private Vec3 targetVelocity = Vec3.ZERO;
-    private ItemStack itemStack;
     private Player targetPlayer;
     private BeePortBlockEntity targetBlockEntity;
     private BeePortBlockEntity startBeePortBlockEntity;
     private String targetAddress = "";
 
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
-    public PackageEntity packageEntity;
-    public boolean doPackageEntity = false;
     private int damageCounter;
 
     /**
@@ -72,7 +71,7 @@ public class RoboEntity extends Mob {
             }
         }
         setItemStack(itemStack);
-        createPackageEntity(itemStack);
+        //createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
         if (targetBlockEntity != null) {targetBlockEntity.trySetEntityOnTravel(this);}
@@ -94,33 +93,12 @@ public class RoboEntity extends Mob {
         setState(new LaunchPrepareState());
     }
 
-    /**
-     * Creates a `PackageEntity` from the given `ItemStack` and initializes its properties.
-     * The created entity is added to the level.
-     *
-     * @param itemStack The `ItemStack` used to create the `PackageEntity`.
-     *                  If null or not a package, the method returns without action.
-     */
-    public void createPackageEntity(ItemStack itemStack) {
-        if (itemStack == null || !PackageItem.isPackage(itemStack)) return;
-
-        packageEntity = PackageEntity.fromItemStack(level(), this.position(), itemStack);
-        packageEntity.noPhysics = true;
-        packageEntity.setNoGravity(true);
-        packageEntity.setPos(this.getX(), this.getY(), this.getZ());
-
-        int randomAngle = new java.util.Random().nextInt(4) * 90;
-        packageEntity.setYRot(randomAngle);
-        packageEntity.setYHeadRot(randomAngle);
-        packageEntity.setYBodyRot(randomAngle);
-
-        level().addFreshEntity(packageEntity);
-    }
-
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(ROT_YAW, getYRot());
+        this.entityData.define(DATA_ITEM_STACK, ItemStack.EMPTY);
+        this.entityData.define(PACKAGE_HEIGHT_SCALE, 0.0f);
     }
 
     /**
@@ -223,7 +201,6 @@ public class RoboEntity extends Mob {
         this.setYRot(rotYaw);
         this.setYHeadRot(rotYaw);
         this.yBodyRot = rotYaw;
-        updatePackageEntity();
         updateNametag();
     }
 
@@ -235,18 +212,6 @@ public class RoboEntity extends Mob {
         } else {
             setCustomName(Component.literal("-> " + targetAddress));
             setCustomNameVisible(true);
-        }
-    }
-
-    public void updatePackageEntity() {
-        if (packageEntity == null) return;
-
-        if (doPackageEntity) {
-            packageEntity.setPos(this.getX(), this.getY() - 0.8, this.getZ());
-        }
-
-        if (packageEntity.isRemoved()) {
-            packageDelivered();
         }
     }
 
@@ -289,13 +254,23 @@ public class RoboEntity extends Mob {
     }
 
     public ItemStack getItemStack() {
-        return itemStack;
+        return this.entityData.get(DATA_ITEM_STACK);
     }
 
     public void setItemStack(ItemStack itemStack) {
         if (itemStack == null) return;
-        this.itemStack = itemStack;
+        this.entityData.set(DATA_ITEM_STACK, itemStack);
     }
+
+    public Float getPackageHeightScale() {
+        return this.entityData.get(PACKAGE_HEIGHT_SCALE);
+    }
+
+    public void setPackageHeightScale(float scale) {
+        if (scale < 0.0f || scale > 1.0f) return;
+        this.entityData.set(PACKAGE_HEIGHT_SCALE, scale);
+    }
+
     public BeePortBlockEntity getStartBeePortBlockEntity() {
         return startBeePortBlockEntity;
     }
@@ -329,16 +304,11 @@ public class RoboEntity extends Mob {
 
     @Override
     public void remove(RemovalReason pReason) {
-
+        handleItemStackOnRemove();
         if (getTargetBlockEntity() != null) {
             getTargetBlockEntity().trySetEntityOnTravel(null);
         }
 
-        if (pReason == RemovalReason.KILLED && packageEntity != null) {
-            if (this.targetPlayer != null) {
-                targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);
-            }
-        }
         // unload all chunks
         loadedChunks.forEach(chunkPos -> {
             if (level() instanceof ServerLevel serverLevel) {
@@ -346,6 +316,16 @@ public class RoboEntity extends Mob {
             }
         });
         super.remove(pReason);
+    }
+
+    private void handleItemStackOnRemove() {
+        if (!this.getItemStack().isEmpty()) {
+            level().addFreshEntity(PackageEntity.fromItemStack(level(), this.position(), getItemStack()));
+            setItemStack(ItemStack.EMPTY);
+            if (targetPlayer != null) {
+                targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);
+            }
+        }
     }
 
     public Player getTargetPlayer() {
@@ -428,29 +408,11 @@ public class RoboEntity extends Mob {
         return (int) Math.ceil(Math.abs(deltaYaw) / rotationSpeed);
     }
 
-    public boolean hasPackageEntity() {
-        return packageEntity != null;
-    }
-
-    public void removePackageEntity() {
-        if (packageEntity == null) return;
-        packageEntity.remove(Entity.RemovalReason.DISCARDED);
-    }
-
-    public void packageDelivered() {
-        this.packageEntity = null;
-        this.itemStack = ItemStack.EMPTY;
-    }
-
     @Override
     public void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
-        if (packageEntity != null) {
-            packageEntity.discard();
-            packageEntity = null;
-        }
-        if (!itemStack.isEmpty()) {
-            nbt.put("itemStack", itemStack.save(new CompoundTag()));
+        if (!getItemStack().isEmpty()) {
+            nbt.put("itemStack", getItemStack().save(new CompoundTag()));
         }
     }
 
@@ -458,9 +420,9 @@ public class RoboEntity extends Mob {
     public void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
         if (nbt.contains("itemStack", Tag.TAG_COMPOUND)) {
-            itemStack = ItemStack.of(nbt.getCompound("itemStack"));
+            setItemStack(ItemStack.of(nbt.getCompound("itemStack")));
         } else {
-            itemStack = ItemStack.EMPTY;
+            setItemStack(ItemStack.EMPTY);
         }
     }
 
@@ -468,14 +430,13 @@ public class RoboEntity extends Mob {
     public void load(CompoundTag pCompound) {
         super.load(pCompound);
         if (pCompound.contains("itemStack")) {
-            itemStack = ItemStack.of(pCompound.getCompound("itemStack"));
+            setItemStack(ItemStack.of(pCompound.getCompound("itemStack")));
         }
-        if (!itemStack.isEmpty()) {
-            setTargetFromItemStack(itemStack);
+        if (!getItemStack().isEmpty()) {
+            setTargetFromItemStack(getItemStack());
         }
-        if (!level().isClientSide() && !itemStack.isEmpty() && packageEntity == null) {
-            createPackageEntity(itemStack);
-            doPackageEntity = true;
+        if (!level().isClientSide() && !getItemStack().isEmpty()) {
+            setPackageHeightScale(1.0f);
         }
     }
 
@@ -513,6 +474,7 @@ public class RoboEntity extends Mob {
             this.markHurt();
             this.damageCounter += pAmount * 10;
             if (this.damageCounter > 40) {
+                handleItemStackOnRemove();
                 this.discard();
                 this.kill();
             }
