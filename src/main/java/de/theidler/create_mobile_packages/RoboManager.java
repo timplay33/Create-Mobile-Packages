@@ -1,42 +1,72 @@
 package de.theidler.create_mobile_packages;
 
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class RoboManager {
 
-    private final List<SimpleRobo> roboStore = new ArrayList<>();
-    private boolean isInitialized = false;
+    public Map<UUID, SimpleRobo> robos;
+
+    private RoboManagerSavedData savedData;
+
+    public RoboManager() {
+        cleanUp();
+    }
+
+    public void markDirty() {
+        if (savedData != null)
+            savedData.setDirty();
+    }
 
     public void tick(Level level) {
-        if (!isInitialized) {
-            isInitialized = true;
-            RoboManagerSavedData.load((ServerLevel) level);
+        if (level.dimension() != Level.OVERWORLD)
+            return;
+
+        tickRobos(level);
+    }
+
+    private void tickRobos(Level level) {
+        for (SimpleRobo robo : robos.values()) {
+            robo.tick();
         }
 
-        List<SimpleRobo> toBeRemoved = new ArrayList<>();
-
-        for (SimpleRobo simpleRobo : roboStore) {
-            if (simpleRobo != null && !simpleRobo.isRemoved()) {
-                simpleRobo.tick();
-            } else {
-                toBeRemoved.add(simpleRobo);
+        for (Iterator<SimpleRobo> iterator = robos.values().iterator(); iterator.hasNext();) {
+            SimpleRobo robo = iterator.next();
+            if (robo.invalid) {
+                iterator.remove();
+                robos.remove(robo.id);
             }
         }
-
-        roboStore.removeAll(toBeRemoved);
     }
 
-    public void add(SimpleRobo simpleRobo) {
-        if (simpleRobo != null && !roboStore.contains(simpleRobo)) {
-            roboStore.add(simpleRobo);
-        }
+    public void addRobo(SimpleRobo robo) {
+        robos.put(robo.id, robo);
     }
 
-    public List<SimpleRobo> getRoboStore() {
-        return roboStore;
+    public void removeRobo(UUID id) {
+        robos.remove(id);
+    }
+
+    public void levelLoaded(LevelAccessor level) {
+        MinecraftServer server = level.getServer();
+        if (server == null || server.overworld() != level)
+            return;
+        cleanUp();
+        savedData = null;
+        loadRoboData(server);
+    }
+
+    private void loadRoboData(MinecraftServer server) {
+        if (savedData != null)
+            return;
+        savedData = RoboManagerSavedData.load(server);
+        robos = savedData.getRobos();
+    }
+
+    private void cleanUp() {
+        this.robos = new HashMap<>();
     }
 }
