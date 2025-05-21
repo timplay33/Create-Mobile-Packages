@@ -12,16 +12,14 @@ public class SimpleRobo {
     public UUID id;
     public Level level;
     public Vec3 position;
+    public Vec3 deltaMovement;
     public boolean invalid;
 
-    public SimpleRobo(UUID id, Level level, Vec3 position) {
+    public SimpleRobo(UUID id, Level level, Vec3 position, Vec3 deltaMovement) {
         this.id = id;
         this.level = level;
         this.position = position;
-    }
-
-    public SimpleRobo(Level level, Vec3 position) {
-        this(UUID.randomUUID(), level, position);
+        this.deltaMovement = deltaMovement;
     }
 
     //region Getters/Setters
@@ -37,34 +35,40 @@ public class SimpleRobo {
     public void setPosition(Vec3 position) {
         this.position = position;
     }
+    public Vec3 getDeltaMovement() {
+        return deltaMovement;
+    }
+    public void setDeltaMovement(Vec3 deltaMovement) {
+        this.deltaMovement = deltaMovement;
+    }
     //endregion
 
     public static SimpleRobo read(CompoundTag tag, DimensionPalette dimensions) {
         UUID id = tag.getUUID("Id");
         Level level = CreateMobilePackages.ROBO_MANAGER.getLevel();
 
-        double x = tag.getDouble("PosX");
-        double y = tag.getDouble("PosY");
-        double z = tag.getDouble("PosZ");
-        Vec3 position = new Vec3(x, y, z);
+        Vec3 position = CMPHelper.readVec3FromTag(tag, "Pos");
+        Vec3 deltaMovement = CMPHelper.readVec3FromTag(tag, "Delta");
 
-        return new SimpleRobo(id, level, position);
+        return new SimpleRobo(id, level, position, deltaMovement);
     }
 
     public void tick() {
+        if (deltaMovement != null && !deltaMovement.equals(Vec3.ZERO)) {
+            position = position.add(deltaMovement);
+        }
+
         CreateMobilePackages.ROBO_MANAGER.markDirty();
-        CreateMobilePackages.LOGGER.info("SimpleRobo ticked: {}", this.id);
+        CreateMobilePackages.LOGGER.info("SimpleRobo ticked: {} at {} {} {}", this.id, this.position.x, this.position.y, this.position.z);
     }
 
     public CompoundTag write(DimensionPalette dimensions) {
         CompoundTag nbt = new CompoundTag();
         nbt.putUUID("Id", id);
 
-        if (position != null) {
-            nbt.putDouble("PosX", position.x);
-            nbt.putDouble("PosY", position.y);
-            nbt.putDouble("PosZ", position.z);
-        }
+        nbt = CMPHelper.writeVec3ToTag(nbt, "Pos", position);
+        if (deltaMovement != null)
+            nbt = CMPHelper.writeVec3ToTag(nbt, "Delta", deltaMovement);
 
         return nbt;
     }

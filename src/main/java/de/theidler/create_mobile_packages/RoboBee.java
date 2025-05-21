@@ -14,13 +14,13 @@ public class RoboBee extends SimpleRobo{
 
     private ItemStack itemStack;
 
-    public RoboBee(UUID id, Level level, Vec3 position, ItemStack itemStack) {
-        super(id, level, position);
+    public RoboBee(UUID id, Level level, Vec3 position, Vec3 deltaMovement, ItemStack itemStack) {
+        super(id, level, position, deltaMovement);
         setItemStack(itemStack);
     }
 
-    public RoboBee(Level level, Vec3 position, ItemStack itemStack) {
-        this(UUID.randomUUID(), level, position, itemStack);
+    public RoboBee(Level level, Vec3 position, Vec3 deltaMovement, ItemStack itemStack) {
+        this(UUID.randomUUID(), level, position, deltaMovement, itemStack);
     }
 
     @Override
@@ -67,13 +67,11 @@ public class RoboBee extends SimpleRobo{
         UUID id = tag.getUUID("Id");
         Level level = CreateMobilePackages.ROBO_MANAGER.getLevel();
 
-        double x = tag.getDouble("PosX");
-        double y = tag.getDouble("PosY");
-        double z = tag.getDouble("PosZ");
-        Vec3 position = new Vec3(x, y, z);
+        Vec3 position = CMPHelper.readVec3FromTag(tag, "Pos");
+        Vec3 deltaMovement = CMPHelper.readVec3FromTag(tag, "Delta");
 
         ItemStack itemstack = ItemStack.of(tag.getCompound("ItemStack"));
 
-        return new RoboBee(id, level, position, itemstack);
+        return new RoboBee(id, level, position, deltaMovement, itemstack);
     }
 }
