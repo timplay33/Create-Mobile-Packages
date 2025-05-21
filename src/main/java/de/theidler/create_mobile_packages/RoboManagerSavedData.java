@@ -34,6 +34,15 @@ public class RoboManagerSavedData extends SavedData {
 
         DimensionPalette dimensions = DimensionPalette.read(nbt);
         NBTHelper.iterateCompoundList(nbt.getList("Robos", CompoundTag.TAG_COMPOUND), c -> {
+            if (c.contains("Type")) {
+                RoboManager.RoboType type = RoboManager.RoboType.values()[c.getInt("Type")];
+                if (type == RoboManager.RoboType.ROBO_BEE) {
+                    RoboBee roboBee = RoboBee.read(c, dimensions);
+                    savedData.robos.put(roboBee.id, roboBee);
+                    return;
+                }
+            }
+            //default type
             SimpleRobo simpleRobo = SimpleRobo.read(c, dimensions);
             savedData.robos.put(simpleRobo.id, simpleRobo);
         });

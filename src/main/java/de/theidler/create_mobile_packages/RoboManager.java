@@ -11,6 +11,7 @@ public class RoboManager {
     public Map<UUID, SimpleRobo> robos;
 
     private RoboManagerSavedData savedData;
+    private Level level;
 
     public RoboManager() {
         cleanUp();
@@ -47,10 +48,19 @@ public class RoboManager {
     }
 
     public void removeRobo(UUID id) {
-        robos.remove(id);
+        SimpleRobo robo = robos.get(id);
+        if (robo != null) robo.remove();
+    }
+
+    public Level getLevel() {
+        return level;
+    }
+    public void setLevel(Level level) {
+        this.level = level;
     }
 
     public void levelLoaded(LevelAccessor level) {
+        this.level = (Level) level;
         MinecraftServer server = level.getServer();
         if (server == null || server.overworld() != level)
             return;
@@ -69,4 +79,10 @@ public class RoboManager {
     private void cleanUp() {
         this.robos = new HashMap<>();
     }
+
+    public enum RoboType {
+        SIMPLE_ROBO,
+        ROBO_BEE
+    }
+
 }
