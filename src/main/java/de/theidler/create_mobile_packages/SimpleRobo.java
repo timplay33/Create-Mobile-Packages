@@ -12,6 +12,7 @@ public class SimpleRobo {
     public UUID id;
     public Level level;
     public Vec3 position;
+    public Vec3 oldPosition;
     public Vec3 deltaMovement;
     public boolean invalid;
 
@@ -54,6 +55,7 @@ public class SimpleRobo {
     }
 
     public void tick() {
+        oldPosition = position;
         if (deltaMovement != null && !deltaMovement.equals(Vec3.ZERO)) {
             position = position.add(deltaMovement);
         }
