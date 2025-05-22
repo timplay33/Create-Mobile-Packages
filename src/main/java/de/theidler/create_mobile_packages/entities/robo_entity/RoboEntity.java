@@ -49,6 +49,7 @@ public class RoboEntity extends Mob {
     private BeePortBlockEntity targetBlockEntity;
     private BeePortBlockEntity startBeePortBlockEntity;
     private String targetAddress = "";
+    private boolean pathing = true;
 
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
     private int damageCounter;
@@ -74,7 +75,9 @@ public class RoboEntity extends Mob {
         //createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
-        if (targetBlockEntity != null) {targetBlockEntity.trySetEntityOnTravel(this);}
+        if (targetBlockEntity != null) {
+            targetBlockEntity.trySetEntityOnTravel(this);
+        }
         if (level().getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
             startBeePortBlockEntity = dpbe;
         }
@@ -122,9 +125,13 @@ public class RoboEntity extends Mob {
     }
 
     private void updateTarget() {
-        if (level().isClientSide) { return; }
+        if (level().isClientSide) {
+            return;
+        }
         targetPlayer = getTargetPlayerFromAddress();
-        if (targetPlayer != null) { return; }
+        if (targetPlayer != null) {
+            return;
+        }
         if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this)) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
             targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
@@ -331,6 +338,7 @@ public class RoboEntity extends Mob {
     public Player getTargetPlayer() {
         return targetPlayer;
     }
+
     public BeePortBlockEntity getTargetBlockEntity() {
         return targetBlockEntity;
     }
@@ -360,7 +368,7 @@ public class RoboEntity extends Mob {
     /**
      * Instantly rotates the RoboEntity to look at its target.
      */
-    public void lookAtTarget(){
+    public void lookAtTarget() {
         if (level().isClientSide()) return;
         BlockPos targetPos = getTargetPosition();
         if (targetPos != null) {
@@ -374,8 +382,8 @@ public class RoboEntity extends Mob {
      *
      * @return The number of ticks required to complete the rotation.
      */
-    public int rotateLookAtTarget(){
-        return rotateToAngle((float) getAngleToTarget()+90);
+    public int rotateLookAtTarget() {
+        return rotateToAngle((float) getAngleToTarget() + 90);
     }
 
     /**
@@ -383,8 +391,8 @@ public class RoboEntity extends Mob {
      *
      * @return The number of ticks required to complete the rotation.
      */
-    public int rotateToSnap(){
-        return rotateToAngle((float) getSnapAngle(getAngleToTarget())+90);
+    public int rotateToSnap() {
+        return rotateToAngle((float) getSnapAngle(getAngleToTarget()) + 90);
     }
 
     /**
@@ -481,5 +489,9 @@ public class RoboEntity extends Mob {
         }
 
         return true;
+    }
+
+    public boolean getPathing() {
+        return pathing;
     }
 }
