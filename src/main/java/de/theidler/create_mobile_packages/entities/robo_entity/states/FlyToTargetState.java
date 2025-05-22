@@ -4,6 +4,7 @@ import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -90,10 +91,10 @@ public class FlyToTargetState implements RoboEntityState {
 
             while (!openSet.isEmpty() && iterations++ < maxIterations) {
                 Node current = openSet.poll();
+                if (current.equals(goal))
+                    return reconstructPath(current);
 
-                if (current.equals(goal)) return reconstructPath(current);
                 closedSet.add(current.pos);
-
                 for (BlockPos neighborPos : getNeighbors(current)) {
                     if (!isWalkable.apply(neighborPos) || closedSet.contains(neighborPos)) continue;
 
@@ -120,17 +121,15 @@ public class FlyToTargetState implements RoboEntityState {
             return nodeMap.computeIfAbsent(pos, Node::new);
         }
 
-        private static final BlockPos[] DIRECTIONS = BlockPos.betweenClosedStream(-1, -1, -1, 1, 1, 1)
-                .filter(pos -> !(pos.getX() == 0 && pos.getY() == 0 && pos.getZ() == 0))
-                .map(BlockPos::immutable)
-                .toArray(BlockPos[]::new);
-
         private List<BlockPos> getNeighbors(Node node) {
             BlockPos pos = node.pos;
             List<BlockPos> neighbors = new ArrayList<>(26);
-            for (BlockPos offset : DIRECTIONS)
+            Vec3i[] directions = {
+                    new Vec3i(1, 0, 0), new Vec3i(0, 1, 0), new Vec3i(0, 0, 1),
+                    new Vec3i(-1, 0, 0), new Vec3i(0, -1, 0), new Vec3i(0, 0, -1)
+            };
+            for (Vec3i offset : directions)
                 neighbors.add(node.pos.offset(offset));
-
             return neighbors;
         }
 
