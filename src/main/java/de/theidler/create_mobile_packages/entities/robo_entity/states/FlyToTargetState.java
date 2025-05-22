@@ -3,10 +3,8 @@ package de.theidler.create_mobile_packages.entities.robo_entity.states;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
-import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -130,7 +128,6 @@ public class FlyToTargetState implements RoboEntityState {
         }
 
         private List<BlockPos> getNeighbors(Node node) {
-            BlockPos pos = node.pos;
             List<BlockPos> neighbors = new ArrayList<>(6);
             Vec3i[] directions = {
                     new Vec3i(1, 0, 0), new Vec3i(0, 1, 0), new Vec3i(0, 0, 1),
