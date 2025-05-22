@@ -11,8 +11,11 @@ import java.util.*;
 import java.util.function.Function;
 
 public class FlyToTargetState implements RoboEntityState {
+    private boolean pathing;
+
     @Override
     public void tick(RoboEntity re) {
+        pathing = re.getPathing();
         BlockPos targetPos = re.getTargetPosition();
         if (targetPos == null)
             return;
@@ -35,7 +38,7 @@ public class FlyToTargetState implements RoboEntityState {
                 Function<BlockPos, Boolean> isWalkable = pos ->
                         re.level().getBlockState(new BlockPos(pos)).isAir();
                 List<Node> path = pathfinder.findPath(re.blockPosition(), targetPos, isWalkable);
-                if (!path.isEmpty()) {
+                if (!path.isEmpty() && pathing) {
                     Node nextNode = path.get(0);
                     if (re.position().distanceTo(nextNode.pos.getCenter()) < 0.5 && path.size() > 1)
                         nextNode = path.get(1);
@@ -45,7 +48,9 @@ public class FlyToTargetState implements RoboEntityState {
                     if (re.position().distanceTo(targetPos.getCenter()) > 2.5) // entity rotation starts drifting
                         re.lookAtTarget();
                 }
-            } else {
+            }
+
+            if (!pathing) {
                 Vec3 direction = targetPos.getCenter().subtract(re.position()).normalize();
                 re.setTargetVelocity(direction.scale(speed));
                 if (re.position().distanceTo(targetPos.getCenter()) > 2.5) // entity rotation starts drifting
@@ -70,7 +75,7 @@ public class FlyToTargetState implements RoboEntityState {
         }
     }
 
-    public static class Pathfinder {
+    public class Pathfinder {
         public List<Node> findPath(BlockPos startPos, BlockPos goalPos,
                                    Function<BlockPos, Boolean> isWalkable) {
             Map<BlockPos, Node> nodeMap = new HashMap<>();
@@ -97,6 +102,7 @@ public class FlyToTargetState implements RoboEntityState {
                 closedSet.add(current.pos);
                 for (BlockPos neighborPos : getNeighbors(current)) {
                     if (!isWalkable.apply(neighborPos) || closedSet.contains(neighborPos)) continue;
+                    if (!isWalkable.apply(neighborPos.below())) continue;
 
                     Node neighbor = getOrCreateNode(neighborPos, nodeMap);
                     double tentativeG = current.gCost + 1;
@@ -113,7 +119,7 @@ public class FlyToTargetState implements RoboEntityState {
                 }
             }
 
-            System.err.println("No path found or iteration limit exceeded.");
+            pathing = false;
             return Collections.emptyList();
         }
 

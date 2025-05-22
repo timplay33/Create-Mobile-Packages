@@ -494,4 +494,8 @@ public class RoboEntity extends Mob {
     public boolean getPathing() {
         return pathing;
     }
+
+    public void setPathing(boolean pathing) {
+        this.pathing = pathing;
+    }
 }
