@@ -12,6 +12,7 @@ import java.util.function.Function;
 
 public class FlyToTargetState implements RoboEntityState {
     private boolean pathing;
+    private Pathfinder pathfinder = new Pathfinder();
 
     @Override
     public void tick(RoboEntity re) {
@@ -34,7 +35,6 @@ public class FlyToTargetState implements RoboEntityState {
 
             double speed = CMPConfigs.server().beeSpeed.get() / 20.0;
             if (re.getPathing()) {
-                Pathfinder pathfinder = new Pathfinder();
                 Function<BlockPos, Boolean> isWalkable = pos ->
                         re.level().getBlockState(new BlockPos(pos)).isAir();
                 List<Node> path = pathfinder.findPath(re.blockPosition(), targetPos, isWalkable);
@@ -129,7 +129,7 @@ public class FlyToTargetState implements RoboEntityState {
 
         private List<BlockPos> getNeighbors(Node node) {
             BlockPos pos = node.pos;
-            List<BlockPos> neighbors = new ArrayList<>(26);
+            List<BlockPos> neighbors = new ArrayList<>(6);
             Vec3i[] directions = {
                     new Vec3i(1, 0, 0), new Vec3i(0, 1, 0), new Vec3i(0, 0, 1),
                     new Vec3i(-1, 0, 0), new Vec3i(0, -1, 0), new Vec3i(0, 0, -1)
