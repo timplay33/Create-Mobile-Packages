@@ -10,7 +10,7 @@ import java.util.*;
 
 public class RoboManager {
 
-    public HashMap<UUID, RoboEntity> robos;
+    public Map<UUID, RoboEntity> robos;
 
     private RoboManagerSavedData savedData;
     private Level level;

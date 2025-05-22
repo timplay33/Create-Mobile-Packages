@@ -8,11 +8,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class RoboManagerSavedData extends SavedData {
 
-    private HashMap<UUID, RoboEntity> robos = new HashMap<>();
+    private Map<UUID, RoboEntity> robos = new HashMap<>();
 
     @Override
     public CompoundTag save(CompoundTag nbt) {
@@ -41,7 +42,7 @@ public class RoboManagerSavedData extends SavedData {
         return savedData;
     }
 
-    public HashMap<UUID, RoboEntity> getRobos() {
+    public Map<UUID, RoboEntity> getRobos() {
         return robos;
     }
 }
