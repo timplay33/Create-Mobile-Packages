@@ -3,8 +3,10 @@ package de.theidler.create_mobile_packages.entities.robo_entity.states;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -39,15 +41,14 @@ public class FlyToTargetState implements RoboEntityState {
                 Function<BlockPos, Boolean> isWalkable = pos ->
                         re.level().getBlockState(new BlockPos(pos)).isAir();
                 path = pathfinder.findPath(re.blockPosition(), targetPos, isWalkable);
-                if (!path.isEmpty() && pathing) {
+                if (!path.isEmpty()) {
                     Node nextNode = path.get(0);
                     if (re.position().distanceTo(nextNode.pos.getCenter()) < 0.5 && path.size() > 1)
                         nextNode = path.get(1);
 
                     Vec3 direction = nextNode.pos.getCenter().subtract(re.position()).normalize();
                     re.setTargetVelocity(direction.scale(speed));
-                    if (re.position().distanceTo(targetPos.getCenter()) > 2.5) // entity rotation starts drifting
-                        re.lookAtTarget();
+                    re.lookAt(nextNode.pos);
                 }
             }
 

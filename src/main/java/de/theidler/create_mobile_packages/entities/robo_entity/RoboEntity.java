@@ -375,10 +375,16 @@ public class RoboEntity extends Mob {
      * Instantly rotates the RoboEntity to look at its target.
      */
     public void lookAtTarget() {
+        lookAt(getTargetPosition());
+    }
+
+    /**
+     * Instantly rotates the RoboEntity to look at a certain direction.
+     */
+    public void lookAt(BlockPos pos) {
         if (level().isClientSide()) return;
-        BlockPos targetPos = getTargetPosition();
-        if (targetPos != null) {
-            Vec3 direction = new Vec3(targetPos.getX(), targetPos.getY(), targetPos.getZ()).subtract(this.position()).normalize();
+        if (pos != null) {
+            Vec3 direction = pos.getCenter().subtract(this.position()).normalize();
             this.entityData.set(ROT_YAW, (float) Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90);
         }
     }
