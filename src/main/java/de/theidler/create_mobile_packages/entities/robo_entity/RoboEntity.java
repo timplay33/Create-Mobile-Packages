@@ -6,6 +6,7 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.ModCapabilities;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
+import de.theidler.create_mobile_packages.entities.robo_entity.states.FlyToTargetState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDescendFinishState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
 import de.theidler.create_mobile_packages.index.CMPItems;
@@ -49,6 +50,7 @@ public class RoboEntity extends Mob {
     private BeePortBlockEntity targetBlockEntity;
     private BeePortBlockEntity startBeePortBlockEntity;
     private String targetAddress = "";
+    private boolean pathing = true;
 
     private final List<ChunkPos> loadedChunks = new ArrayList<>();
     private int damageCounter;
@@ -74,7 +76,9 @@ public class RoboEntity extends Mob {
         //createPackageEntity(itemStack);
         setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
-        if (targetBlockEntity != null) {targetBlockEntity.trySetEntityOnTravel(this);}
+        if (targetBlockEntity != null) {
+            targetBlockEntity.trySetEntityOnTravel(this);
+        }
         if (level().getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
             startBeePortBlockEntity = dpbe;
         }
@@ -122,9 +126,13 @@ public class RoboEntity extends Mob {
     }
 
     private void updateTarget() {
-        if (level().isClientSide) { return; }
+        if (level().isClientSide) {
+            return;
+        }
         targetPlayer = getTargetPlayerFromAddress();
-        if (targetPlayer != null) { return; }
+        if (targetPlayer != null) {
+            return;
+        }
         if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this)) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
             targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
@@ -331,6 +339,7 @@ public class RoboEntity extends Mob {
     public Player getTargetPlayer() {
         return targetPlayer;
     }
+
     public BeePortBlockEntity getTargetBlockEntity() {
         return targetBlockEntity;
     }
@@ -342,7 +351,7 @@ public class RoboEntity extends Mob {
      */
     public void updateDisplay(Player player) {
         if (player == null) return;
-        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player.position(), this.position())), true);
+        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player.position(), this.position(), state)), true);
     }
 
     /**
@@ -351,20 +360,31 @@ public class RoboEntity extends Mob {
      * @param targetPosition The Vec3 to calculate the ETA for.
      * @return The ETA in seconds.
      */
-    public static int calcETA(Vec3 targetPosition, Vec3 currentPosition) {
+    public static int calcETA(Vec3 targetPosition, Vec3 currentPosition, RoboEntityState state) {
         if (targetPosition == null || currentPosition == null) return Integer.MAX_VALUE;
-        double distance = targetPosition.distanceTo(currentPosition);
+        double distance;
+        if (state instanceof FlyToTargetState flyToTargetState && flyToTargetState.pathing) {
+            distance = flyToTargetState.path.size();
+        } else {
+            distance = targetPosition.distanceTo(currentPosition);
+        }
         return (int) (distance / CMPConfigs.server().beeSpeed.get()) + 1;
     }
 
     /**
      * Instantly rotates the RoboEntity to look at its target.
      */
-    public void lookAtTarget(){
+    public void lookAtTarget() {
+        lookAt(getTargetPosition());
+    }
+
+    /**
+     * Instantly rotates the RoboEntity to look at a certain direction.
+     */
+    public void lookAt(BlockPos pos) {
         if (level().isClientSide()) return;
-        BlockPos targetPos = getTargetPosition();
-        if (targetPos != null) {
-            Vec3 direction = new Vec3(targetPos.getX(), targetPos.getY(), targetPos.getZ()).subtract(this.position()).normalize();
+        if (pos != null) {
+            Vec3 direction = pos.getCenter().subtract(this.position()).normalize();
             this.entityData.set(ROT_YAW, (float) Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90);
         }
     }
@@ -374,8 +394,8 @@ public class RoboEntity extends Mob {
      *
      * @return The number of ticks required to complete the rotation.
      */
-    public int rotateLookAtTarget(){
-        return rotateToAngle((float) getAngleToTarget()+90);
+    public int rotateLookAtTarget() {
+        return rotateToAngle((float) getAngleToTarget() + 90);
     }
 
     /**
@@ -383,8 +403,8 @@ public class RoboEntity extends Mob {
      *
      * @return The number of ticks required to complete the rotation.
      */
-    public int rotateToSnap(){
-        return rotateToAngle((float) getSnapAngle(getAngleToTarget())+90);
+    public int rotateToSnap() {
+        return rotateToAngle((float) getSnapAngle(getAngleToTarget()) + 90);
     }
 
     /**
@@ -481,5 +501,9 @@ public class RoboEntity extends Mob {
         }
 
         return true;
+    }
+
+    public boolean getPathing() {
+        return pathing;
     }
 }
