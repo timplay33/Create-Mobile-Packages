@@ -11,8 +11,9 @@ import java.util.*;
 import java.util.function.Function;
 
 public class FlyToTargetState implements RoboEntityState {
-    private boolean pathing;
-    private Pathfinder pathfinder = new Pathfinder();
+    public boolean pathing;
+    public List<Node> path = new ArrayList<>();
+    private final Pathfinder pathfinder = new Pathfinder();
 
     @Override
     public void tick(RoboEntity re) {
@@ -37,7 +38,7 @@ public class FlyToTargetState implements RoboEntityState {
             if (re.getPathing()) {
                 Function<BlockPos, Boolean> isWalkable = pos ->
                         re.level().getBlockState(new BlockPos(pos)).isAir();
-                List<Node> path = pathfinder.findPath(re.blockPosition(), targetPos, isWalkable);
+                path = pathfinder.findPath(re.blockPosition(), targetPos, isWalkable);
                 if (!path.isEmpty() && pathing) {
                     Node nextNode = path.get(0);
                     if (re.position().distanceTo(nextNode.pos.getCenter()) < 0.5 && path.size() > 1)

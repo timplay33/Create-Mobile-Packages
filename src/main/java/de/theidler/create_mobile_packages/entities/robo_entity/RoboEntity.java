@@ -6,6 +6,7 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.ModCapabilities;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
+import de.theidler.create_mobile_packages.entities.robo_entity.states.FlyToTargetState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDescendFinishState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
 import de.theidler.create_mobile_packages.index.CMPItems;
@@ -350,7 +351,7 @@ public class RoboEntity extends Mob {
      */
     public void updateDisplay(Player player) {
         if (player == null) return;
-        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player.position(), this.position())), true);
+        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player.position(), this.position(), state)), true);
     }
 
     /**
@@ -359,9 +360,14 @@ public class RoboEntity extends Mob {
      * @param targetPosition The Vec3 to calculate the ETA for.
      * @return The ETA in seconds.
      */
-    public static int calcETA(Vec3 targetPosition, Vec3 currentPosition) {
+    public static int calcETA(Vec3 targetPosition, Vec3 currentPosition, RoboEntityState state) {
         if (targetPosition == null || currentPosition == null) return Integer.MAX_VALUE;
-        double distance = targetPosition.distanceTo(currentPosition);
+        double distance;
+        if (state instanceof FlyToTargetState flyToTargetState && flyToTargetState.pathing) {
+            distance = flyToTargetState.path.size();
+        } else {
+            distance = targetPosition.distanceTo(currentPosition);
+        }
         return (int) (distance / CMPConfigs.server().beeSpeed.get()) + 1;
     }
 
