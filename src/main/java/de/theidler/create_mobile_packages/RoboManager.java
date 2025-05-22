@@ -1,6 +1,8 @@
 package de.theidler.create_mobile_packages;
 
+import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 
@@ -8,7 +10,7 @@ import java.util.*;
 
 public class RoboManager {
 
-    public Map<UUID, SimpleRobo> robos;
+    public HashMap<UUID, RoboEntity> robos;
 
     private RoboManagerSavedData savedData;
     private Level level;
@@ -26,30 +28,31 @@ public class RoboManager {
         if (level.dimension() != Level.OVERWORLD)
             return;
 
+        StringBuilder output = new StringBuilder();
+        for (RoboEntity robo : robos.values()) {
+            output.append(robo.getUUID()).append(" ").append(robo).append("; ");
+        }
+        System.out.println("RoboManager ticking... with " + robos.size() + " robos: " + output);
+
         tickRobos(level);
     }
 
     private void tickRobos(Level level) {
-        for (SimpleRobo robo : robos.values()) {
-            robo.tick();
+        for (RoboEntity robo : robos.values()) {
+            level.guardEntityTick(entity -> {}, robo);
+            robo.roboMangerTick();
         }
 
-        for (Iterator<SimpleRobo> iterator = robos.values().iterator(); iterator.hasNext();) {
-            SimpleRobo robo = iterator.next();
-            if (robo.invalid) {
-                iterator.remove();
-                robos.remove(robo.id);
-            }
-        }
+        robos.values().removeIf(robo -> {return robo == null || robo.isRemoved();});
     }
 
-    public void addRobo(SimpleRobo robo) {
-        robos.put(robo.id, robo);
+    public void addRobo(RoboEntity robo) {
+        robos.put(robo.getUUID(), robo);
     }
 
     public void removeRobo(UUID id) {
-        SimpleRobo robo = robos.get(id);
-        if (robo != null) robo.remove();
+        RoboEntity robo = robos.get(id);
+        if (robo != null) robo.remove(Entity.RemovalReason.DISCARDED);
     }
 
     public Level getLevel() {
@@ -79,10 +82,4 @@ public class RoboManager {
     private void cleanUp() {
         this.robos = new HashMap<>();
     }
-
-    public enum RoboType {
-        SIMPLE_ROBO,
-        ROBO_BEE
-    }
-
 }

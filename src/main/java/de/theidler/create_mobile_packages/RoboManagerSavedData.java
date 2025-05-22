@@ -1,26 +1,28 @@
 package de.theidler.create_mobile_packages;
 
-import com.simibubi.create.content.trains.graph.DimensionPalette;
+import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class RoboManagerSavedData extends SavedData {
 
-    private Map<UUID, SimpleRobo> robos = new HashMap<>();
+    private HashMap<UUID, RoboEntity> robos = new HashMap<>();
 
     @Override
     public CompoundTag save(CompoundTag nbt) {
         RoboManager roboManager = CreateMobilePackages.ROBO_MANAGER;
         CreateMobilePackages.LOGGER.info("Saving RoboManager...");
-        DimensionPalette dimensions = new DimensionPalette();
-        nbt.put("Robos", NBTHelper.writeCompoundList(roboManager.robos.values(), robo -> robo.write(dimensions)));
-        dimensions.write(nbt);
+        nbt.put("Robos", NBTHelper.writeCompoundList(roboManager.robos.values(), robo -> {
+            CompoundTag roboTag = new CompoundTag();
+            roboTag.putInt("Id", robo.getId());
+            return roboTag;
+        }));
         return nbt;
     }
 
@@ -31,25 +33,15 @@ public class RoboManagerSavedData extends SavedData {
     public static RoboManagerSavedData load(CompoundTag nbt) {
         RoboManagerSavedData savedData = new RoboManagerSavedData();
         savedData.robos = new HashMap<>();
-
-        DimensionPalette dimensions = DimensionPalette.read(nbt);
+        Level level = CreateMobilePackages.ROBO_MANAGER.getLevel();
         NBTHelper.iterateCompoundList(nbt.getList("Robos", CompoundTag.TAG_COMPOUND), c -> {
-            if (c.contains("Type")) {
-                RoboManager.RoboType type = RoboManager.RoboType.values()[c.getInt("Type")];
-                if (type == RoboManager.RoboType.ROBO_BEE) {
-                    RoboBee roboBee = RoboBee.read(c, dimensions);
-                    savedData.robos.put(roboBee.id, roboBee);
-                    return;
-                }
-            }
-            //default type
-            SimpleRobo simpleRobo = SimpleRobo.read(c, dimensions);
-            savedData.robos.put(simpleRobo.id, simpleRobo);
+            if (level.getEntity(c.getInt("Id")) instanceof RoboEntity robo)
+                savedData.robos.put(robo.getUUID(), robo);
         });
         return savedData;
     }
 
-    public Map<UUID, SimpleRobo> getRobos() {
+    public HashMap<UUID, RoboEntity> getRobos() {
         return robos;
     }
 }

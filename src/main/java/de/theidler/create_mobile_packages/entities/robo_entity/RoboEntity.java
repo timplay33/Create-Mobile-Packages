@@ -21,7 +21,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -64,6 +63,7 @@ public class RoboEntity extends Mob {
     public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
         super(type, level);
         this.damageCounter = 0;
+        CreateMobilePackages.ROBO_MANAGER.addRobo(this);
         if (targetPos != null) {
             this.targetBlockEntity = level.getBlockEntity(targetPos) instanceof BeePortBlockEntity dpbe ? dpbe : null;
             if (this.targetBlockEntity != null) {
@@ -192,7 +192,11 @@ public class RoboEntity extends Mob {
 
     @Override
     public void tick() {
+    }
+
+    public void roboMangerTick() {
         super.tick();
+        CreateMobilePackages.ROBO_MANAGER.markDirty();
         tickEntity(level(), this.blockPosition(), this.getX(), this.getZ());
         state.tick(this);
         this.setDeltaMovement(targetVelocity);
