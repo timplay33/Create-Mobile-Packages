@@ -411,6 +411,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      * @return True if the drone port can accept a package, false otherwise.
      */
     public boolean canAcceptEntity(RoboEntity entity) {
+        if (this.isRemoved()) return false;
         if (entity == null) return !isFull();
         if (entityOnTravel != null && entityOnTravel != entity) return false;
         return !isFull();

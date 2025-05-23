@@ -113,16 +113,18 @@ public class RoboEntity extends Mob {
 
     private Player getTargetPlayerFromAddress() {
         return level().players().stream()
-                .filter(player -> player.getName().getString().equals(targetAddress))
+                .filter(player -> player.getName().getString().equals(PackageItem.getAddress(this.getItemStack())))
                 .findFirst().orElse(null);
     }
 
+    private String activeTargetAddress = "";
     private void updateTarget() {
         if (level().isClientSide) { return; }
         targetPlayer = getTargetPlayerFromAddress();
         if (targetPlayer != null) { return; }
-        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this)) {
+        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this) || !Objects.equals(activeTargetAddress,targetAddress)) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
+            activeTargetAddress = targetAddress;
             targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null) {
@@ -193,7 +195,7 @@ public class RoboEntity extends Mob {
     public void roboMangerTick() {
         super.tick();
         CreateMobilePackages.ROBO_MANAGER.markDirty();
-        state.tick(this);
+        if (state != null) state.tick(this);
         this.setDeltaMovement(targetVelocity);
         this.move(MoverType.SELF, targetVelocity);
         float rotYaw = this.entityData.get(ROT_YAW);
@@ -293,6 +295,7 @@ public class RoboEntity extends Mob {
     }
 
     public Player getTargetPlayer() {
+        updateTarget();
         return targetPlayer;
     }
     public BeePortBlockEntity getTargetBlockEntity() {
@@ -436,7 +439,7 @@ public class RoboEntity extends Mob {
 
         if (!this.level().isClientSide && !this.isRemoved()) {
             this.markHurt();
-            this.damageCounter += pAmount * 10;
+            this.damageCounter += (int) (pAmount * 10);
             if (this.damageCounter > 40) {
                 handleItemStackOnRemove();
                 this.discard();

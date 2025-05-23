@@ -7,6 +7,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RoboManager {
 
@@ -28,31 +29,31 @@ public class RoboManager {
         if (level.dimension() != Level.OVERWORLD)
             return;
 
-        StringBuilder output = new StringBuilder();
-        for (RoboEntity robo : robos.values()) {
-            output.append(robo.getUUID()).append(" ").append(robo).append("; ");
-        }
-        System.out.println("RoboManager ticking... with " + robos.size() + " robos: " + output);
-
         tickRobos(level);
     }
 
-    private void tickRobos(Level level) {
-        for (RoboEntity robo : robos.values()) {
+    private synchronized void tickRobos(Level level) {
+        List<UUID> toRemove = new ArrayList<>();
+
+        for (Map.Entry<UUID, RoboEntity> entry : robos.entrySet()) {
+            UUID id = entry.getKey();
+            RoboEntity robo = entry.getValue();
+
             level.guardEntityTick(entity -> {}, robo);
             robo.roboMangerTick();
+
+            if (robo.isRemoved()) {
+                toRemove.add(id);
+            }
+        }
+        for (UUID id : toRemove) {
+            robos.remove(id);
         }
 
-        robos.values().removeIf(robo -> {return robo == null || robo.isRemoved();});
     }
 
     public void addRobo(RoboEntity robo) {
         robos.put(robo.getUUID(), robo);
-    }
-
-    public void removeRobo(UUID id) {
-        RoboEntity robo = robos.get(id);
-        if (robo != null) robo.remove(Entity.RemovalReason.DISCARDED);
     }
 
     public Level getLevel() {
@@ -80,6 +81,6 @@ public class RoboManager {
     }
 
     private void cleanUp() {
-        this.robos = new HashMap<>();
+        this.robos = new ConcurrentHashMap<>();
     }
 }
