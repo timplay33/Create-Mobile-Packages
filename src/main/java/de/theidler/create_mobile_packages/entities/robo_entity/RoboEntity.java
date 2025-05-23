@@ -207,12 +207,19 @@ public class RoboEntity extends Mob {
 
     private void updateNametag() {
         if (level().isClientSide) return;
-        if (!CMPConfigs.server().displayNametag.get() || targetAddress == null || targetAddress.isBlank()) {
+        if (!CMPConfigs.server().displayNametag.get()) {
             setCustomName(null);
             setCustomNameVisible(false);
-        } else {
+        } else if (targetAddress != null && !targetAddress.isBlank()) {
             setCustomName(Component.literal("-> " + targetAddress));
             setCustomNameVisible(true);
+        } else if (targetBlockEntity != null) {
+            BlockPos pos = targetBlockEntity.getBlockPos();
+            setCustomName(Component.literal("-> [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]"));
+            setCustomNameVisible(true);
+        } else {
+            setCustomName(null);
+            setCustomNameVisible(false);
         }
     }
 
@@ -391,6 +398,7 @@ public class RoboEntity extends Mob {
         } else {
             setItemStack(ItemStack.EMPTY);
         }
+        setTargetFromItemStack(getItemStack());
     }
 
     @Override
@@ -399,9 +407,7 @@ public class RoboEntity extends Mob {
         if (pCompound.contains("itemStack")) {
             setItemStack(ItemStack.of(pCompound.getCompound("itemStack")));
         }
-        if (!getItemStack().isEmpty()) {
-            setTargetFromItemStack(getItemStack());
-        }
+        setTargetFromItemStack(getItemStack());
         if (!level().isClientSide() && !getItemStack().isEmpty()) {
             setPackageHeightScale(1.0f);
         }
