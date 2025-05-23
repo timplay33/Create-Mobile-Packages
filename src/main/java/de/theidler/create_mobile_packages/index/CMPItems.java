@@ -10,6 +10,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 
 
 public class CMPItems {
@@ -27,8 +28,11 @@ public class CMPItems {
                     .removeTab(CreativeModeTabs.SEARCH)
                     .register();
 
-    public static final ItemEntry<RoboBeeItem> ROBO_BEE =
-            CreateMobilePackages.REGISTRATE.item("robo_bee",RoboBeeItem::new)
+    public static final ItemEntry<ForgeSpawnEggItem> ROBO_BEE =
+            CreateMobilePackages.REGISTRATE.item("robo_bee", properties ->
+                            new ForgeSpawnEggItem(CMPEntities.ROBO_BEE_ENTITY, 0x000000, 0x000000, properties))
+                    .properties(properties ->
+                            properties.stacksTo(64))
                     .register();
 
     public static void register() {
