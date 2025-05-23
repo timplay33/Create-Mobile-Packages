@@ -10,13 +10,17 @@
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "仓库管理器将会绑定到对应的物流网络",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "使用时",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "仓库管理器将会打开一个仓库管理界面",
-    "create_mobile_packages.bee_port.send_items": "将物品送至玩家",
+    "create_mobile_packages.bee_port.send_items": "已经将物品送至玩家",
     "create_mobile_packages.ponder.bee_port.header": "运输蜂停泊港",
     "create_mobile_packages.ponder.bee_port.text_1": "运输蜂停泊港可将包裹送至玩家",
     "create_mobile_packages.ponder.bee_port.text_2": "将包裹目的地设置为玩家名",
     "create_mobile_packages.ponder.bee_port.text_3": "运输蜂就会将包裹交给对应的玩家",
-    "create_mobile_packages.robo_entity.death": "携带%4$s下单的包裹的运输蜂在 X=%1$s Y=%2$s Z=%3$s 处连接中断",
-    "create_mobile_packages.robo_entity.eta": "包裹将在%1$s秒后抵达",
+    "create_mobile_packages.robo_entity.death": "携带 %4$s 下单的包裹的运输蜂在 X=%1$s Y=%2$s Z=%3$s 处连接中断",
+    "create_mobile_packages.robo_entity.eta": "包裹将在 %1$s秒 后抵达",
     "entity.create_mobile_packages.robo_bee": "运输蜂",
-    "item.create_mobile_packages.robo_bee": "运输蜂"
+    "item.create_mobile_packages.robo_bee": "运输蜂",
+    "create_mobile_packages.bee_port.screen.arrival_time": "运输蜂将在 %1$s秒 后抵达",
+    "create_mobile_packages.bee_port.screen.no_bee_on_travel": "没有运输蜂正在执行任务",
+    "create_mobile_packages.display_source.bee_eta": "运输蜂预计到达时间",
+    "create_mobile_packages.display_source.bee_count": "运输蜂数量"
 }
