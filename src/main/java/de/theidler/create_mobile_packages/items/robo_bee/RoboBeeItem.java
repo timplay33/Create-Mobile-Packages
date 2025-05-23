@@ -1,52 +1,55 @@
 package de.theidler.create_mobile_packages.items.robo_bee;
 
+import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 
-public class RoboBeeItem extends Item {
-    public RoboBeeItem(Properties pProperties) {
-        super(pProperties);
+import java.util.function.Supplier;
+
+public class RoboBeeItem extends ForgeSpawnEggItem {
+    public RoboBeeItem(Supplier<? extends EntityType<? extends Mob>> type, int backgroundColor, int highlightColor, Properties props) {
+        super(type, backgroundColor, highlightColor, props);
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
-        ItemStack itemStack = pPlayer.getItemInHand(pUsedHand);
-        if (itemStack.getItem() instanceof RoboBeeItem) {
-            pLevel.addFreshEntity(new RoboBeeEntity(pLevel, ItemStack.EMPTY, null, getTargetPos(pPlayer)));
-            itemStack.setCount(itemStack.getCount() - 1);
-        }
-        return super.use(pLevel, pPlayer, pUsedHand);
-    }
+    public InteractionResult useOn(UseOnContext context) {
+        Level level = context.getLevel();
+        if (level.isClientSide) return InteractionResult.SUCCESS;
 
-    private BlockPos getTargetPos(Player pPlayer) {
-        double rayTraceDistance = 5.0D;
-        Vec3 eyePos = pPlayer.getEyePosition();
-        Vec3 lookVec = pPlayer.getViewVector(1.0F);
-        BlockHitResult result = pPlayer.level().clip(
-                new ClipContext(
-                        eyePos,
-                        eyePos.add(lookVec.scale(rayTraceDistance)),
-                        ClipContext.Block.OUTLINE,
-                        ClipContext.Fluid.NONE,
-                        pPlayer
-                )
-        );
+        Player player = context.getPlayer();
+        ItemStack offhandItem = player.getOffhandItem();
 
-        Vec3 hitPos;
-        if (result.getType() == BlockHitResult.Type.MISS) {
-            hitPos = eyePos.add(lookVec.scale(1.0));
-        } else {
-            hitPos = result.getLocation().subtract(lookVec.scale(0.3));
+        BlockPos pos = context.getClickedPos().relative(context.getClickedFace());
+
+        EntityType<?> entityType = getType(null);
+
+        Entity entity = entityType.create(level);
+        if (entity == null) return InteractionResult.FAIL;
+
+        entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0F, 0.0F);
+
+        if (entity instanceof RoboBeeEntity roboBee) {
+            if (offhandItem.getItem() instanceof PackageItem) {
+                roboBee.setPackageHeightScale(1.0F);
+                roboBee.setItemStack(offhandItem.copy());
+                player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY); // remove from offhand
+            }
         }
-        return BlockPos.containing(hitPos);
+
+        level.addFreshEntity(entity);
+        context.getItemInHand().shrink(1);
+
+        return InteractionResult.SUCCESS;
     }
 }

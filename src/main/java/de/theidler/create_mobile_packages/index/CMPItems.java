@@ -28,9 +28,9 @@ public class CMPItems {
                     .removeTab(CreativeModeTabs.SEARCH)
                     .register();
 
-    public static final ItemEntry<ForgeSpawnEggItem> ROBO_BEE =
+    public static final ItemEntry<RoboBeeItem> ROBO_BEE =
             CreateMobilePackages.REGISTRATE.item("robo_bee", properties ->
-                            new ForgeSpawnEggItem(CMPEntities.ROBO_BEE_ENTITY, 0x000000, 0x000000, properties))
+                            new RoboBeeItem(CMPEntities.ROBO_BEE_ENTITY, 0x000000, 0x000000, properties))
                     .properties(properties ->
                             properties.stacksTo(64))
                     .register();
