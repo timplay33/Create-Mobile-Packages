@@ -59,8 +59,14 @@ public class SendPackage extends SimplePacketBase {
             WiFiEffectPacket.send(player.level(), player.blockPosition());
         }
 
-        if (player.getMainHandItem().getItem() instanceof PortableStockTicker) {
-            ((PortableStockTicker) player.getMainHandItem().getItem()).broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address, player);
-        }
+        PortableStockTicker pst = PortableStockTicker.find(player.getInventory());
+        if (pst != null)
+            pst.broadcastPackageRequest(
+                LogisticallyLinkedBehaviour.RequestType.PLAYER,
+                order,
+                null,
+                address,
+                player
+            );
     }
 }

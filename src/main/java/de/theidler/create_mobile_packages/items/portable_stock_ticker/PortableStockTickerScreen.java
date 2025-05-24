@@ -438,8 +438,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
-        GuiGameElement.of(playerInventory.player.getMainHandItem())
-                .render(pGuiGraphics);
+        PortableStockTicker pst = PortableStockTicker.find(playerInventory);
+        if (pst != null) {
+            GuiGameElement.of(pst)
+                    .render(pGuiGraphics);
+        }
         ms.popPose();
 
         // Render ordered items
