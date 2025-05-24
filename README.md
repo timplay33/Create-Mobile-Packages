@@ -10,7 +10,7 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 ## Requirements
 
 ### 1.20.1 Forge
-- Forge 47.1.3 or newer
+- Forge 47.3.33 or newer
 - Create 6.0.4 or newer
 
 ### 1.21.1 NeoForge

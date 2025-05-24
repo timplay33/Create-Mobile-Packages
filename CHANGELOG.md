@@ -38,7 +38,8 @@ Create: Mobile Packages Unreleased
 - Changed Packages are no longer their own entity but are now a part of the Robo Bee entity
 - Fixed Robo Bees can't fly through unloaded chunks, by adding a global RoboManager that keeps track of all Robo Bees and ticks them
 - Fixed Offhand block is placed when opening a Portable Stock Ticker
-- 
+- Fixed Portable Stock Ticker not working with Create: Factory Logistics
+
 ### Translations
 
 - Added German translation
