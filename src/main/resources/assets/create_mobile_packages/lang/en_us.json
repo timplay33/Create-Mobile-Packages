@@ -22,5 +22,6 @@
     "create_mobile_packages.ponder.bee_port.text_2": "Set the Package address to the Player's name",
     "create_mobile_packages.ponder.bee_port.text_3": "The Package will be sent to the Player",
     "create_mobile_packages.robo_entity.death": "Robo Bee died at X %1$s Y %2$s Z %3$s with a Package for %4$s",
-    "create_mobile_packages.robo_entity.eta": "Package will arrive in %1$s seconds"
+    "create_mobile_packages.robo_entity.eta": "Package will arrive in %1$s seconds",
+    "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Open Portable Stock Ticker"
 }

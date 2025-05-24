@@ -2,10 +2,7 @@ package de.theidler.create_mobile_packages.index;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.BigItemStackListPacket;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.HiddenCategoriesPacket;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +24,7 @@ public enum CMPPackets {
     LOGISTICS_PACKAGE_REQUEST(SendPackage.class, SendPackage::new, PLAY_TO_SERVER),
     REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate::new, PLAY_TO_SERVER),
     HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket::new, PLAY_TO_SERVER),
+    OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker::new, PLAY_TO_SERVER),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT);

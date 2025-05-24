@@ -17,6 +17,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -43,6 +44,24 @@ public class PortableStockTicker extends StockCheckingItem {
         hiddenCategoriesByPlayer = new HashMap<>();
     }
 
+    public static PortableStockTicker find(Inventory playerInventory) {
+        for (int i = 0; i < playerInventory.getContainerSize(); i++) {
+            if (playerInventory.getItem(i).getItem() instanceof PortableStockTicker portableStockTicker) {
+                return portableStockTicker;
+            }
+        }
+        return null;
+    }
+
+    public static int getIndexOfPortableStockTicker(Inventory playerInventory) {
+        for (int i = 0; i < playerInventory.getContainerSize(); i++) {
+            if (playerInventory.getItem(i).getItem() instanceof PortableStockTicker) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     @Override
     public Rarity getRarity(ItemStack pStack) {
         return Rarity.UNCOMMON;
@@ -54,11 +73,10 @@ public class PortableStockTicker extends StockCheckingItem {
         previouslyUsedAddress = address;
 
         if (player instanceof ServerPlayer) {
-            for (ItemStack itemStack : player.getInventory().items) {
+            ItemStack itemStack = player.getInventory().getItem(getIndexOfPortableStockTicker(player.getInventory()));
                 if (itemStack.getItem() instanceof PortableStockTicker) {
                     saveAddressToStack(itemStack, address);
                 }
-            }
         }
         return result;
     }
