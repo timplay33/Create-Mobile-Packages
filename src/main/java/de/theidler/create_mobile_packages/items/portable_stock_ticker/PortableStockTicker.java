@@ -24,8 +24,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkHooks;
-import org.checkerframework.checker.units.qual.K;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -75,7 +73,7 @@ public class PortableStockTicker extends StockCheckingItem {
         if (player == null)
             return InteractionResult.FAIL;
 
-        if (!level.isClientSide()) {
+        if (!level.isClientSide() && player.isShiftKeyDown()) {
             if (level.getBlockEntity(pos) instanceof StockTickerBlockEntity stbe) {
                 CompoundTag tag = new CompoundTag();
                 stbe.saveAdditional(tag);
@@ -85,9 +83,9 @@ public class PortableStockTicker extends StockCheckingItem {
             }
             saveCategoriesToStack(stack, categories);
             saveHiddenCategoriesByPlayerToStack(stack , hiddenCategoriesByPlayer);
+            return super.useOn(pContext);
         }
-        return super.useOn(pContext);
-
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -116,8 +114,9 @@ public class PortableStockTicker extends StockCheckingItem {
                         Component.translatable("item.create_mobile_packages.portable_stock_ticker")
                 ), buf -> {});
             }
+            return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
         }
-        return super.use(pLevel, pPlayer, pUsedHand);
+        return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
     }
 
     @Override
