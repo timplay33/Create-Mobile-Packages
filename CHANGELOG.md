@@ -25,6 +25,7 @@ Create: Mobile Packages Unreleased
 - Added a Config option to disable Bee nametags
 - Added Categories to the Portable Stock Ticker (added by linking to a Stock Ticker with Categories)
 - Added rigging to a package carried by a Robo Bee
+- Added when spawning a Robo Bee with the Robo Bee Item while holding a package in the offhand, the package will be rigged to the Robo Bee allowing Player to Player and Player to Port transfer
 
 ### Bug Fixes
 
@@ -34,6 +35,7 @@ Create: Mobile Packages Unreleased
 - Fixed Portable Stock Ticker address not being saved to the NBT
 - Fixed applied Foil effect to a linked Portable Stock Ticker
 - Changed Packages are no longer their own entity but are now a part of the Robo Bee entity
+- Fixed Robo Bees can't fly through unloaded chunks, by adding a global RoboManager that keeps track of all Robo Bees and ticks them
 
 ### Translations
 
