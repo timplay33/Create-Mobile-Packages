@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.entities;
 
+import de.theidler.create_mobile_packages.entities.robo_entity.Location;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import net.minecraft.core.BlockPos;
@@ -13,8 +14,8 @@ import net.minecraft.world.level.Level;
 
 public class RoboBeeEntity extends RoboEntity {
 
-    public RoboBeeEntity(Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
-        super(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, targetPos, spawnPos);
+    public RoboBeeEntity(Level level, ItemStack itemStack, Location targetLocation, BlockPos spawnPos) {
+        super(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, targetLocation, spawnPos);
         this.setNoGravity(true);
         this.noPhysics = true;
         this.setNoAi(true);

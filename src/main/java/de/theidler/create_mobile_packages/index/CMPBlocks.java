@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock;
+import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -20,7 +21,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 
 import static com.simibubi.create.api.behaviour.display.DisplaySource.displaySource;
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
-import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
 
 public class CMPBlocks {
@@ -30,13 +30,22 @@ public class CMPBlocks {
     }
 
     public static final BlockEntry<BeePortBlock> BEE_PORT = CreateMobilePackages.REGISTRATE.block("bee_port", BeePortBlock::new)
-                    .initialProperties(SharedProperties::wooden)
-                    .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
-                    .transform(displaySource(CMPDisplaySources.BEE_COUNT))
-                    .transform(displaySource(CMPDisplaySources.BEE_ETA))
-                    .item()
-                    .transform(customItemModel())
-                    .register();
+            .initialProperties(SharedProperties::wooden)
+            .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
+            .transform(displaySource(CMPDisplaySources.BEE_COUNT))
+            .transform(displaySource(CMPDisplaySources.BEE_ETA))
+            .item()
+            .transform(customItemModel())
+            .register();
+
+    public static final BlockEntry<BeePortalBlock> BEE_PORT_PORTAL = CreateMobilePackages.REGISTRATE.block("bee_port_portal", BeePortalBlock::new)
+            .initialProperties(SharedProperties::wooden)
+            .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
+            .transform(displaySource(CMPDisplaySources.BEE_COUNT))
+            .transform(displaySource(CMPDisplaySources.BEE_ETA))
+            .item()
+            .transform(customItemModel())
+            .register();
 
     public static final BlockEntry<DronePortBlock> DRONE_PORT = CreateMobilePackages.REGISTRATE.block("drone_port", DronePortBlock::new)
             .initialProperties(SharedProperties::wooden)
@@ -54,6 +63,7 @@ public class CMPBlocks {
         public DronePortItem(Block pBlock, Properties pProperties) {
             super(pBlock, pProperties);
         }
+
         @Override
         public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
             if (!level.isClientSide && entity instanceof Player player) {
@@ -74,7 +84,7 @@ public class CMPBlocks {
         @Override
         protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
             super.createBlockStateDefinition(pBuilder);
-            pBuilder.add(IS_OPEN_TEXTURE);
+            pBuilder.add(BeePortBlock.IS_OPEN_TEXTURE);
         }
 
         @Override

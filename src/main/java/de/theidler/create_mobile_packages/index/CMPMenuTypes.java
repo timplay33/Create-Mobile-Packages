@@ -5,6 +5,8 @@ import com.tterrag.registrate.util.entry.MenuEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortMenu;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortScreen;
+import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalMenu;
+import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalScreen;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTicker;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerMenu;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerScreen;
@@ -23,6 +25,13 @@ public class CMPMenuTypes {
                     "bee_port_menu",
                     BeePortMenu::new,
                     () -> BeePortScreen::new
+            ).register();
+
+    public static final MenuEntry<PackagePortMenu> BEE_PORT_PORTAL_MENU =
+            CreateMobilePackages.REGISTRATE.menu(
+                    "bee_port_portal_menu",
+                    BeePortalMenu::new,
+                    () -> BeePortalScreen::new
             ).register();
 
     public static void register() {
