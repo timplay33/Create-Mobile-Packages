@@ -26,6 +26,7 @@ Create: Mobile Packages Unreleased
 - Added Categories to the Portable Stock Ticker (added by linking to a Stock Ticker with Categories)
 - Added rigging to a package carried by a Robo Bee
 - Added when spawning a Robo Bee with the Robo Bee Item while holding a package in the offhand, the package will be rigged to the Robo Bee allowing Player to Player and Player to Port transfer
+- Added Keybind to open a Portable Stock Ticker being in the player inventory (default: `G`)
 
 ### Bug Fixes
 
@@ -44,4 +45,6 @@ Create: Mobile Packages Unreleased
 - Added Chinese (Simplified Han script) translation
 - Added Russian translation
 - Added French translation
+- Added Japanese translation
+- Added Portuguese (Brazilian) translation
 
