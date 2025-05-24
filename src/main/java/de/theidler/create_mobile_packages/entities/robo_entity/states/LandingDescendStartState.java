@@ -9,7 +9,7 @@ public class LandingDescendStartState implements RoboEntityState {
 
     @Override
     public void tick(RoboEntity re) {
-        if (re.getTargetBlockEntity() != null && re.getTargetBlockEntity().isFull()) {
+        if (re.getTargetBlockEntity() != null && !re.getTargetBlockEntity().canAcceptEntity(re, !re.getItemStack().isEmpty())) {
             return;
         }
         if (re.getTargetBlockEntity() == null) {

@@ -406,14 +406,17 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     }
 
     /**
-     * Checks if the drone port can accept a Create Mod package.
+     * Checks if the drone port can accept a Create Mod package or a Robo-Bee.
      *
-     * @return True if the drone port can accept a package, false otherwise.
+     * @param entity     The incoming RoboEntity (can be null).
+     * @param hasPackage True if the entity carries a package, false otherwise.
+     * @return True if the port can accept the entity, false otherwise.
      */
-    public boolean canAcceptEntity(RoboEntity entity) {
-        if (entity == null) return !isFull();
+    public boolean canAcceptEntity(RoboEntity entity, Boolean hasPackage) {
+        if (this.isRemoved()) return false;
+        if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(1);
         if (entityOnTravel != null && entityOnTravel != entity) return false;
-        return !isFull();
+        return hasPackage ? !isFull() : !hasFullRoboSlot(1);
     }
 
     public synchronized boolean trySetEntityOnTravel(RoboEntity entity) {

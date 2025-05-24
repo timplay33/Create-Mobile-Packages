@@ -20,6 +20,7 @@ public class CreateMobilePackages
     public static final String MODID = "create_mobile_packages";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(CreateMobilePackages.MODID);
+    public static final RoboManager ROBO_MANAGER = new RoboManager();
 
     public CreateMobilePackages() {
         onCtor();
