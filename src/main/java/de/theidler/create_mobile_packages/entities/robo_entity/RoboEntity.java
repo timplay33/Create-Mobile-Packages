@@ -122,7 +122,7 @@ public class RoboEntity extends Mob {
         if (level().isClientSide) { return; }
         targetPlayer = getTargetPlayerFromAddress();
         if (targetPlayer != null) { return; }
-        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this) || !Objects.equals(activeTargetAddress,targetAddress)) {
+        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this, !getItemStack().isEmpty()) || !Objects.equals(activeTargetAddress,targetAddress)) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
             activeTargetAddress = targetAddress;
             targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
@@ -180,7 +180,7 @@ public class RoboEntity extends Mob {
             if (address != null) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
             }
-            allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity));
+            allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity, (entity != null && !entity.getItemStack().isEmpty())));
             closest[0] = allBEs.stream()
                     .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin)))
                     .orElse(null);
