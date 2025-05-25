@@ -151,7 +151,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        List<List<BigItemStack>> clientStockSnapshot = convertToCategoryList(ClientScreenStorage.stacks);
+        List<List<BigItemStack>> clientStockSnapshot = convertToCategoryList(removeEmptyStacks(ClientScreenStorage.stacks));
         if (clientStockSnapshot != currentItemSource) {
             currentItemSource = clientStockSnapshot;
             refreshSearchResults(false);
@@ -169,6 +169,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             itemScroll.setValue(itemScroll.getChaseTarget());
     }
 
+    private List<BigItemStack> removeEmptyStacks(List<BigItemStack> stacks) {
+        stacks.removeIf(bigStack -> bigStack.stack.isEmpty() || bigStack.count <= 0);
+        return stacks;
+    }
+
     private List<List<BigItemStack>> convertToCategoryList(List<BigItemStack> stacks) {
         List<BigItemStack> stacksCopy = new ArrayList<>(stacks); // Copy to avoid side effects
         List<List<BigItemStack>> output = new ArrayList<>();
@@ -178,10 +183,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 FilterItemStack filterItemStack = FilterItemStack.of(filter);
                 for (Iterator<BigItemStack> iterator = stacksCopy.iterator(); iterator.hasNext(); ) {
                     BigItemStack bigStack = iterator.next();
-                    if (bigStack.stack.isEmpty()) {
-                        iterator.remove();
-                        continue;
-                    }
                     if (!filterItemStack.test(playerInventory.player.level(), bigStack.stack))
                         continue;
                     inCategory.add(bigStack);

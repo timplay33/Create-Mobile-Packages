@@ -39,6 +39,7 @@ Create: Mobile Packages Unreleased
 - Fixed Robo Bees can't fly through unloaded chunks, by adding a global RoboManager that keeps track of all Robo Bees and ticks them
 - Fixed Offhand block is placed when opening a Portable Stock Ticker
 - Fixed Portable Stock Ticker not working with Create: Factory Logistics
+- Fixed Portable Stock Ticker showing Fluids from Create: Factory Logistics as Air by not showing them at all
 
 ### Translations
 
