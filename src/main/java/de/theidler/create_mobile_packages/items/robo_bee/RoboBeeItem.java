@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.items.robo_bee;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
+import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,7 +31,7 @@ public class RoboBeeItem extends Item {
         BlockPos pos = context.getClickedPos().relative(context.getClickedFace());
 
         ItemStack packageItem = ItemStack.EMPTY;
-        if (PackageItem.isPackage(offhandItem)){
+        if (PackageItem.isPackage(offhandItem) && CMPConfigs.server().allowRoboBeeSpawnPackageTransport.get()){
             packageItem = offhandItem.copy();
             player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
         }
