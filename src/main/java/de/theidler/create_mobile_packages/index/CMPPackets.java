@@ -19,6 +19,8 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
 
     // Server to Client
     BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket.STREAM_CODEC);
+    HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket::new, PLAY_TO_SERVER),
+    OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker::new, PLAY_TO_SERVER),
 
     private final CatnipPacketRegistry.PacketType<?> type;
 

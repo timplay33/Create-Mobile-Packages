@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 public class CreateMobilePackages
 {
     public static final String MODID = "create_mobile_packages";
+    public static final String NAME = "Create: Mobile Packages";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(CreateMobilePackages.MODID)
             .defaultCreativeTab((ResourceKey<CreativeModeTab>) null)
@@ -38,6 +39,8 @@ public class CreateMobilePackages
                     .persistent(CustomData.CODEC)
                     .networkSynchronized(CustomData.STREAM_CODEC)
                     .build());
+    public static final RoboManager ROBO_MANAGER = new RoboManager();
+
     public CreateMobilePackages(IEventBus eventBus, ModContainer modContainer) {
         onCtor(eventBus, modContainer);
     }
@@ -55,6 +58,7 @@ public class CreateMobilePackages
         CMPPackets.register();
         CMPConfigs.register(modLoadingContext, modContainer);
         CMPEntities.register();
+        CMPDisplaySources.register();
     }
 
     public static ResourceLocation asResource(String path) {
