@@ -9,7 +9,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
 public class FlyToTargetState implements RoboEntityState {
-    boolean multiDimensional = false;
 
     @Override
     public void tick(RoboEntity re) {
@@ -18,32 +17,24 @@ public class FlyToTargetState implements RoboEntityState {
             return;
         }
 
-        if (targetLocation.dimensionType() != re.level().dimensionType() && !multiDimensional) {
-            targetLocation = RoboBeeEntity.getClosestBeePortal(re.level().dimensionType(), re.location()).location();
-            multiDimensional = true;
+        if (re.multidimensional()) {
+            targetLocation = RoboBeeEntity.getClosestBeePortal(re.level(), re.position()).location();
         }
 
         if (re.position().distanceTo(targetLocation.position().getCenter()) <= CMPConfigs.server().beeSpeed.get() / 12.0) {
-            if (multiDimensional) {
-                multiDimensional = false;
-
-                if (re.getTargetBlockEntity() != null) {
+            if (re.multidimensional()) {
+                if (re.getTargetBlockEntity() != null || re.getTargetPortalEntity() != null)
                     re.setState(new LandingPrepareState());
-                } else if (re.getTargetPlayer() != null) {
-                    re.setState(new InteractWithPlayerState());
-                }
             } else {
-                if (re.getTargetBlockEntity() != null) {
-                    re.setState(new LandingPrepareState());
-                } else if (re.getTargetPlayer() != null) {
-                    re.setState(new InteractWithPlayerState());
-                }
+                if (re.getTargetBlockEntity() != null) re.setState(new LandingPrepareState());
+                else if (re.getTargetPlayer() != null) re.setState(new InteractWithPlayerState());
                 re.setTargetVelocity(Vec3.ZERO);
             }
         } else {
-            if (re.getTargetPlayer() != null) {
+            if (re.getTargetPlayer() != null && re.getTargetPortalEntity() == null) {
                 re.updateDisplay(re.getTargetPlayer());
             }
+
             Vec3 direction = targetLocation.position().getCenter().subtract(re.position()).normalize();
             double speed = CMPConfigs.server().beeSpeed.get() / 20.0;
             re.setTargetVelocity(direction.scale(speed));

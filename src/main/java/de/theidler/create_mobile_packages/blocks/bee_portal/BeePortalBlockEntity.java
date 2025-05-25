@@ -1,23 +1,27 @@
 package de.theidler.create_mobile_packages.blocks.bee_portal;
 
+import de.theidler.create_mobile_packages.blocks.BeePortStorage;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.Location;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPPackets;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestDimensionTeleport;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.ItemStackHandler;
 
 import static de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlock.IS_OPEN_TEXTURE;
-import static de.theidler.create_mobile_packages.index.CMPBlockEntities.beePortStorage;
 
 /**
  * Represents a Drone Port block entity that handles the processing and sending of Create Mod packages
@@ -57,10 +61,12 @@ public class BeePortalBlockEntity extends BlockEntity {
         }
 
         BeePortBlockEntity targetBlock = re.getTargetBlockEntity();
-        Level targetLevel = targetBlock.getLevel();
+        Player targetPlayer = re.getTargetPlayer();
+        Level targetLevel = targetBlock == null ? targetPlayer.level() : targetBlock.getLevel();
         if (targetLevel == null) return;
+        Vec3 spawnPos = getBlockPos().getCenter();
         CMPPackets.getChannel()
-                .sendToServer(new RequestDimensionTeleport(targetLevel.dimension().location(), getBlockPos().getCenter(), targetBlock.getBlockPos(), re.getItemStack()));
+                .sendToServer(new RequestDimensionTeleport(targetLevel.dimension().location(), spawnPos, targetBlock == null ? targetPlayer.blockPosition() : targetBlock.getBlockPos(), re.getItemStack()));
     }
 
     /**
@@ -69,19 +75,18 @@ public class BeePortalBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level == null) return;
-        beePortStorage.addBeePortal(this, level.dimensionType());
+        if (level != null && level instanceof ServerLevel serverLevel) BeePortStorage.add(this);
     }
 
     @Override
     public void setRemoved() {
-        if (level == null) return;
-        if (!level.isClientSide) {
-            beePortStorage.removeBeePortal(this, level.dimensionType());
+        if (level != null && !level.isClientSide) {
+            if (level instanceof ServerLevel serverLevel) BeePortStorage.remove(this);
             if (roboBeeInventory.getStackInSlot(0).getCount() > 0) {
                 level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
             }
         }
+
         super.setRemoved();
     }
 

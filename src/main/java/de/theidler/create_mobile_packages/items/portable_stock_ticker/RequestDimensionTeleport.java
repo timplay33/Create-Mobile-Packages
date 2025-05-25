@@ -1,6 +1,8 @@
-package de.theidler.create_mobile_packages.blocks.bee_portal;
+package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
+import de.theidler.create_mobile_packages.blocks.BeePortStorage;
+import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.Location;
 import net.minecraft.client.Minecraft;
@@ -15,6 +17,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 import org.joml.Vector3f;
+
+import java.util.Comparator;
+import java.util.List;
 
 public class RequestDimensionTeleport extends SimplePacketBase {
     private final ServerLevel serverLevel;
@@ -59,10 +64,14 @@ public class RequestDimensionTeleport extends SimplePacketBase {
         context.enqueueWork(() -> {
             if (serverLevel != null) {
                 BlockPos spawnBlockPos = new BlockPos(Math.round(spawnPos.x()), Math.round(spawnPos.y()), Math.round(spawnPos.z()));
-                RoboBeeEntity drone = new RoboBeeEntity(serverLevel, itemStack, new Location(targetPos, serverLevel.dimensionType()), spawnBlockPos);
-                drone.setPackageHeightScale(1f);
-                serverLevel.addFreshEntity(drone);
-                // roboBeeInventory.getStackInSlot(0).shrink(1);
+                BeePortalBlockEntity exitPortal = BeePortStorage.getPortals(serverLevel).stream()
+                        .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(spawnBlockPos)))
+                        .orElse(null);
+                if (exitPortal != null) {
+                    RoboBeeEntity drone = new RoboBeeEntity(serverLevel, itemStack, new Location(targetPos, serverLevel.dimensionType()), exitPortal.getBlockPos());
+                    drone.setPackageHeightScale(1f);
+                    serverLevel.addFreshEntity(drone);
+                }
             }
         });
 

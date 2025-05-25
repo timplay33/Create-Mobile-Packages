@@ -25,6 +25,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
+    protected void createBlockStateDefinition(StateDefinition.@NotNull Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
         pBuilder.add(IS_OPEN_TEXTURE, FACING);
     }
@@ -52,7 +53,7 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+    public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter world, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         Direction facing = state.getValue(FACING);
         return CMPShapes.DRONE_PORT_SHAPE.get(facing);
     }
@@ -68,12 +69,12 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
     }
 
     @Override
-    public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pMovedByPiston) {
+    public void onRemove(@NotNull BlockState pState, @NotNull Level pLevel, @NotNull BlockPos pPos, @NotNull BlockState pNewState, boolean pMovedByPiston) {
         IBE.onRemove(pState, pLevel, pPos, pNewState);
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState pState, LootParams.Builder pParams) {
+    public @NotNull List<ItemStack> getDrops(@NotNull BlockState pState, @NotNull LootParams.Builder pParams) {
         List<ItemStack> drops = super.getDrops(pState, pParams);
         if (drops.isEmpty()) {
             drops.add(new ItemStack(CMPBlocks.BEE_PORT.asItem(), 1));
@@ -82,8 +83,8 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-                                 BlockHitResult hit) {
+    public @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level worldIn, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn,
+                                          @NotNull BlockHitResult hit) {
         return onBlockEntityUse(worldIn, pos, be -> be.use(player));
     }
 }

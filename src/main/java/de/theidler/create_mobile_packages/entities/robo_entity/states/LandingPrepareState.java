@@ -10,7 +10,7 @@ public class LandingPrepareState implements RoboEntityState {
 
     @Override
     public void tick(RoboEntity re) {
-        if (re.getTargetBlockEntity() != null) {
+        if (re.getTargetBlockEntity() != null || re.getTargetPortalEntity() != null) {
             if (init) {
                 if (re.getTargetPortalEntity() == null) {
                     BeePortBlockEntity.setOpen(re.getTargetBlockEntity(), true);

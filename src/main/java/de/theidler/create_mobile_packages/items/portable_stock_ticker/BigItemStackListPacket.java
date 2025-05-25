@@ -47,5 +47,4 @@ public class BigItemStackListPacket extends SimplePacketBase {
     public void handleClient() {
         ClientScreenStorage.stacks = stacks;
     }
-
 }

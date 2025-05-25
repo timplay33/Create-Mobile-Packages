@@ -11,13 +11,17 @@ public class InteractWithPlayerState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
         if (!re.getItemStack().isEmpty()) {
-            if (sendPackageToPlayer(re.getTargetPlayer(), re.getItemStack())){
+            if (sendPackageToPlayer(re.getTargetPlayer(), re.getItemStack())) {
                 re.setItemStack(ItemStack.EMPTY);
             } else {
                 re.level().addFreshEntity(PackageEntity.fromItemStack(re.level(), re.position(), re.getItemStack()));
                 re.setItemStack(ItemStack.EMPTY);
             }
         }
+
+
+        re.setTargetPlayer(null);
+
         //TODO: check if player has toBeSendPackages
         re.setState(new DeliveryDecisionState());
     }

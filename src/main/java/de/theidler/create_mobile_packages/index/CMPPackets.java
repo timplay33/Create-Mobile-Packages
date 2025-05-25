@@ -2,11 +2,7 @@ package de.theidler.create_mobile_packages.index;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.blocks.bee_portal.RequestDimensionTeleport;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.BigItemStackListPacket;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.HiddenCategoriesPacket;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -21,17 +17,20 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT;
 import static net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER;
 
 public enum CMPPackets {
     // Client to Server
     REQUEST_DIMENSION_TELEPORT(RequestDimensionTeleport.class, RequestDimensionTeleport::new, PLAY_TO_SERVER),
+    GET_PLAYER(GetPlayer.class, GetPlayer::new, PLAY_TO_SERVER),
     LOGISTICS_PACKAGE_REQUEST(SendPackage.class, SendPackage::new, PLAY_TO_SERVER),
     REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate::new, PLAY_TO_SERVER),
     HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket::new, PLAY_TO_SERVER),
 
     // Server to Client
-    BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT);
+    SEND_PLAYER(SendPlayer.class, SendPlayer::read, PLAY_TO_CLIENT),
+    BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket::read, PLAY_TO_CLIENT);
 
 
     public static final ResourceLocation CHANNEL_NAME = CreateMobilePackages.asResource("main");

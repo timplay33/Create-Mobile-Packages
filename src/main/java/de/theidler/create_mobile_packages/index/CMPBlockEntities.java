@@ -4,7 +4,6 @@ import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
-import de.theidler.create_mobile_packages.blocks.bee_port.BeePortStorage;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -15,7 +14,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
 
 public class CMPBlockEntities {
-    public static final BeePortStorage beePortStorage = new BeePortStorage();
     public static final BlockEntityEntry<BeePortBlockEntity> BEE_PORT = CreateMobilePackages.REGISTRATE
             .blockEntity("bee_port", BeePortBlockEntity::new)
             .validBlocks(CMPBlocks.BEE_PORT)
@@ -45,7 +43,7 @@ public class CMPBlockEntities {
 
         @Override
         public void tick() {
-            if (!level.isClientSide) {
+            if (level != null && !level.isClientSide) {
                 tryConvert(level, worldPosition);
             }
         }

@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import net.minecraft.world.phys.Vec3;
@@ -10,13 +11,14 @@ public class LaunchAscendState implements RoboEntityState {
 
     @Override
     public void tick(RoboEntity re) {
-        BeePortBlockEntity bpbe = re.getStartBeePortBlockEntity();
-        if (bpbe == null) {
+        BeePortBlockEntity startPort = re.getStartBeePortBlockEntity();
+        BeePortalBlockEntity startPortal = re.getStartBeePortalBlockEntity();
+        if (startPort == null && startPortal == null) {
             re.setState(new LaunchFinishState());
             return;
         }
 
-        Vec3 target = bpbe.getBlockPos().getCenter().add(0, 2, 0);
+        Vec3 target = (startPort == null ? startPortal : startPort).getBlockPos().getCenter().add(0, 2, 0);
         Vec3 direction = target.subtract(re.position()).normalize();
         re.setTargetVelocity(direction.scale(1 / 20.0)); // fixed speed of 1 block per second
 

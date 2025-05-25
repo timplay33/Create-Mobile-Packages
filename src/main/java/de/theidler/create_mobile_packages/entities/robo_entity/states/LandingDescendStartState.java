@@ -9,12 +9,8 @@ public class LandingDescendStartState implements RoboEntityState {
 
     @Override
     public void tick(RoboEntity re) {
-        if (re.getTargetBlockEntity() != null && re.getTargetBlockEntity().isFull()) {
-            return;
-        }
-        if (re.getTargetBlockEntity() == null) {
-            return;
-        }
+        if (re.getTargetBlockEntity() != null && re.getTargetBlockEntity().isFull()) return;
+        if (re.getTargetBlockEntity() == null && re.getTargetPortalEntity() == null) return;
 
         Vec3 target = (re.getTargetPortalEntity() != null ? re.getTargetPortalEntity() : re.getTargetBlockEntity()).getBlockPos().getCenter().subtract(0, 0.5, 0);
         Vec3 direction = target.subtract(re.position()).normalize();
