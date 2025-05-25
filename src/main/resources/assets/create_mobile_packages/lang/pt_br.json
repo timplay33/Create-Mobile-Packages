@@ -22,5 +22,6 @@
     "create_mobile_packages.bee_port.screen.arrival_time": "Abelha Robô chegará em: %1$ss",
     "create_mobile_packages.bee_port.screen.no_bee_on_travel": "Nenhuma Abelha Robô em trânsito",
     "create_mobile_packages.display_source.bee_count": "Quantidade de Abelhas Robô",
-    "create_mobile_packages.display_source.bee_eta": "Previsão de chegada da Abelha Robô"
+    "create_mobile_packages.display_source.bee_eta": "Previsão de chegada da Abelha Robô",
+    "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Abrir o Telégrafo de Estoque Portátil"
 }

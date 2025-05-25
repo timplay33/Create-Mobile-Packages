@@ -22,5 +22,6 @@
     "create_mobile_packages.bee_port.screen.arrival_time": "Le Robeille arrivera dans : %1$ss",
     "create_mobile_packages.bee_port.screen.no_bee_on_travel": "Pas de Robeille en voyage",
     "create_mobile_packages.display_source.bee_count": "Quantité de Robeilles",
-    "create_mobile_packages.display_source.bee_eta": "HPA du Robeille"
+    "create_mobile_packages.display_source.bee_eta": "HPA du Robeille",
+    "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Ouvrir le Téléscripteur de Stock Portable"
 }
