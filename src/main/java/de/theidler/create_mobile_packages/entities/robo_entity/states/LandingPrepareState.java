@@ -1,20 +1,29 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 
 public class LandingPrepareState implements RoboEntityState {
     boolean init = true;
+
     @Override
     public void tick(RoboEntity re) {
         if (re.getTargetBlockEntity() != null) {
             if (init) {
-                BeePortBlockEntity.setOpen(re.getTargetBlockEntity(), true);
-                re.setPos(re.getTargetBlockEntity().getBlockPos().above().getCenter());
+                if (re.getTargetPortalEntity() == null) {
+                    BeePortBlockEntity.setOpen(re.getTargetBlockEntity(), true);
+                    re.setPos(re.getTargetBlockEntity().getBlockPos().above().getCenter());
+                } else {
+                    BeePortalBlockEntity.setOpen(re.getTargetPortalEntity(), true);
+                    re.setPos(re.getTargetPortalEntity().getBlockPos().above().getCenter());
+                }
+
                 init = false;
             }
-            if (re.rotateToSnap() == 0) {
+
+            if (re.rotateToSnap() == 0 || re.getTargetPortalEntity() != null) {
                 re.setState(new LandingDescendStartState());
             }
         }

@@ -26,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -193,7 +194,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         // Check if the item can be sent to a player.
         for (Player player : level.players()) {
             if (player.getName().getString().equals(address)
-                    && RoboEntity.isWithinRange(new Location(player.blockPosition(), player.level().dimensionType()), new Location(this.getBlockPos(), this.level.dimensionType()))) {
+                    && RoboEntity.isWithinRange(new Location(player.blockPosition(), player.level().dimensionType()), location())) {
                 sendToPlayer(player, itemStack, slot);
                 return;
             }
@@ -201,9 +202,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to another drone port.
         if (CMPConfigs.server().portToPort.get() && !PackageItem.matchAddress(address, addressFilter)) {
-            BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, this.location(), null);
+            BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level.dimensionType(), address, location(), null);
             if (beePortBlockEntity == null) {
-                var BEs = RoboEntity.getMultidimensionalBeePorts(level, address, new Location(this.getBlockPos(), this.level.dimensionType()), null);
+                var BEs = RoboEntity.getMultidimensionalBeePorts(level.dimensionType(), address, location(), null);
                 if (!BEs.isEmpty())
                     beePortBlockEntity = BEs.get(0);
             }
@@ -214,17 +215,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private static void requestRoboEntity(Location location) {
         AtomicReference<BeePortBlockEntity> result = new AtomicReference<>();
         beePortStorage.getAllBeePorts().forEach((currentLevel, allBEs) -> {
-//            currentLevel.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
-//                List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
             allBEs.removeIf(be -> be.location().dimensionType() == location.dimensionType() && be.getBlockPos().equals(location.position()));
             allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
             result.set(allBEs.stream()
                     .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(location.position())))
                     .orElse(null));
-//            });
         });
 
-        if (result.get() != null) result.get().sendDrone(new Location(location.position(), location.dimensionType()));
+        if (result.get() != null) result.get().sendDrone(location);
     }
 
     /**
@@ -255,12 +253,10 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     private void sendDrone(ItemStack itemStack, int slot) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
-            if (this.entityOnTravel == null) {
-                requestRoboEntity(this.location());
-                return;
-            }
+            if (this.entityOnTravel == null) requestRoboEntity(this.location());
             return;
         }
+
         sendItemThisTime = 2;
         RoboBeeEntity drone = new RoboBeeEntity(level, itemStack, null, this.getBlockPos());
         level.addFreshEntity(drone);
@@ -359,15 +355,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!level.isClientSide) {
-            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
-        }
-
-        if (!beePortStorage.hasLevel(level)) {
-            beePortStorage.addBeePortLevel(level);
-            beePortStorage.addBeePortalLevel(level);
-        }
-        beePortStorage.addBeePort(this, level);
+        beePortStorage.addBeePort(this, level.dimensionType());
     }
 
     /**
@@ -376,7 +364,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public void remove() {
         if (!level.isClientSide) {
-            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
+            beePortStorage.removeBeePort(this, level.dimensionType());
             if (entityOnTravel != null) {
                 entityOnTravel.setTargetVelocity(Vec3.ZERO);
                 entityOnTravel.setState(new AdjustRotationToTarget());

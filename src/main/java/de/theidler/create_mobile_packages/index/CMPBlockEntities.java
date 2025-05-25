@@ -71,7 +71,6 @@ public class CMPBlockEntities {
 
         @Override
         protected void onOpenChange(boolean open) {
-
         }
     }
 }

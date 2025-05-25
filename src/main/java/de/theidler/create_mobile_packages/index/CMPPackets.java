@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.index;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.blocks.bee_portal.RequestDimensionTeleport;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.BigItemStackListPacket;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.HiddenCategoriesPacket;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
@@ -24,6 +25,7 @@ import static net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER;
 
 public enum CMPPackets {
     // Client to Server
+    REQUEST_DIMENSION_TELEPORT(RequestDimensionTeleport.class, RequestDimensionTeleport::new, PLAY_TO_SERVER),
     LOGISTICS_PACKAGE_REQUEST(SendPackage.class, SendPackage::new, PLAY_TO_SERVER),
     REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate::new, PLAY_TO_SERVER),
     HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket::new, PLAY_TO_SERVER),

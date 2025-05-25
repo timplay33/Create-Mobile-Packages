@@ -17,9 +17,9 @@ public class FlyToTargetState implements RoboEntityState {
         if (targetLocation == null || targetLocation.position() == null) {
             return;
         }
-        
+
         if (targetLocation.dimensionType() != re.level().dimensionType() && !multiDimensional) {
-            targetLocation = RoboBeeEntity.getClosestBeePortal(re.level(), re.location()).location();
+            targetLocation = RoboBeeEntity.getClosestBeePortal(re.level().dimensionType(), re.location()).location();
             multiDimensional = true;
         }
 

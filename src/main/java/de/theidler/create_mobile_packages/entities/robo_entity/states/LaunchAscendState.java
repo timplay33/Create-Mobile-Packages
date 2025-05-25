@@ -7,6 +7,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class LaunchAscendState implements RoboEntityState {
     private float initialDistanceToTarget = 0;
+
     @Override
     public void tick(RoboEntity re) {
         BeePortBlockEntity bpbe = re.getStartBeePortBlockEntity();
@@ -27,7 +28,7 @@ public class LaunchAscendState implements RoboEntityState {
             re.setPackageHeightScale(1.0f);
             re.setState(new LaunchFinishState());
         } else {
-            float scale =1.0f - (float) (distanceToTarget / initialDistanceToTarget);
+            float scale = 1.0f - (float) (distanceToTarget / initialDistanceToTarget);
             re.setPackageHeightScale(scale);
         }
     }

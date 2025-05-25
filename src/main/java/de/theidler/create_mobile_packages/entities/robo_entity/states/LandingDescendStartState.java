@@ -15,12 +15,12 @@ public class LandingDescendStartState implements RoboEntityState {
         if (re.getTargetBlockEntity() == null) {
             return;
         }
-        Vec3 target = re.getTargetBlockEntity().getBlockPos().getCenter().subtract(0, 0.5, 0);
+
+        Vec3 target = (re.getTargetPortalEntity() != null ? re.getTargetPortalEntity() : re.getTargetBlockEntity()).getBlockPos().getCenter().subtract(0, 0.5, 0);
         Vec3 direction = target.subtract(re.position()).normalize();
         re.setTargetVelocity(direction.scale(1 / 20.0)); // fixed speed of 1 block per second
 
         double distanceToTarget = re.position().distanceToSqr(target);
-
         if (distanceToTarget < 0.2) {
             re.setPackageHeightScale(0.0f);
             if (wait++ < 10) {
