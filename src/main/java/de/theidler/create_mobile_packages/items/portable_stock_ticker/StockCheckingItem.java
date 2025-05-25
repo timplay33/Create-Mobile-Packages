@@ -9,6 +9,7 @@ import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.theidler.create_mobile_packages.compat.FactoryLogisticsCompat;
+import de.theidler.create_mobile_packages.compat.Mods;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +23,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fml.ModList;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -65,7 +65,7 @@ public class StockCheckingItem extends Item {
     // Send a package request
     public boolean broadcastPackageRequest(RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler,
                                            String address) {
-        if (ModList.get().isLoaded("create_factory_logistics")) {
+        if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
             return FactoryLogisticsCompat.tryBroadcast(Freq, type, order, ignoredHandler, address);
         } else {
             return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);

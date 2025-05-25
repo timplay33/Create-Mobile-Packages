@@ -178,6 +178,10 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 FilterItemStack filterItemStack = FilterItemStack.of(filter);
                 for (Iterator<BigItemStack> iterator = stacksCopy.iterator(); iterator.hasNext(); ) {
                     BigItemStack bigStack = iterator.next();
+                    if (bigStack.stack.isEmpty()) {
+                        iterator.remove();
+                        continue;
+                    }
                     if (!filterItemStack.test(playerInventory.player.level(), bigStack.stack))
                         continue;
                     inCategory.add(bigStack);
