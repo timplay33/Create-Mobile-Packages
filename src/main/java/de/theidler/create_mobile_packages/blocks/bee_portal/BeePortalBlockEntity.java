@@ -92,12 +92,8 @@ public class BeePortalBlockEntity extends BlockEntity {
 
         BeePortalBlockEntity targetPortal = re.getTargetPortalEntity();
         BeePortBlockEntity targetBlock = re.getTargetBlockEntity();
-        Level targetLevel = targetBlock.getLevel();
-        Vec3 exitPosition = targetPortal.getBlockPos().getCenter().multiply(1 / 8d, 1, 1 / 8d);
-        BlockPos exitBlockPos = new BlockPos((int) Math.round(exitPosition.x), (int) Math.round(exitPosition.y), (int) Math.round(exitPosition.z));
-        BeePortalBlockEntity exitPortal = RoboEntity.getClosestBeePortal(targetLevel.dimensionType(), new Location(exitBlockPos, targetLevel.dimensionType()));
         CMPPackets.getChannel()
-                .sendToServer(new RequestDimensionTeleport(targetLevel.dimension().location(), exitPortal.getBlockPos().getCenter(), targetBlock.getBlockPos(), re.getItemStack()));
+                .sendToServer(new RequestDimensionTeleport(targetBlock.getLevel().dimension().location(), getBlockPos().getCenter(), targetBlock.getBlockPos(), re.getItemStack()));
     }
 
     /**

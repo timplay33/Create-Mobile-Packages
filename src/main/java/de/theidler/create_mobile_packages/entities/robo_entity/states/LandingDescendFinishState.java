@@ -19,9 +19,14 @@ public class LandingDescendFinishState implements RoboEntityState {
         BeePortBlockEntity targetBlock = re.getTargetBlockEntity();
         BeePortalBlockEntity targetPortal = re.getTargetPortalEntity();
         if (targetPortal != null) {
-            Vec3 position = targetPortal.getBlockPos().getCenter().multiply(1 / 8d, 1, 1 / 8d);
-            BlockPos blockPos = new BlockPos((int) Math.round(position.x), (int) Math.round(position.y), (int) Math.round(position.z));
             Level targetLevel = targetBlock.getLevel();
+            if (targetLevel == null)
+                return;
+
+            Vec3 position = targetLevel.dimension() == Level.END
+                    ? new Vec3(100, 49, 0)
+                    : targetPortal.getBlockPos().getCenter().multiply(1 / 8d, 1, 1 / 8d);
+            BlockPos blockPos = new BlockPos((int) Math.round(position.x), (int) Math.round(position.y), (int) Math.round(position.z));
             BeePortalBlockEntity exitPortal = RoboEntity.getClosestBeePortal(targetLevel.dimensionType(), new Location(blockPos, targetLevel.dimensionType()));
             exitPortal.addBeeToRoboBeeInventory(1);
             exitPortal.sendDrone(re);
