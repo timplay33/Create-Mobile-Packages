@@ -23,5 +23,7 @@
     "create_mobile_packages.display_source.bee_eta": "Ankunftszeit der Biene",
     "create_mobile_packages.bee_port.screen.arrival_time": "Robo Biene kommt in: %1$sSek.",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "Der tragbare Lagerticker öffnet ein mobiles Lagerhalter-Menü",
-    "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Öffne den Mobiler Lagerticker"
+    "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Öffne den Mobiler Lagerticker",
+    "create_mobile_packages.ponder.robo_bee_port.text_1": "Der Robo Bienen Hafen kann Pakete an Spieler senden",
+    "create_mobile_packages.ponder.robo_bee_port.header": "Robo Bienen Hafen"
 }
