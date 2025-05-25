@@ -27,6 +27,8 @@ Create: Mobile Packages Unreleased
 - Added rigging to a package carried by a Robo Bee
 - Added when spawning a Robo Bee with the Robo Bee Item while holding a package in the offhand, the package will be rigged to the Robo Bee allowing Player to Player and Player to Port transfer
 - Added Keybind to open a Portable Stock Ticker being in the player inventory (default: `G`)
+- Updated Ponder for the Robo Bee Port
+- Added Tooltip to the Robo Bee Item
 
 ### Bug Fixes
 

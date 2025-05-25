@@ -49,5 +49,7 @@
     "create_mobile_packages.ponder.port_to_port.text_2": "Set an address in the destination port.",
     "create_mobile_packages.ponder.port_to_port.text_3": "Set the same address as the package address and place the package in the first port.",
     "create_mobile_packages.ponder.port_to_port.text_4": "The package will be sent from one port to the other.",
-    "create_mobile_packages.ponder.port_to_port.text_5": "This feature can be disabled in the configuration files."
+    "create_mobile_packages.ponder.port_to_port.text_5": "This feature can be disabled in the configuration files.",
+    "tooltip.create_mobile_packages.robo_bee.package_transport": "When holding a package in the offhand it will be send with the Robo Bee",
+    "tooltip.create_mobile_packages.robo_bee.robo_bee": "Item to spawn a Robo Bee. Needed in Robo Bee Ports to send packages"
 }
