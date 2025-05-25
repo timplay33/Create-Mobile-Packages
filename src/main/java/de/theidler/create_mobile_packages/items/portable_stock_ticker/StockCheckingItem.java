@@ -8,6 +8,8 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
+import de.theidler.create_mobile_packages.compat.FactoryLogisticsCompat;
+import de.theidler.create_mobile_packages.compat.Mods;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -63,7 +65,11 @@ public class StockCheckingItem extends Item {
     // Send a package request
     public boolean broadcastPackageRequest(RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler,
                                            String address) {
-        return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
+        if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
+            return FactoryLogisticsCompat.tryBroadcast(Freq, type, order, ignoredHandler, address);
+        } else {
+            return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
+        }
     }
 
     @Override

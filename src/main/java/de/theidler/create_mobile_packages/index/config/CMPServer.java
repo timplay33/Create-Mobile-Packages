@@ -14,6 +14,8 @@ public class CMPServer extends ConfigBase {
             CMPServer.Comments.beeMaxDistance);
     public final ConfigBool displayNametag = b(true, "displayNametag",
             Comments.displayNametag);
+    public final ConfigBool allowRoboBeeSpawnPackageTransport = b(true, "allowRoboBeeSpawnPackageTransport",
+            CMPServer.Comments.allowRoboBeeSpawnPackageTransport);
 
     @Override
     public String getName() {
@@ -26,5 +28,6 @@ public class CMPServer extends ConfigBase {
         static String portToPort = "If true, the Robo Bee will be able to deliver packages from one port to another. Default: true";
         static String beeMaxDistance = "The maximum distance a Robo Bee can travel. Default: -1 (unlimited)";
         static String displayNametag = "If true, the Robo Bee will display a nametag with the address of the package it is carrying. Default: true";
+        static String allowRoboBeeSpawnPackageTransport = "If true, when Spawning a Robo Bee with the Item it will take any Package from the offhand and deliver it. Default: true";
     }
 }

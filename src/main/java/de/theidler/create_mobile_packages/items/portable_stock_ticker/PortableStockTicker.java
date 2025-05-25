@@ -17,6 +17,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -24,8 +25,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkHooks;
-import org.checkerframework.checker.units.qual.K;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -45,6 +44,24 @@ public class PortableStockTicker extends StockCheckingItem {
         hiddenCategoriesByPlayer = new HashMap<>();
     }
 
+    public static PortableStockTicker find(Inventory playerInventory) {
+        for (int i = 0; i < playerInventory.getContainerSize(); i++) {
+            if (playerInventory.getItem(i).getItem() instanceof PortableStockTicker portableStockTicker) {
+                return portableStockTicker;
+            }
+        }
+        return null;
+    }
+
+    public static int getIndexOfPortableStockTicker(Inventory playerInventory) {
+        for (int i = 0; i < playerInventory.getContainerSize(); i++) {
+            if (playerInventory.getItem(i).getItem() instanceof PortableStockTicker) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     @Override
     public Rarity getRarity(ItemStack pStack) {
         return Rarity.UNCOMMON;
@@ -56,11 +73,10 @@ public class PortableStockTicker extends StockCheckingItem {
         previouslyUsedAddress = address;
 
         if (player instanceof ServerPlayer) {
-            for (ItemStack itemStack : player.getInventory().items) {
+            ItemStack itemStack = player.getInventory().getItem(getIndexOfPortableStockTicker(player.getInventory()));
                 if (itemStack.getItem() instanceof PortableStockTicker) {
                     saveAddressToStack(itemStack, address);
                 }
-            }
         }
         return result;
     }
@@ -75,7 +91,7 @@ public class PortableStockTicker extends StockCheckingItem {
         if (player == null)
             return InteractionResult.FAIL;
 
-        if (!level.isClientSide()) {
+        if (!level.isClientSide() && player.isShiftKeyDown()) {
             if (level.getBlockEntity(pos) instanceof StockTickerBlockEntity stbe) {
                 CompoundTag tag = new CompoundTag();
                 stbe.saveAdditional(tag);
@@ -85,9 +101,9 @@ public class PortableStockTicker extends StockCheckingItem {
             }
             saveCategoriesToStack(stack, categories);
             saveHiddenCategoriesByPlayerToStack(stack , hiddenCategoriesByPlayer);
+            return super.useOn(pContext);
         }
-        return super.useOn(pContext);
-
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -116,8 +132,9 @@ public class PortableStockTicker extends StockCheckingItem {
                         Component.translatable("item.create_mobile_packages.portable_stock_ticker")
                 ), buf -> {});
             }
+            return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
         }
-        return super.use(pLevel, pPlayer, pUsedHand);
+        return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
 
@@ -26,7 +27,10 @@ public class RequestStockUpdate extends SimplePacketBase {
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player != null) {
-                BigItemStackListPacket responsePacket = new BigItemStackListPacket(getAccurateSummary(player.getMainHandItem()).getStacks());
+                int slotIndex = PortableStockTicker.getIndexOfPortableStockTicker(player.getInventory());
+                if (slotIndex == -1) return;
+                ItemStack stack = player.getInventory().getItem(slotIndex);
+                BigItemStackListPacket responsePacket = new BigItemStackListPacket(getAccurateSummary(stack).getStacks());
                 CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), responsePacket);
             }
         });

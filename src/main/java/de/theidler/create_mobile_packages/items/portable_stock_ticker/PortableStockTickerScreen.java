@@ -151,7 +151,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        List<List<BigItemStack>> clientStockSnapshot = convertToCategoryList(ClientScreenStorage.stacks);
+        List<List<BigItemStack>> clientStockSnapshot = convertToCategoryList(removeEmptyStacks(ClientScreenStorage.stacks));
         if (clientStockSnapshot != currentItemSource) {
             currentItemSource = clientStockSnapshot;
             refreshSearchResults(false);
@@ -167,6 +167,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
             itemScroll.setValue(itemScroll.getChaseTarget());
+    }
+
+    private List<BigItemStack> removeEmptyStacks(List<BigItemStack> stacks) {
+        stacks.removeIf(bigStack -> bigStack.stack.isEmpty() || bigStack.count <= 0);
+        return stacks;
     }
 
     private List<List<BigItemStack>> convertToCategoryList(List<BigItemStack> stacks) {
@@ -438,8 +443,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
-        GuiGameElement.of(playerInventory.player.getMainHandItem())
-                .render(pGuiGraphics);
+        PortableStockTicker pst = PortableStockTicker.find(playerInventory);
+        if (pst != null) {
+            GuiGameElement.of(pst)
+                    .render(pGuiGraphics);
+        }
         ms.popPose();
 
         // Render ordered items

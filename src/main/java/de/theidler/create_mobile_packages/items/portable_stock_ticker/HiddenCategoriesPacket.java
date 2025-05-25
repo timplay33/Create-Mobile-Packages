@@ -35,11 +35,12 @@ public class HiddenCategoriesPacket extends SimplePacketBase {
         context.enqueueWork(() -> {
             Player player = context.getSender();
             if (player != null) {
-                if (player.getMainHandItem().getItem() instanceof PortableStockTicker pst) {
+                int slotIndex = PortableStockTicker.getIndexOfPortableStockTicker(player.getInventory());
+                if (slotIndex != -1 && player.getInventory().getItem(slotIndex).getItem() instanceof PortableStockTicker pst) {
                     Map<UUID, List<Integer>> hiddenCategories = new HashMap<>();
                     hiddenCategories.put(player.getUUID(), indices);
                     pst.hiddenCategoriesByPlayer = hiddenCategories;
-                    pst.saveHiddenCategoriesByPlayerToStack(player.getMainHandItem(), hiddenCategories);
+                    pst.saveHiddenCategoriesByPlayerToStack(player.getInventory().getItem(slotIndex), hiddenCategories);
                 }
             }
         });

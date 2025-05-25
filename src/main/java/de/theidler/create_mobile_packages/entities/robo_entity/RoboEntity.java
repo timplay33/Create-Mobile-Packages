@@ -22,16 +22,13 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.world.ForgeChunkManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -51,8 +48,6 @@ public class RoboEntity extends Mob {
     private BeePortBlockEntity startBeePortBlockEntity;
     private String targetAddress = "";
     private boolean pathing = true;
-
-    private final List<ChunkPos> loadedChunks = new ArrayList<>();
     private int damageCounter;
 
     /**
@@ -66,6 +61,7 @@ public class RoboEntity extends Mob {
     public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
         super(type, level);
         this.damageCounter = 0;
+        CreateMobilePackages.ROBO_MANAGER.addRobo(this);
         if (targetPos != null) {
             this.targetBlockEntity = level.getBlockEntity(targetPos) instanceof BeePortBlockEntity dpbe ? dpbe : null;
             if (this.targetBlockEntity != null) {
@@ -121,10 +117,11 @@ public class RoboEntity extends Mob {
 
     private Player getTargetPlayerFromAddress() {
         return level().players().stream()
-                .filter(player -> player.getName().getString().equals(targetAddress))
+                .filter(player -> player.getName().getString().equals(PackageItem.getAddress(this.getItemStack())))
                 .findFirst().orElse(null);
     }
 
+    private String activeTargetAddress = "";
     private void updateTarget() {
         if (level().isClientSide) {
             return;
@@ -133,8 +130,9 @@ public class RoboEntity extends Mob {
         if (targetPlayer != null) {
             return;
         }
-        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this)) {
+        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this, !getItemStack().isEmpty()) || !Objects.equals(activeTargetAddress,targetAddress)) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
+            activeTargetAddress = targetAddress;
             targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null) {
@@ -190,7 +188,7 @@ public class RoboEntity extends Mob {
             if (address != null) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
             }
-            allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity));
+            allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity, (entity != null && !entity.getItemStack().isEmpty())));
             closest[0] = allBEs.stream()
                     .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin)))
                     .orElse(null);
@@ -200,9 +198,12 @@ public class RoboEntity extends Mob {
 
     @Override
     public void tick() {
+    }
+
+    public void roboMangerTick() {
         super.tick();
-        tickEntity(level(), this.blockPosition(), this.getX(), this.getZ());
-        state.tick(this);
+        CreateMobilePackages.ROBO_MANAGER.markDirty();
+        if (state != null) state.tick(this);
         this.setDeltaMovement(targetVelocity);
         this.move(MoverType.SELF, targetVelocity);
         float rotYaw = this.entityData.get(ROT_YAW);
@@ -214,40 +215,19 @@ public class RoboEntity extends Mob {
 
     private void updateNametag() {
         if (level().isClientSide) return;
-        if (!CMPConfigs.server().displayNametag.get() || targetAddress == null || targetAddress.isBlank()) {
+        if (!CMPConfigs.server().displayNametag.get()) {
             setCustomName(null);
             setCustomNameVisible(false);
-        } else {
+        } else if (targetAddress != null && !targetAddress.isBlank()) {
             setCustomName(Component.literal("-> " + targetAddress));
             setCustomNameVisible(true);
-        }
-    }
-
-    public void tickEntity(Level world, BlockPos ownerPos, double x, double z) {
-        if (!(world instanceof ServerLevel serverLevel) || ownerPos == null) return;
-
-        ChunkPos currentChunk = new ChunkPos((int) x >> 4, (int) z >> 4);
-
-        loadedChunks.removeIf(loadedChunk -> {
-            boolean isOutsideCurrentArea = Math.abs(loadedChunk.x - currentChunk.x) > 1 || Math.abs(loadedChunk.z - currentChunk.z) > 1;
-            if (isOutsideCurrentArea) {
-                ForgeChunkManager.forceChunk(serverLevel, CreateMobilePackages.MODID, ownerPos, loadedChunk.x, loadedChunk.z, false, false);
-                return true;
-            }
-            return false;
-        });
-
-        forceArea(serverLevel, ownerPos, currentChunk.x, currentChunk.z);
-    }
-
-    private void forceArea(ServerLevel world, BlockPos owner, int cx, int cz) {
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dz = -1; dz <= 1; dz++) {
-                ChunkPos chunkPos = new ChunkPos(cx + dx, cz + dz);
-                if (loadedChunks.contains(chunkPos)) continue;
-                loadedChunks.add(chunkPos);
-                ForgeChunkManager.forceChunk(world, CreateMobilePackages.MODID, owner, chunkPos.x, chunkPos.z, true, true);
-            }
+        } else if (targetBlockEntity != null) {
+            BlockPos pos = targetBlockEntity.getBlockPos();
+            setCustomName(Component.literal("-> [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]"));
+            setCustomNameVisible(true);
+        } else {
+            setCustomName(null);
+            setCustomNameVisible(false);
         }
     }
 
@@ -316,13 +296,6 @@ public class RoboEntity extends Mob {
         if (getTargetBlockEntity() != null) {
             getTargetBlockEntity().trySetEntityOnTravel(null);
         }
-
-        // unload all chunks
-        loadedChunks.forEach(chunkPos -> {
-            if (level() instanceof ServerLevel serverLevel) {
-                ForgeChunkManager.forceChunk(serverLevel, CreateMobilePackages.MODID, this.blockPosition(), chunkPos.x, chunkPos.z, false, false);
-            }
-        });
         super.remove(pReason);
     }
 
@@ -337,6 +310,7 @@ public class RoboEntity extends Mob {
     }
 
     public Player getTargetPlayer() {
+        updateTarget();
         return targetPlayer;
     }
 
@@ -444,6 +418,7 @@ public class RoboEntity extends Mob {
         } else {
             setItemStack(ItemStack.EMPTY);
         }
+        setTargetFromItemStack(getItemStack());
     }
 
     @Override
@@ -452,9 +427,7 @@ public class RoboEntity extends Mob {
         if (pCompound.contains("itemStack")) {
             setItemStack(ItemStack.of(pCompound.getCompound("itemStack")));
         }
-        if (!getItemStack().isEmpty()) {
-            setTargetFromItemStack(getItemStack());
-        }
+        setTargetFromItemStack(getItemStack());
         if (!level().isClientSide() && !getItemStack().isEmpty()) {
             setPackageHeightScale(1.0f);
         }
@@ -492,7 +465,7 @@ public class RoboEntity extends Mob {
 
         if (!this.level().isClientSide && !this.isRemoved()) {
             this.markHurt();
-            this.damageCounter += pAmount * 10;
+            this.damageCounter += (int) (pAmount * 10);
             if (this.damageCounter > 40) {
                 handleItemStackOnRemove();
                 this.discard();
