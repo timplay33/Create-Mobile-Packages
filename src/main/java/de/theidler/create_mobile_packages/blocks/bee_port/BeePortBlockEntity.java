@@ -17,7 +17,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -229,19 +228,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
     }
 
-    private static void requestRoboEntity(Location location, Level level) {
-        if (level instanceof ServerLevel serverLevel) {
-            AtomicReference<BeePortBlockEntity> result = new AtomicReference<>(null);
-            BeePortStorage.getAllPorts().forEach((dim, allBEs) -> {
-                allBEs.removeIf(be -> be.location().dimensionType() == location.dimensionType() && be.getBlockPos().equals(location.position()));
-                allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
-                result.set(allBEs.stream()
-                        .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(location.position())))
-                        .orElse(null));
-            });
+    private static void requestRoboEntity(Location location) {
+        AtomicReference<BeePortBlockEntity> result = new AtomicReference<>(null);
+        BeePortStorage.getAllPorts().values().forEach((allBEs) -> {
+            allBEs.removeIf(be -> be.location().dimensionType() == location.dimensionType() && be.getBlockPos().equals(location.position()));
+            allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
+            result.set(allBEs.stream()
+                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(location.position())))
+                    .orElse(null));
+        });
 
-            if (result.get() != null) result.get().sendDrone(location);
-        }
+        if (result.get() != null) result.get().sendDrone(location);
     }
 
     /**
@@ -254,7 +251,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private void sendToPlayer(Player player, ItemStack itemStack, int slot) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
             if (entityOnTravel == null) {
-                requestRoboEntity(location(), level);
+                requestRoboEntity(location());
                 return;
             }
             return;
@@ -273,7 +270,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     private void sendDrone(ItemStack itemStack, int slot) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
-            if (entityOnTravel == null) requestRoboEntity(location(), level);
+            if (entityOnTravel == null) requestRoboEntity(location());
             return;
         }
 
@@ -372,9 +369,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level != null && level instanceof ServerLevel serverLevel) {
-            BeePortStorage.add(this);
-        }
+        BeePortStorage.add(this);
     }
 
     /**
@@ -383,9 +378,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public void remove() {
         if (level != null) {
-            if (level instanceof ServerLevel serverLevel) {
-                BeePortStorage.remove(this);
-            }
+            BeePortStorage.remove(this);
 
             if (entityOnTravel != null) {
                 entityOnTravel.setTargetVelocity(Vec3.ZERO);

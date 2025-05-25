@@ -19,7 +19,6 @@ import net.minecraftforge.network.NetworkEvent;
 import org.joml.Vector3f;
 
 import java.util.Comparator;
-import java.util.List;
 
 public class RequestDimensionTeleport extends SimplePacketBase {
     private final ServerLevel serverLevel;

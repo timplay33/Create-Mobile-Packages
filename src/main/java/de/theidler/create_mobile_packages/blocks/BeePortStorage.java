@@ -36,21 +36,8 @@ public class BeePortStorage extends SavedData {
         return ports;
     }
 
-    public static Map<ServerLevel, List<BeePortalBlockEntity>> getAllPortals(ServerLevel exclude) {
-        return portals.entrySet().stream()
-                .filter(entry -> entry.getKey() != exclude)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    public static Map<ServerLevel, List<BeePortalBlockEntity>> getAllPortals() {
-        return portals;
-    }
-
     public static void add(BeePortBlockEntity beePort) {
         Level level = beePort.getLevel();
-        if (level == null)
-            return;
-
         if (level instanceof ServerLevel serverLevel) {
             if (!ports.containsKey(serverLevel)) {
                 ports.put(serverLevel, new ArrayList<>());
@@ -64,9 +51,6 @@ public class BeePortStorage extends SavedData {
 
     public static void add(BeePortalBlockEntity beePortal) {
         Level level = beePortal.getLevel();
-        if (level == null)
-            return;
-
         if (level instanceof ServerLevel serverLevel) {
             if (!portals.containsKey(serverLevel)) {
                 ports.put(serverLevel, new ArrayList<>());
@@ -80,7 +64,6 @@ public class BeePortStorage extends SavedData {
 
     public static void remove(BeePortBlockEntity beePort) {
         Level level = beePort.getLevel();
-        if (level == null) return;
         if (level instanceof ServerLevel serverLevel) {
             if (ports.containsKey(serverLevel))
                 getPorts(serverLevel).remove(beePort);
@@ -89,7 +72,6 @@ public class BeePortStorage extends SavedData {
 
     public static void remove(BeePortalBlockEntity beePortal) {
         Level level = beePortal.getLevel();
-        if (level == null) return;
         if (level instanceof ServerLevel serverLevel) {
             if (portals.containsKey(serverLevel))
                 getPortals(serverLevel).remove(beePortal);

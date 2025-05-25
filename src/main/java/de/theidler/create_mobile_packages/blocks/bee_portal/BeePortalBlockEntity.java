@@ -75,13 +75,13 @@ public class BeePortalBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level != null && level instanceof ServerLevel serverLevel) BeePortStorage.add(this);
+        BeePortStorage.add(this);
     }
 
     @Override
     public void setRemoved() {
         if (level != null && !level.isClientSide) {
-            if (level instanceof ServerLevel serverLevel) BeePortStorage.remove(this);
+            BeePortStorage.remove(this);
             if (roboBeeInventory.getStackInSlot(0).getCount() > 0) {
                 level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
             }

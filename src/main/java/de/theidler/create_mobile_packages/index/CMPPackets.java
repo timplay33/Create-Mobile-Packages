@@ -23,13 +23,11 @@ import static net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER;
 public enum CMPPackets {
     // Client to Server
     REQUEST_DIMENSION_TELEPORT(RequestDimensionTeleport.class, RequestDimensionTeleport::new, PLAY_TO_SERVER),
-    GET_PLAYER(GetPlayer.class, GetPlayer::new, PLAY_TO_SERVER),
     LOGISTICS_PACKAGE_REQUEST(SendPackage.class, SendPackage::new, PLAY_TO_SERVER),
     REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate::new, PLAY_TO_SERVER),
     HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket::new, PLAY_TO_SERVER),
 
     // Server to Client
-    SEND_PLAYER(SendPlayer.class, SendPlayer::read, PLAY_TO_CLIENT),
     BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket::read, PLAY_TO_CLIENT);
 
 
