@@ -13,7 +13,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public enum Mods {
-    JEI;
+    JEI,
+    CREATE_FACTORY_LOGISTICS;
 
     // from com/simibubi/create/compat/Mods.java
 
@@ -28,7 +29,7 @@ public enum Mods {
     }
 
     public ResourceLocation rl(String path) {
-        return new ResourceLocation(id, path);
+        return ResourceLocation.fromNamespaceAndPath(id, path);
     }
 
     public Block getBlock(String id) {

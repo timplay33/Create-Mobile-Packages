@@ -19,6 +19,7 @@ import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
+import de.theidler.create_mobile_packages.compat.create_factory_logistics.FactoryLogisticsCompat;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
 import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.index.CMPPackets;
@@ -134,9 +135,19 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             }
             for (BigItemStack stack : forcedEntries.getStacks()) {
                 int limitedAmount = -stack.count - 1;
-                int actualAmount = summary.getCountOf(stack.stack);
-                if (actualAmount <= limitedAmount)
-                    forcedEntries.erase(stack.stack);
+                int actualAmount;
+                if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
+                    actualAmount = FactoryLogisticsCompat.getCountIn(summary, stack);
+                } else {
+                    actualAmount = summary.getCountOf(stack.stack);
+                }
+                if (actualAmount <= limitedAmount) {
+                    if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()){
+                        FactoryLogisticsCompat.eraseFromForced(forcedEntries, stack);
+                    } else {
+                        forcedEntries.erase(stack.stack);
+                    }
+                }
             }
         }
 
@@ -698,17 +709,29 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         ms.scale(scaleFromHover, scaleFromHover, scaleFromHover);
         ms.translate(-18 / 2.0, -18 / 2.0, 0);
         if (customCount != 0 || craftable)
-            GuiGameElement.of(entry.stack)
-                    .render(graphics);
+            if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
+                FactoryLogisticsCompat.renderSlot(graphics, entry, 0 ,0);
+            } else {
+                GuiGameElement.of(entry.stack).render(graphics);
+            }
         ms.popPose();
 
         ms.pushPose();
         ms.translate(0, 0, 190);
         if (customCount != 0 || craftable)
-            graphics.renderItemDecorations(font, entry.stack, 1, 1, "");
+            if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
+                FactoryLogisticsCompat.renderItemDecorations(graphics, entry, 1, 1);
+            } else {
+                graphics.renderItemDecorations(font, entry.stack, 1, 1, "");
+            }
+
         ms.translate(0, 0, 10);
         if (customCount > 1 || craftable)
-            drawItemCount(graphics, entry.count, customCount);
+            if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
+                FactoryLogisticsCompat.renderIngredientEntryAmount(graphics, customCount, entry, isStackHovered, isRenderingOrders);
+            } else {
+                drawItemCount(graphics, entry.count, customCount);
+            }
         ms.popPose();
     }
 
@@ -775,14 +798,22 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                     .get(slot);
 
             if (recipeHovered) {
-                ArrayList<Component> lines =
-                        new ArrayList<>(entry.stack.getTooltipLines(minecraft.player, TooltipFlag.NORMAL));
+                ArrayList<Component> lines;
+                if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
+                    lines = (ArrayList<Component>) FactoryLogisticsCompat.getCraftableTooltip(entry);
+                } else {
+                    lines = new ArrayList<>(entry.stack.getTooltipLines(minecraft.player, TooltipFlag.NORMAL));
+                }
                 if (lines.size() > 0)
                     lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.get(0)
                             .copy()));
                 graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             } else
-                graphics.renderTooltip(font, entry.stack, mouseX, mouseY);
+                if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
+                    FactoryLogisticsCompat.renderComponentTooltip(graphics, font, entry, mouseX, mouseY);
+                } else {
+                    graphics.renderTooltip(font, entry.stack, mouseX, mouseY);
+                }
         }
 
         // Render tooltip of address input
@@ -801,10 +832,14 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     @Nullable
     private BigItemStack getOrderForItem(ItemStack stack) {
-        for (BigItemStack entry : itemsToOrder)
-            if (ItemHandlerHelper.canItemStacksStack(stack, entry.stack))
-                return entry;
-        return null;
+        if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()){
+            return FactoryLogisticsCompat.getOrderForItem(stack, itemsToOrder);
+        } else {
+            for (BigItemStack entry : itemsToOrder)
+                if (ItemHandlerHelper.canItemStacksStack(stack, entry.stack))
+                    return entry;
+            return null;
+        }
     }
 
     private boolean isConfirmHovered(int mouseX, int mouseY) {
@@ -908,7 +943,13 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
 
         ItemStack itemStack = entry.stack;
-        int transfer = hasShiftDown() ? itemStack.getMaxStackSize() : hasControlDown() ? 10 : 1;
+        int maxStackSize = 0;
+        if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
+            maxStackSize = FactoryLogisticsCompat.getMaxStackSize(entry);
+        } else {
+            maxStackSize = itemStack.getMaxStackSize();
+        }
+        int transfer = hasShiftDown() ? maxStackSize: hasControlDown() ? 10 : 1;
 
         if (recipeClicked && entry instanceof CraftableBigItemStack cbis) {
             if (rmb && cbis.count == 0) {
@@ -1214,7 +1255,13 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                     summary.add(stack);
                 }
             }
-            existingOrder.count = current + Math.min(transfer, summary.getCountOf(entry.stack) - current);
+            int countOf;
+            if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
+                countOf = FactoryLogisticsCompat.getCountIn(summary, entry);
+            } else {
+                countOf = summary.getCountOf(entry.stack);
+            }
+            existingOrder.count = current + Math.min(transfer,  - current);
 
             if (existingOrder.count != current && current != 0)
                 playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
