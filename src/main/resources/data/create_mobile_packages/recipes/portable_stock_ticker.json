@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "create:clipboard"
+    },
+    {
+      "item": "create:redstone_link"
+    },
+    {
+      "item": "create:stock_ticker"
+    },
+    {
+      "item": "create:andesite_casing"
+    }
+  ],
+  "result": {
+    "item": "create_mobile_packages:portable_stock_ticker"
+  }
+}
