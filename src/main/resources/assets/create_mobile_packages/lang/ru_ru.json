@@ -33,9 +33,9 @@
     "create_mobile_packages.ponder.crafter_setup.text_2": "Переупаковщик делит коробку на меньшие коробки.",
     "create_mobile_packages.ponder.port_to_port.text_2": "Установите адрес назначения.",
     "create_mobile_packages.ponder.port_to_port.text_4": "Коробка отправится от одного порта до другого.",
-    "create_mobile_packages.ponder.crafter_setup.text_1": "Это система для автокрафта со сборщиком и пчелопортом.",
+    "create_mobile_packages.ponder.crafter_setup.text_1": "Это система для автоматического создания со сборщиком и пчелопортом.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Поместите посылку, у которой адрес совпадает с ником игрока в печлопорт.",
-    "create_mobile_packages.ponder.port_to_port.text_3": "Установите тот же самый адрес коробке и поместите её в первый порт.",
+    "create_mobile_packages.ponder.port_to_port.text_3": "Установите тот же адрес, что и адрес посылки, и поместите посылку в первый порт.",
     "create_mobile_packages.ponder.pull_from_chest.text_2": "Пчелопорт достанет посылку из любого инвентаря рядом.",
     "create_mobile_packages.ponder.push_to_chest.text_2": "Убедитесь, что пчелопорт получает сигнал редстоуна..",
     "create_mobile_packages.ponder.pull_from_chest.text_1": "Поместите посылку в сундук.",
@@ -43,7 +43,7 @@
     "create_mobile_packages.ponder.robo_bee_port.header": "Размышляем над пчелопортами",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "Пчелопорт может быть использован чтобы отправить посылку прямо к игроку.",
     "create_mobile_packages.ponder.simple_setup.text_4": "Создайте складскую сеть при помощи складского передатчика.",
-    "create_mobile_packages.ponder.simple_setup.text_1": "Это простая система для автоматизированного управления посылками.",
+    "create_mobile_packages.ponder.simple_setup.text_1": "Это базовая настройка для автоматической обработки посылок.",
     "create_mobile_packages.ponder.simple_setup.text_5": "Наконец, добавьте пчелопорт чтобы отправлять коробки.",
     "create_mobile_packages.ponder.simple_setup.text_2": "Поставьте сундук или любое хранилище.",
     "create_mobile_packages.ponder.push_to_chest.text_1": "Пчелопорт может класть коробки в ближайшие инвентари при сигнале редстоуна.",
@@ -53,5 +53,7 @@
     "create_mobile_packages.ponder.port_to_port.header": "От порта к порту",
     "create_mobile_packages.display_source.bee_eta": "Примерное время ожидания пчелодрона",
     "create_mobile_packages.ponder.pull_from_chest.header": "Достать из сундука",
-    "create_mobile_packages.ponder.simple_setup.header": "Простая Настройка"
+    "create_mobile_packages.ponder.simple_setup.header": "Простая Настройка",
+    "create_mobile_packages.ponder.crafter_setup.header": "Настройка создания",
+    "tooltip.create_mobile_packages.robo_bee.robo_bee": "Предмет для создания Пчёлодрона. Необходим в Дронопорте для отправки посылок."
 }
