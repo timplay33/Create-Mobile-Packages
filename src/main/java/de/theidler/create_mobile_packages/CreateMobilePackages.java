@@ -15,8 +15,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
 @Mod(CreateMobilePackages.MODID)
-public class CreateMobilePackages
-{
+public class CreateMobilePackages {
     public static final String MODID = "create_mobile_packages";
     public static final String NAME = "Create: Mobile Packages";
     public static final Logger LOGGER = LogUtils.getLogger();
@@ -28,7 +27,7 @@ public class CreateMobilePackages
     }
 
     public static void onCtor() {
-        ModLoadingContext modLoadingContext = ModLoadingContext.get();
+        ModLoadingContext modLoadingContext = new ModLoadingContext();
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
         REGISTRATE.registerEventListeners(modEventBus);
