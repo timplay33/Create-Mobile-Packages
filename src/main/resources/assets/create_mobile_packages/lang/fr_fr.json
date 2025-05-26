@@ -23,5 +23,11 @@
     "create_mobile_packages.bee_port.screen.no_bee_on_travel": "Pas de Robeille en voyage",
     "create_mobile_packages.display_source.bee_count": "Quantité de Robeilles",
     "create_mobile_packages.display_source.bee_eta": "HPA du Robeille",
-    "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Ouvrir le Téléscripteur de Stock Portable"
+    "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Ouvrir le Téléscripteur de Stock Portable",
+    "create_mobile_packages.ponder.robo_bee_port.text_3": "Placez une Robeille dans l'emplacement à Robeille du Port à Robeille",
+    "create_mobile_packages.ponder.pull_from_chest.text_1": "Met un paquet dans le coffre",
+    "create_mobile_packages.ponder.robo_bee_port.header": "Port à Robeille",
+    "create_mobile_packages.ponder.robo_bee_port.text_1": "Le Port à Robeille peut envoyer des colis à un joueur",
+    "create_mobile_packages.ponder.robo_bee_port.text_2": "Placez un colis avec une adresse correspondant au nom du joueur dans le Port à Robeille",
+    "create_mobile_packages.ponder.robo_bee_port.text_4": "Le Port à Robeille enverra désormais la Robeille au joueur dont le nom correspond à l'adresse indiquée dans le colis"
 }
