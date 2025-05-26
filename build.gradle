@@ -141,6 +141,10 @@ repositories {
         name = "Jared's maven"
         url = "https://maven.blamejared.com/"
     }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
 
 }
 
@@ -175,6 +179,7 @@ dependencies {
     implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
     implementation(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
+    implementation(fg.deobf("maven.modrinth:create_factory_logistics:${create_factory_logistics_version}"))
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

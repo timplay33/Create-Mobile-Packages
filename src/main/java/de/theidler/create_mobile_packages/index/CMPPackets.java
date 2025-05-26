@@ -26,6 +26,7 @@ public enum CMPPackets {
     LOGISTICS_PACKAGE_REQUEST(SendPackage.class, SendPackage::new, PLAY_TO_SERVER),
     REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate::new, PLAY_TO_SERVER),
     HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket::new, PLAY_TO_SERVER),
+    OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker::new, PLAY_TO_SERVER),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket::read, PLAY_TO_CLIENT);

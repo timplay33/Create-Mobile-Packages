@@ -356,9 +356,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     @Override
     protected void onOpenChange(boolean open) {
-        if (level == null) {
-            return;
-        }
+        if (level == null) return;
         level.playSound(null, worldPosition, open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE, SoundSource.BLOCKS);
         setOpen(this, open);
     }
@@ -427,15 +425,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     /**
-     * Checks if the drone port can accept a Create Mod package.
+     * Checks if the drone port can accept a Create Mod package or a Robo-Bee.
      *
-     * @return True if the drone port can accept a package, false otherwise.
+     * @param entity     The incoming RoboEntity (can be null).
+     * @param hasPackage True if the entity carries a package, false otherwise.
+     * @return True if the port can accept the entity, false otherwise.
      */
-    public boolean canAcceptEntity(RoboEntity entity) {
-        // Check for BeePortPortal in different dimension if entity is in different dimension
-        if (entity == null) return !isFull();
+    public boolean canAcceptEntity(RoboEntity entity, Boolean hasPackage) {
+        if (this.isRemoved()) return false;
+        if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(1);
         if (entityOnTravel != null && entityOnTravel != entity) return false;
-        return !isFull();
+        return hasPackage ? !isFull() : !hasFullRoboSlot(1);
     }
 
     public synchronized void trySetEntityOnTravel(RoboEntity entity) {
