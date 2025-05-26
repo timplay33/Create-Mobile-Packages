@@ -51,5 +51,7 @@
     "create_mobile_packages.ponder.crafter_setup.text_3": "Коробки отправляются через жёлоб к упаковщику.",
     "create_mobile_packages.ponder.crafter_setup.text_4": "Упаковщик подключен к механическому сборщику, который крафтит предметы.",
     "create_mobile_packages.ponder.port_to_port.header": "От порта к порту",
-    "create_mobile_packages.display_source.bee_eta": "Примерное время ожидания пчелодрона"
+    "create_mobile_packages.display_source.bee_eta": "Примерное время ожидания пчелодрона",
+    "create_mobile_packages.ponder.pull_from_chest.header": "Достать из сундука",
+    "create_mobile_packages.ponder.simple_setup.header": "Простая Настройка"
 }
