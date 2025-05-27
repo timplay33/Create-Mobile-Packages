@@ -18,6 +18,8 @@ import com.simibubi.create.foundation.gui.ScreenWithStencils;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
+import com.simibubi.create.infrastructure.config.AllConfigs;
+import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
@@ -38,8 +40,9 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
@@ -1335,15 +1338,15 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         }
 
         CatnipServices.NETWORK.sendToServer(
-                new SendPackage(new PackageOrder(itemsToOrder),
+                new SendPackage(new PackageOrderWithCrafts(new PackageOrder(itemsToOrder), List.of()),
                         addressBox.getValue()));
-        menu.droneController.previouslyUsedAddress = addressBox.getValue();
+        menu.portableStockTicker.previouslyUsedAddress = addressBox.getValue();
 
         itemsToOrder = new ArrayList<>();
         recipesToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;
         successTicks = 1;
-        ClientScreenStorage.manualUpdate(menu.droneController.getFrequency());
+        ClientScreenStorage.manualUpdate(menu.portableStockTicker.getFrequency());
 
     }
 
