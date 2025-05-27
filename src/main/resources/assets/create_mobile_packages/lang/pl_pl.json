@@ -1,1 +1,8 @@
-{}
+{
+    "itemGroup.create_mobile_packages": "Create: Mobilne Pakiety",
+    "block.create_mobile_packages.bee_port": "Port Robo-Pszczół",
+    "item.create_mobile_packages.portable_stock_ticker": "Przenośny licznik zapasów",
+    "item.create_mobile_packages.portable_stock_ticker.screen_title": "Przenośny licznik zapasów",
+    "item.create_mobile_packages.portable_stock_ticker.not_linked": "Brak połączenia z siecią",
+    "item.create_mobile_packages.bee_port": "Port Robo-Pszczół"
+}
