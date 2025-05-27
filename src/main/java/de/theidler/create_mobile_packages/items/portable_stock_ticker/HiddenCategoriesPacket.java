@@ -1,49 +1,42 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.NetworkEvent;
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
+import net.createmod.catnip.net.base.ServerboundPacketPayload;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.IntStream;
 
-public class HiddenCategoriesPacket extends SimplePacketBase {
+public class HiddenCategoriesPacket implements ServerboundPacketPayload {
 
-    private List<Integer> indices;
+    public static final StreamCodec<RegistryFriendlyByteBuf, HiddenCategoriesPacket> STREAM_CODEC = StreamCodec.composite(
+            CatnipStreamCodecBuilders.list(ByteBufCodecs.INT), packet -> packet.indices,
+            HiddenCategoriesPacket::new
+    );
+    private final List<Integer> indices;
 
     public HiddenCategoriesPacket(List<Integer> indices) {
         this.indices = indices;
     }
 
-    public HiddenCategoriesPacket(FriendlyByteBuf buffer) {
-        this.indices = IntStream.of(buffer.readVarIntArray()).boxed().toList();
+    @Override
+    public void handle(ServerPlayer player) {
+        int slotIndex = PortableStockTicker.getIndexOfPortableStockTicker(player.getInventory());
+        if (slotIndex != -1 && player.getInventory().getItem(slotIndex).getItem() instanceof PortableStockTicker pst) {
+            Map<UUID, List<Integer>> hiddenCategories = new HashMap<>();
+            hiddenCategories.put(player.getUUID(), indices);
+            pst.hiddenCategoriesByPlayer = hiddenCategories;
+            pst.saveHiddenCategoriesByPlayerToStack(player.getInventory().getItem(slotIndex), hiddenCategories);
+        }
     }
 
     @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeVarIntArray(indices.stream()
-                .mapToInt(Integer::intValue)
-                .toArray());
-    }
-
-    @Override
-    public boolean handle(NetworkEvent.Context context) {
-        context.enqueueWork(() -> {
-            Player player = context.getSender();
-            if (player != null) {
-                int slotIndex = PortableStockTicker.getIndexOfPortableStockTicker(player.getInventory());
-                if (slotIndex != -1 && player.getInventory().getItem(slotIndex).getItem() instanceof PortableStockTicker pst) {
-                    Map<UUID, List<Integer>> hiddenCategories = new HashMap<>();
-                    hiddenCategories.put(player.getUUID(), indices);
-                    pst.hiddenCategoriesByPlayer = hiddenCategories;
-                    pst.saveHiddenCategoriesByPlayerToStack(player.getInventory().getItem(slotIndex), hiddenCategories);
-                }
-            }
-        });
-        return true;
+    public PacketTypeProvider getTypeProvider() {
+        return null;
     }
 }

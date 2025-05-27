@@ -1,10 +1,8 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import com.simibubi.create.AllSoundEvents;
-import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.WiFiEffectPacket;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.utility.AdventureUtil;
@@ -18,15 +16,15 @@ import net.minecraft.world.level.Level;
 
 public class SendPackage implements ServerboundPacketPayload {
     public static final StreamCodec<RegistryFriendlyByteBuf, SendPackage> STREAM_CODEC = StreamCodec.composite(
-            PackageOrder.STREAM_CODEC, packet -> packet.order,
+            PackageOrderWithCrafts.STREAM_CODEC, packet -> packet.order,
             ByteBufCodecs.STRING_UTF8, packet -> packet.address,
             SendPackage::new
     );
 
-    private final PackageOrder order;
+    private final PackageOrderWithCrafts order;
     private final String address;
 
-    public SendPackage(PackageOrder order, String address) {
+    public SendPackage(PackageOrderWithCrafts order, String address) {
         this.order = order;
         this.address = address;
     }
@@ -39,8 +37,9 @@ public class SendPackage implements ServerboundPacketPayload {
             WiFiEffectPacket.send(player.level(), player.blockPosition());
         }
 
-        if (player.getMainHandItem().getItem() instanceof DroneController droneController) {
-            droneController.broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address);
+        PortableStockTicker portableStockTicker = PortableStockTicker.find(player.getInventory());
+        if (portableStockTicker != null) {
+            portableStockTicker.broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address);
         }
     }
 

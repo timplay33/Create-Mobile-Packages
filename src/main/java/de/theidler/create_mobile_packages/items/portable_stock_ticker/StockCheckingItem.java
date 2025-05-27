@@ -5,6 +5,9 @@ import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
+import de.theidler.create_mobile_packages.compat.FactoryLogisticsCompat;
+import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.items.drone_controller.LogisticallyLinkedItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -13,7 +16,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.UUID;
 
 public abstract class StockCheckingItem extends LogisticallyLinkedItem {
@@ -41,12 +43,12 @@ public abstract class StockCheckingItem extends LogisticallyLinkedItem {
         return LogisticsManager.getSummaryOfNetwork(Freq, true);
     }
 
-    public static boolean broadcastPackageRequest(ItemStack stack, LogisticallyLinkedBehaviour.RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler, String address) {
+    public static boolean broadcastPackageRequest(ItemStack stack, LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler, String address) {
         Freq = networkFromStack(stack);
         return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
     }
 
-    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrder order, @Nullable IdentifiedInventory ignoredHandler,
+    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler,
                                            String address) {
         if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
             return FactoryLogisticsCompat.tryBroadcast(Freq, type, order, ignoredHandler, address);

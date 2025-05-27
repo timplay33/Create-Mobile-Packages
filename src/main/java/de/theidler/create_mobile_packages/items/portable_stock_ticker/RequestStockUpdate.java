@@ -8,10 +8,8 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.PacketDistributor;
 
-import static de.theidler.create_mobile_packages.items.drone_controller.StockCheckingItem.getAccurateSummary;
+import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.items.drone_controller.LogisticallyLinkedItem.networkFromStack;
 
