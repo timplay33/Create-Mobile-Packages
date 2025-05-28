@@ -237,14 +237,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private static void requestRoboEntity(Location location, ServerLevel serverLevel) {
         BeePortBlockEntity result;
         BeePortStorage storage = BeePortStorage.get(serverLevel);
-        Stream<BeePortBlockEntity> allBEs = storage.getAllPorts().stream().filter((be) -> {
-//            allBEs.removeIf(be -> be.location().dimensionType() == location.dimensionType() && be.getBlockPos().equals(location.position()));
-//            allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
-//            result.set(allBEs.stream()
-//                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(location.position())))
-//                    .orElse(null));
-            return (be.location().dimensionType() != location.dimensionType() || !be.getBlockPos().equals(location.position())) && be.getRoboBeeInventory().getStackInSlot(0).getCount() > 0;
-        });
+        Stream<BeePortBlockEntity> allBEs = storage.getAllPorts().stream()
+                .filter((be) -> (be.location().dimensionType() != location.dimensionType()
+                        || !be.getBlockPos().equals(location.position()))
+                        && be.getRoboBeeInventory().getStackInSlot(0).getCount() > 0
+                );
 
         result = allBEs.min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(location.position()))).orElse(null);
         // TODO: Add dimension priority
