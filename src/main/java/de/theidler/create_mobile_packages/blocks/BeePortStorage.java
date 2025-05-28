@@ -11,9 +11,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class BeePortStorage extends SavedData {
     private final List<BeePortBlockEntity> ports = new ArrayList<>();
@@ -82,43 +80,4 @@ public class BeePortStorage extends SavedData {
         if (level instanceof ServerLevel)
             portals.remove(beePortal);
     }
-
-//    private static final Map<ServerLevel, List<BeePortBlockEntity>> ports = new HashMap<>();
-//    private static final Map<ServerLevel, List<BeePortalBlockEntity>> portals = new HashMap<>();
-//
-//    public static List<BeePortBlockEntity> getPorts(ServerLevel level) {
-//        return ports.computeIfAbsent(level, sl -> new ArrayList<>());
-//    }
-//
-//    public static List<BeePortalBlockEntity> getPortals(ServerLevel level) {
-//        return portals.computeIfAbsent(level, sl -> new ArrayList<>());
-//    }
-//
-//    public static Map<ServerLevel, List<BeePortBlockEntity>> getAllPorts() {
-//        return ports;
-//    }
-//
-//    public static void add(BeePortBlockEntity beePort) {
-//        Level level = beePort.getLevel();
-//        if (level instanceof ServerLevel serverLevel)
-//            ports.computeIfAbsent(serverLevel, sl -> new ArrayList<>()).add(beePort);
-//    }
-//
-//    public static void add(BeePortalBlockEntity beePortal) {
-//        Level level = beePortal.getLevel();
-//        if (level instanceof ServerLevel serverLevel)
-//            portals.computeIfAbsent(serverLevel, sl -> new ArrayList<>()).add(beePortal);
-//    }
-//
-//    public static void remove(BeePortBlockEntity beePort) {
-//        Level level = beePort.getLevel();
-//        if (level instanceof ServerLevel serverLevel)
-//            ports.computeIfAbsent(serverLevel, sl -> new ArrayList<>()).remove(beePort);
-//    }
-//
-//    public static void remove(BeePortalBlockEntity beePortal) {
-//        Level level = beePortal.getLevel();
-//        if (level instanceof ServerLevel serverLevel)
-//            portals.computeIfAbsent(serverLevel, sl -> new ArrayList<>()).remove(beePortal);
-//    }
 }
