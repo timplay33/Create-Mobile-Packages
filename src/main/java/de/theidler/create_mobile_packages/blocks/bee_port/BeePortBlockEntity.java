@@ -5,6 +5,7 @@ import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.BeePortStorage;
+import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.Location;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
@@ -39,7 +40,7 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 import static de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity.calcETA;
@@ -92,10 +93,18 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (++tickCounter % 20 == 0) {
             processItems();
         }
-        //Update Client Data
+
+        // Update Client Data
         if (level != null && !level.isClientSide()) {
-            if (this.getRoboEntity() != null)
-                this.data.set(0, calcETA(this.getBlockPos().getCenter(), this.getRoboEntity().position()));
+            RoboEntity re = getRoboEntity();
+            if (re != null) {
+                BeePortalBlockEntity exitPortal = re.getExitPortal();
+                if (re.multidimensional() && exitPortal != null)
+                    this.data.set(0, calcETA(re, exitPortal.getBlockPos().getCenter()));
+                else
+                    this.data.set(0, calcETA(this.getBlockPos().getCenter(), re.position()));
+            }
+
             this.data.set(1, this.entityOnTravel != null ? 1 : 0);
         }
     }
@@ -175,13 +184,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (level == null || level.isClientSide) return;
 
         for (int i = 0; i < inventory.getSlots(); i++) {
-            if (sendItemThisTime-- > 0) {
-                return;
-            }
+            if (sendItemThisTime-- > 0) return;
             ItemStack itemStack = inventory.getStackInSlot(i);
-            if (!itemStack.isEmpty()) {
-                sendItem(itemStack, i);
-            }
+            if (!itemStack.isEmpty()) sendItem(itemStack, i);
         }
     }
 
@@ -216,29 +221,34 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                 }
             }
 
-        // Check if the item can be sent to another drone port.
+        // Check if the item can be sent to a drone port.
         if (CMPConfigs.server().portToPort.get() && !PackageItem.matchAddress(address, addressFilter)) {
             BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, getBlockPos().getCenter(), null);
             if (beePortBlockEntity == null) {
-                var BEs = RoboEntity.getMultidimensionalBeePorts(level, address, getBlockPos().getCenter(), null);
+                List<BeePortBlockEntity> BEs = RoboEntity.getMultidimensionalBeePorts(level, address, getBlockPos().getCenter(), null);
                 if (!BEs.isEmpty())
                     beePortBlockEntity = BEs.get(0);
             }
-            if (beePortBlockEntity != null && !beePortBlockEntity.isFull()) sendDrone(itemStack, slot);
+
+            if (beePortBlockEntity != null && beePortBlockEntity.hasSpace()) sendDrone(itemStack, slot);
         }
     }
 
-    private static void requestRoboEntity(Location location) {
-        AtomicReference<BeePortBlockEntity> result = new AtomicReference<>(null);
-        BeePortStorage.getAllPorts().values().forEach((allBEs) -> {
-            allBEs.removeIf(be -> be.location().dimensionType() == location.dimensionType() && be.getBlockPos().equals(location.position()));
-            allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
-            result.set(allBEs.stream()
-                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(location.position())))
-                    .orElse(null));
+    private static void requestRoboEntity(Location location, ServerLevel serverLevel) {
+        BeePortBlockEntity result;
+        BeePortStorage storage = BeePortStorage.get(serverLevel);
+        Stream<BeePortBlockEntity> allBEs = storage.getAllPorts().stream().filter((be) -> {
+//            allBEs.removeIf(be -> be.location().dimensionType() == location.dimensionType() && be.getBlockPos().equals(location.position()));
+//            allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
+//            result.set(allBEs.stream()
+//                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(location.position())))
+//                    .orElse(null));
+            return (be.location().dimensionType() != location.dimensionType() || !be.getBlockPos().equals(location.position())) && be.getRoboBeeInventory().getStackInSlot(0).getCount() > 0;
         });
 
-        if (result.get() != null) result.get().sendDrone(location);
+        result = allBEs.min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(location.position()))).orElse(null);
+        // TODO: Add dimension priority
+        if (result != null) result.sendDrone(location);
     }
 
     /**
@@ -251,9 +261,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private void sendToPlayer(Player player, ItemStack itemStack, int slot) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
             if (entityOnTravel == null) {
-                requestRoboEntity(location());
+                if (level instanceof ServerLevel serverLevel)
+                    requestRoboEntity(location(), serverLevel);
                 return;
             }
+
             return;
         }
 
@@ -270,7 +282,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     private void sendDrone(ItemStack itemStack, int slot) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
-            if (entityOnTravel == null) requestRoboEntity(location());
+            if (level instanceof ServerLevel serverLevel)
+                if (entityOnTravel == null) requestRoboEntity(location(), serverLevel);
             return;
         }
 
@@ -344,7 +357,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (player == null || itemStack.isEmpty()) return false;
         player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
         if (isPlayerInventoryFull(player)) return false;
-
         player.getInventory().add(itemStack);
         return true;
     }
@@ -367,7 +379,10 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        BeePortStorage.add(this);
+        if (level instanceof ServerLevel serverLevel) {
+            BeePortStorage storage = BeePortStorage.get(serverLevel);
+            storage.add(this);
+        }
     }
 
     /**
@@ -375,17 +390,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     @Override
     public void remove() {
-        if (level != null) {
-            BeePortStorage.remove(this);
+        if (level instanceof ServerLevel serverLevel) {
+            BeePortStorage storage = BeePortStorage.get(serverLevel);
+            storage.remove(this);
 
             if (entityOnTravel != null) {
                 entityOnTravel.setTargetVelocity(Vec3.ZERO);
                 entityOnTravel.setState(new AdjustRotationToTarget());
             }
 
-            if (roboBeeInventory.getStackInSlot(0).getCount() > 0) {
+            if (roboBeeInventory.getStackInSlot(0).getCount() > 0)
                 level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
-            }
         }
 
         super.remove();
@@ -416,8 +431,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      *
      * @return True if the drone port is full, false otherwise.
      */
-    public boolean isFull() {
-        return isFull(0);
+    public boolean hasSpace() {
+        return !isFull(0);
     }
 
     public boolean isFull(int slotsToLeaveEmpty) {
@@ -433,9 +448,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     public boolean canAcceptEntity(RoboEntity entity, Boolean hasPackage) {
         if (this.isRemoved()) return false;
-        if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(1);
+        if (entity == null) return hasPackage ? hasSpace() : !hasFullRoboSlot(1);
         if (entityOnTravel != null && entityOnTravel != entity) return false;
-        return hasPackage ? !isFull() : !hasFullRoboSlot(1);
+        return hasPackage ? hasSpace() : !hasFullRoboSlot(1);
     }
 
     public synchronized void trySetEntityOnTravel(RoboEntity entity) {

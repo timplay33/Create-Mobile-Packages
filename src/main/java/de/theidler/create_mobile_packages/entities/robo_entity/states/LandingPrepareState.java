@@ -2,29 +2,31 @@ package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
+import de.theidler.create_mobile_packages.entities.robo_entity.Location;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
+import net.minecraft.world.phys.Vec3;
 
 public class LandingPrepareState implements RoboEntityState {
     boolean init = true;
 
     @Override
     public void tick(RoboEntity re) {
-        if (re.getTargetBlockEntity() != null || re.getTargetPortalEntity() != null) {
+        Location targetLocation = re.getTargetLocation();
+        if (targetLocation != null) {
             if (init) {
-                if (re.getTargetPortalEntity() == null) {
+                if (re.getTargetPortalEntity() == null)
                     BeePortBlockEntity.setOpen(re.getTargetBlockEntity(), true);
-                    re.setPos(re.getTargetBlockEntity().getBlockPos().above().getCenter());
-                } else {
+                else
                     BeePortalBlockEntity.setOpen(re.getTargetPortalEntity(), true);
-                    re.setPos(re.getTargetPortalEntity().getBlockPos().above().getCenter());
-                }
 
+                Vec3 newPos = targetLocation.position().getCenter().subtract(0, 0.5, 0);
+                re.setPos(newPos);
                 init = false;
             }
 
-            if (re.rotateToSnap() == 0 || re.getTargetPortalEntity() != null) {
-                re.setState(new LandingDescendStartState());
+            if (re.rotateToSnap() == 0) {
+                re.setState(new LandingDescendState());
             }
         }
     }

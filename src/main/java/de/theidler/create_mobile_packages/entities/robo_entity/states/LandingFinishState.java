@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class LandingDescendFinishState implements RoboEntityState {
+public class LandingFinishState implements RoboEntityState {
     boolean init = true;
 
     @Override
@@ -19,15 +19,18 @@ public class LandingDescendFinishState implements RoboEntityState {
         Player targetPlayer = re.getTargetPlayer();
         BeePortalBlockEntity targetPortal = re.getTargetPortalEntity();
         if (targetPortal != null) {
-            Level targetLevel = targetBlock == null ? targetPlayer.level() : targetPortal.getLevel();
-            if (targetLevel == null)
-                return;
+            if (init) {
+                BeePortalBlockEntity.setOpen(targetPortal, false);
+                targetPortal.addBeeToRoboBeeInventory(1);
+                init = false;
+            }
 
+            Level targetLevel = targetBlock == null ? targetPlayer.level() : targetPortal.getLevel();
+            if (targetLevel == null) return;
             Vec3 position = targetLevel.dimension() == Level.END
                     ? new Vec3(100, 49, 0)
                     : targetPortal.getBlockPos().getCenter().multiply(1 / 8d, 1, 1 / 8d);
             BeePortalBlockEntity exitPortal = RoboEntity.getClosestBeePortal(targetLevel, position);
-            exitPortal.addBeeToRoboBeeInventory(1);
             exitPortal.sendDrone(re);
             re.remove(Entity.RemovalReason.CHANGED_DIMENSION);
         } else {

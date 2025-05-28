@@ -8,6 +8,7 @@ import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestDimensionTeleport;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -48,7 +49,6 @@ public class BeePortalBlockEntity extends BlockEntity {
      */
     public static void setOpen(BeePortalBlockEntity entity, boolean open) {
         if (entity == null || entity.level == null) return;
-
         entity.level.setBlockAndUpdate(entity.getBlockPos(), entity.getBlockState().setValue(IS_OPEN_TEXTURE, open));
         entity.level.playSound(null, entity.getBlockPos(), open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
                 SoundSource.BLOCKS);
@@ -74,13 +74,17 @@ public class BeePortalBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        BeePortStorage.add(this);
+        if (level instanceof ServerLevel serverLevel) {
+            BeePortStorage storage = BeePortStorage.get(serverLevel);
+            storage.add(this);
+        }
     }
 
     @Override
     public void setRemoved() {
-        if (level != null && !level.isClientSide) {
-            BeePortStorage.remove(this);
+        if (level != null && level instanceof ServerLevel serverLevel) {
+            BeePortStorage storage = BeePortStorage.get(serverLevel);
+            storage.remove(this);
             if (roboBeeInventory.getStackInSlot(0).getCount() > 0) {
                 level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
             }

@@ -18,14 +18,12 @@ public class LaunchAscendState implements RoboEntityState {
             return;
         }
 
-        Vec3 target = (startPort == null ? startPortal : startPort).getBlockPos().getCenter().add(0, 2, 0);
-        Vec3 direction = target.subtract(re.position()).normalize();
+        Vec3 targetPos = (startPort == null ? startPortal : startPort).getBlockPos().getCenter().add(0, 2, 0);
+        Vec3 direction = targetPos.subtract(re.position()).normalize();
         re.setTargetVelocity(direction.scale(1 / 20.0)); // fixed speed of 1 block per second
 
-        double distanceToTarget = re.position().distanceToSqr(target);
-        if (initialDistanceToTarget == 0) {
-            initialDistanceToTarget = (float) distanceToTarget;
-        }
+        double distanceToTarget = re.position().distanceToSqr(targetPos);
+        if (initialDistanceToTarget == 0) initialDistanceToTarget = (float) distanceToTarget;
         if (distanceToTarget < 0.2) {
             re.setPackageHeightScale(1.0f);
             re.setState(new LaunchFinishState());

@@ -63,7 +63,8 @@ public class RequestDimensionTeleport extends SimplePacketBase {
         context.enqueueWork(() -> {
             if (serverLevel != null) {
                 BlockPos spawnBlockPos = new BlockPos(Math.round(spawnPos.x()), Math.round(spawnPos.y()), Math.round(spawnPos.z()));
-                BeePortalBlockEntity exitPortal = BeePortStorage.getPortals(serverLevel).stream()
+                BeePortStorage storage = BeePortStorage.get(serverLevel);
+                BeePortalBlockEntity exitPortal = storage.getPortals().stream()
                         .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(spawnBlockPos)))
                         .orElse(null);
                 if (exitPortal != null) {

@@ -20,9 +20,7 @@ public class InteractWithPlayerState implements RoboEntityState {
         }
 
 
-        re.setTargetPlayer(null);
-
-        //TODO: check if player has toBeSendPackages
+        // TODO: check if player has toBeSendPackages
         re.setState(new DeliveryDecisionState());
     }
 }
