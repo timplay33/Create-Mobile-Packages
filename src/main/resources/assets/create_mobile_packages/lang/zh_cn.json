@@ -23,5 +23,17 @@
     "create_mobile_packages.bee_port.screen.no_bee_on_travel": "没有运输蜂正在执行任务",
     "create_mobile_packages.display_source.bee_eta": "运输蜂预计到达时间",
     "create_mobile_packages.display_source.bee_count": "运输蜂数量",
-    "create_mobile_packages.keyinfo.open_portable_stock_ticker": "打开便携式仓库管理器"
+    "create_mobile_packages.keyinfo.open_portable_stock_ticker": "打开便携式仓库管理器",
+    "create_mobile_packages.ponder.robo_bee_port.header": "运输蜂停泊港",
+    "create_mobile_packages.ponder.robo_bee_port.text_3": "将运输蜂放入停泊港中的运输蜂槽位。",
+    "create_mobile_packages.ponder.pull_from_chest.header": "从箱子中提取",
+    "create_mobile_packages.ponder.simple_setup.header": "轻松使用",
+    "create_mobile_packages.ponder.push_to_chest.header": "放入箱子",
+    "create_mobile_packages.ponder.crafter_setup.header": "合成器安装",
+    "create_mobile_packages.ponder.robo_bee_port.text_1": "运输蜂停泊港可将包裹送至玩家。",
+    "create_mobile_packages.ponder.pull_from_chest.text_2": "停泊港将会从任何相邻的库存中提取包裹。",
+    "create_mobile_packages.ponder.pull_from_chest.text_1": "将包裹放入箱子。",
+    "create_mobile_packages.ponder.robo_bee_port.text_2": "将地址为玩家名的包裹放入运输蜂停泊港内。",
+    "create_mobile_packages.ponder.robo_bee_port.text_4": "此时，停泊港会使运输蜂携带包裹出发，并前往对应的玩家处。",
+    "create_mobile_packages.ponder.port_to_port.header": "P2P"
 }
