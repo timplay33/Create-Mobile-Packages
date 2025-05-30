@@ -11,8 +11,7 @@ public class LaunchFinishState implements RoboEntityState {
     public void tick(RoboEntity re) {
         BeePortalBlockEntity startPortal = re.getStartBeePortalBlockEntity();
         if (startPortal != null) {
-            BeePortalBlockEntity.setOpen(startPortal, false);
-            startPortal.trySetEntityOnTravel(null);
+            startPortal.tryRemoveFromLaunchingQueue(re);
         } else
             BeePortBlockEntity.setOpen(re.getStartBeePortBlockEntity(), false);
         re.setTargetVelocity(Vec3.ZERO);

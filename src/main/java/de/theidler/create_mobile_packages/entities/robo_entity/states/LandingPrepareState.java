@@ -16,7 +16,10 @@ public class LandingPrepareState implements RoboEntityState {
         if (targetLocation != null) {
             if (init) {
                 BeePortBlockEntity.setOpen(re.getTargetBlockEntity(), true);
-                BeePortalBlockEntity.setOpen(re.getExitPortal(), true);
+                BeePortalBlockEntity exitPortal = re.getExitPortal();
+                if (exitPortal != null)
+                    exitPortal.tryAddToLaunchingQueue(re);
+
                 Vec3 newPos = targetLocation.position().getCenter().subtract(0, 0.5, 0);
                 re.setPos(newPos);
                 init = false;

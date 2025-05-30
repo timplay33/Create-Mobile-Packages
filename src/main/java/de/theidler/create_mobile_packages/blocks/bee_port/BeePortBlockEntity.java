@@ -318,7 +318,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         roboBeeInventory.getStackInSlot(0).shrink(1);
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
         if (targetPortal != null)
-            targetPortal.trySetEntityOnTravel(re);
+            targetPortal.tryAddToLandingQueue(re);
     }
 
     private void sendDrone(Location tagetLocation) {

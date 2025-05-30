@@ -92,7 +92,7 @@ public class RoboEntity extends Mob {
         setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
 
         if (targetPortalEntity != null)
-            targetPortalEntity.trySetEntityOnTravel(this);
+            targetPortalEntity.tryAddToLandingQueue(this);
         else if (targetBlockEntity != null) {
             targetBlockEntity.trySetEntityOnTravel(this);
         }
@@ -116,6 +116,13 @@ public class RoboEntity extends Mob {
         }
 
         setState(new LaunchPrepareState());
+    }
+
+    @Override
+    public boolean equals(Object pObject) {
+        if (pObject instanceof RoboEntity re)
+            return re.getUUID().equals(getUUID());
+        return false;
     }
 
     @Override
@@ -440,7 +447,9 @@ public class RoboEntity extends Mob {
         if (getTargetBlockEntity() != null)
             getTargetBlockEntity().trySetEntityOnTravel(null);
         if (getTargetPortalEntity() != null)
-            getTargetPortalEntity().trySetEntityOnTravel(null);
+            getTargetPortalEntity().tryRemoveFromLandingQueue(this);
+        if (getExitPortal() != null)
+            getExitPortal().tryRemoveFromLaunchingQueue(this);
 
         super.remove(pReason);
     }

@@ -18,15 +18,20 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 import static de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlock.IS_OPEN_TEXTURE;
 
 /**
- * Represents a Drone Port block entity that handles the processing and sending of Create Mod packages
- * to players or other drone ports using drones.
+ * Represents a Drone Portal block entity that handles the teleportation of Robo Bees
+ * to other dimensions.
  */
 public class BeePortalBlockEntity extends BlockEntity {
-    private RoboEntity entityOnTravel = null;
+    private final Queue<RoboEntity> entityLandingQueue = new ArrayDeque<>();
+    private final Queue<RoboEntity> entityLaunchingQueue = new ArrayDeque<>();
 
     /**
      * Constructor for the BeePortalBlockEntity.
@@ -52,8 +57,10 @@ public class BeePortalBlockEntity extends BlockEntity {
                 SoundSource.BLOCKS);
     }
 
-    public boolean sendDrone(RoboEntity re) {
-        if (entityOnTravel != null) return false;
+    public boolean sendDrone(@NotNull RoboEntity re) {
+        if (!entityLandingQueue.isEmpty() && !entityLandingQueue.peek().equals(re)
+                || !entityLaunchingQueue.isEmpty() && !entityLaunchingQueue.peek().equals(re))
+            return false;
 
         BeePortBlockEntity targetBlock = re.getTargetBlockEntity();
         Player targetPlayer = re.getTargetPlayer();
@@ -85,16 +92,41 @@ public class BeePortalBlockEntity extends BlockEntity {
         if (level != null && level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
             storage.remove(this);
-            if (entityOnTravel != null)
+            if (!entityLandingQueue.isEmpty() || !entityLaunchingQueue.isEmpty())
                 level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), CMPItems.ROBO_BEE.asStack()));
         }
 
         super.setRemoved();
     }
 
-    public synchronized void trySetEntityOnTravel(RoboEntity entity) {
-        if (entityOnTravel == null || entity == null)
-            entityOnTravel = entity;
+    public synchronized void tryAddToLandingQueue(RoboEntity entity) {
+        if (entity != null && entityLandingQueue.stream().noneMatch(e -> e.equals(entity))) {
+            BeePortalBlockEntity.setOpen(this, true);
+            entityLandingQueue.add(entity);
+        }
+    }
+
+    public synchronized void tryRemoveFromLandingQueue(RoboEntity entity) {
+        if (!entityLandingQueue.isEmpty() && !entityLandingQueue.peek().equals(entity))
+            entityLandingQueue.poll();
+
+        if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
+            BeePortalBlockEntity.setOpen(this, false);
+    }
+
+    public synchronized void tryAddToLaunchingQueue(RoboEntity entity) {
+        if (entity != null && entityLaunchingQueue.stream().noneMatch(e -> e.equals(entity))) {
+            BeePortalBlockEntity.setOpen(this, true);
+            entityLaunchingQueue.add(entity);
+        }
+    }
+
+    public synchronized void tryRemoveFromLaunchingQueue(RoboEntity entity) {
+        if (!entityLaunchingQueue.isEmpty() && !entityLaunchingQueue.peek().equals(entity))
+            entityLaunchingQueue.poll();
+
+        if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
+            BeePortalBlockEntity.setOpen(this, false);
     }
 
     public Location location() {
