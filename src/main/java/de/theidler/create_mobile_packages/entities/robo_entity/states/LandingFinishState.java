@@ -19,20 +19,16 @@ public class LandingFinishState implements RoboEntityState {
         Player targetPlayer = re.getTargetPlayer();
         BeePortalBlockEntity targetPortal = re.getTargetPortalEntity();
         if (targetPortal != null) {
-            if (init) {
-                BeePortalBlockEntity.setOpen(targetPortal, false);
-                targetPortal.addBeeToRoboBeeInventory(1);
-                init = false;
-            }
-
-            Level targetLevel = targetBlock == null ? targetPlayer.level() : targetPortal.getLevel();
+            Level targetLevel = targetBlock == null ? targetPlayer.level() : targetBlock.getLevel();
             if (targetLevel == null) return;
             Vec3 position = targetLevel.dimension() == Level.END
                     ? new Vec3(100, 49, 0)
                     : targetPortal.getBlockPos().getCenter().multiply(1 / 8d, 1, 1 / 8d);
             BeePortalBlockEntity exitPortal = RoboEntity.getClosestBeePortal(targetLevel, position);
-            exitPortal.sendDrone(re);
-            re.remove(Entity.RemovalReason.CHANGED_DIMENSION);
+            if (exitPortal != null && exitPortal.sendDrone(re)) {
+                BeePortalBlockEntity.setOpen(targetPortal, false);
+                re.remove(Entity.RemovalReason.CHANGED_DIMENSION);
+            }
         } else {
             if (targetBlock != null && init) {
                 BeePortBlockEntity.setOpen(targetBlock, false);
@@ -41,11 +37,7 @@ public class LandingFinishState implements RoboEntityState {
             }
 
             if (re.getItemStack().isEmpty()) re.setState(new ShutdownState());
-            if (targetBlock != null) {
-                if (targetBlock.addItemStack(re.getItemStack())) {
-                    re.setItemStack(ItemStack.EMPTY);
-                }
-            }
+            if (targetBlock != null && targetBlock.addItemStack(re.getItemStack())) re.setItemStack(ItemStack.EMPTY);
         }
     }
 }

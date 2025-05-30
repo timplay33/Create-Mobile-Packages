@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.index.config;
 
 import net.createmod.catnip.config.ConfigBase;
+import org.jetbrains.annotations.NotNull;
 
 public class CMPServer extends ConfigBase {
 
@@ -18,7 +19,7 @@ public class CMPServer extends ConfigBase {
             CMPServer.Comments.allowRoboBeeSpawnPackageTransport);
 
     @Override
-    public String getName() {
+    public @NotNull String getName() {
         return "server";
     }
 

@@ -76,9 +76,8 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
     @Override
     public @NotNull List<ItemStack> getDrops(@NotNull BlockState pState, @NotNull LootParams.Builder pParams) {
         List<ItemStack> drops = super.getDrops(pState, pParams);
-        if (drops.isEmpty()) {
+        if (drops.isEmpty())
             drops.add(new ItemStack(CMPBlocks.BEE_PORT.asItem(), 1));
-        }
         return drops;
     }
 

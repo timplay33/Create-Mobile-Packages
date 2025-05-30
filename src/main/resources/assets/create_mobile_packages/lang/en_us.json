@@ -2,6 +2,8 @@
   "itemGroup.create_mobile_packages": "Create: Mobile Packages",
   "block.create_mobile_packages.bee_port": "Robo Bee Port",
   "item.create_mobile_packages.bee_port": "Robo Bee Port",
+  "block.create_mobile_packages.bee_portal": "Robo Bee Portal",
+  "item.create_mobile_packages.bee_portal": "Robo Bee Portal",
   "item.create_mobile_packages.portable_stock_ticker": "Portable Stock Ticker",
   "item.create_mobile_packages.portable_stock_ticker.screen_title": "Portable Stock Ticker",
   "item.create_mobile_packages.portable_stock_ticker.not_linked": "Not linked to Network",

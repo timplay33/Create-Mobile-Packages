@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.entities.robo_entity;
 import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.blocks.BeePortStorage;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
@@ -32,7 +33,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.storage.WorldData;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
@@ -90,9 +90,13 @@ public class RoboEntity extends Mob {
         setItemStack(itemStack);
         setTargetFromItemStack(itemStack);
         setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
-        if (targetBlockEntity != null) {
+
+        if (targetPortalEntity != null)
+            targetPortalEntity.trySetEntityOnTravel(this);
+        else if (targetBlockEntity != null) {
             targetBlockEntity.trySetEntityOnTravel(this);
         }
+
 
         BlockEntity spawn = level().getBlockEntity(spawnPos);
         if (spawn instanceof BeePortBlockEntity dpbe) startBeePortBlockEntity = dpbe;
@@ -296,7 +300,7 @@ public class RoboEntity extends Mob {
         if (closest != null)
             result.add(closest);
 
-        if (level instanceof ServerLevel serverLevel) {
+        if (level instanceof ServerLevel) {
             MinecraftServer server = Minecraft.getInstance().getSingleplayerServer();
             if (server == null) return result;
             Iterable<ServerLevel> levels = server.getAllLevels();
@@ -317,16 +321,16 @@ public class RoboEntity extends Mob {
      * @return The closest BeePortalBlockEntity.
      */
     public static BeePortalBlockEntity getClosestBeePortal(Level level, Vec3 originPos) {
-        final BeePortalBlockEntity[] closest = {null};
+        BeePortalBlockEntity closest = null;
         if (level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
             List<BeePortalBlockEntity> allBEs = storage.getPortals().stream().filter(BE -> isWithinRange(BE.getBlockPos().getCenter(), originPos)).toList();
-            closest[0] = allBEs.stream()
+            closest = allBEs.stream()
                     .min(Comparator.comparingDouble(a -> a.getBlockPos().getCenter().distanceToSqr(originPos)))
                     .orElse(null);
         }
 
-        return closest[0];
+        return closest;
     }
 
     @Override
@@ -435,6 +439,8 @@ public class RoboEntity extends Mob {
             handleItemStackOnRemove();
         if (getTargetBlockEntity() != null)
             getTargetBlockEntity().trySetEntityOnTravel(null);
+        if (getTargetPortalEntity() != null)
+            getTargetPortalEntity().trySetEntityOnTravel(null);
 
         super.remove(pReason);
     }
@@ -485,8 +491,7 @@ public class RoboEntity extends Mob {
         if (player == null) return;
         if (multidimensional) {
             BeePortalBlockEntity exitPortal = getExitPortal();
-            if (exitPortal == null)
-                exitPortal = startBeePortalBlockEntity;
+            if (exitPortal == null) return;
             player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(this, exitPortal.getBlockPos().getCenter())), true);
         } else
             player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player.position(), position())), true);

@@ -12,15 +12,18 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+//import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+//import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -31,13 +34,10 @@ public class BeePortalBlock extends Block implements IBE<BeePortalBlockEntity>, 
 
     public BeePortalBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any()
-                .setValue(FACING, Direction.NORTH)
-                .setValue(IS_OPEN_TEXTURE, false));
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
+    protected void createBlockStateDefinition(StateDefinition.@NotNull Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
         pBuilder.add(IS_OPEN_TEXTURE, FACING);
     }
@@ -48,7 +48,7 @@ public class BeePortalBlock extends Block implements IBE<BeePortalBlockEntity>, 
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+    public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter world, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         Direction facing = state.getValue(FACING);
         return CMPShapes.DRONE_PORT_SHAPE.get(facing);
     }
@@ -60,20 +60,20 @@ public class BeePortalBlock extends Block implements IBE<BeePortalBlockEntity>, 
 
     @Override
     public BlockEntityType<? extends BeePortalBlockEntity> getBlockEntityType() {
-        return CMPBlockEntities.BEE_PORT_PORTAL.get();
+        return CMPBlockEntities.BEE_PORTAL.get();
     }
 
     @Override
-    public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pMovedByPiston) {
+    public void onRemove(@NotNull BlockState pState, @NotNull Level pLevel, @NotNull BlockPos pPos, @NotNull BlockState pNewState, boolean pMovedByPiston) {
         IBE.onRemove(pState, pLevel, pPos, pNewState);
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState pState, LootParams.Builder pParams) {
+    public @NotNull List<ItemStack> getDrops(@NotNull BlockState pState, LootParams.@NotNull Builder pParams) {
         List<ItemStack> drops = super.getDrops(pState, pParams);
-        if (drops.isEmpty()) {
-            drops.add(new ItemStack(CMPBlocks.BEE_PORT.asItem(), 1));
-        }
+        if (drops.isEmpty())
+            drops.add(new ItemStack(CMPBlocks.BEE_PORTAL.asItem(), 1));
+
         return drops;
     }
 }

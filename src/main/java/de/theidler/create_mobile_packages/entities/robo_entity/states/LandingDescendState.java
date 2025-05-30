@@ -13,8 +13,11 @@ public class LandingDescendState implements RoboEntityState {
     public void tick(RoboEntity re) {
         BeePortBlockEntity targetBlock = re.getTargetBlockEntity();
         BeePortalBlockEntity targetPortal = re.getTargetPortalEntity();
-        if (targetBlock == null && targetPortal == null || targetBlock != null && !targetBlock.canAcceptEntity(re, !re.getItemStack().isEmpty()))
+        if (targetBlock == null && targetPortal == null) return;
+        if (targetBlock != null && !targetBlock.canAcceptEntity(re, !re.getItemStack().isEmpty())) {
+            re.setTargetVelocity(Vec3.ZERO);
             return;
+        }
 
         Vec3 targetPos = (targetPortal == null ? targetBlock : targetPortal).getBlockPos().getCenter();
         Vec3 direction = re.position().vectorTo(targetPos).normalize();

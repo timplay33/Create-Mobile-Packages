@@ -1,6 +1,6 @@
 package de.theidler.create_mobile_packages.entities;
 
-import de.theidler.create_mobile_packages.entities.robo_entity.Location;
+import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import net.minecraft.core.BlockPos;
@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 public class RoboBeeEntity extends RoboEntity {
 
@@ -36,21 +37,16 @@ public class RoboBeeEntity extends RoboEntity {
     }
 
     @Override
-    public boolean canCollideWith(Entity entity) {
+    public boolean canCollideWith(@NotNull Entity entity) {
         return false;
     }
 
     @Override
-    public boolean canBeCollidedWith() {
-        return false;
+    public void push(@NotNull Entity entity) {
     }
 
     @Override
-    public void push(Entity entity) {
-    }
-
-    @Override
-    protected void doPush(Entity entity) {
+    protected void doPush(@NotNull Entity entity) {
     }
 
     public static AttributeSupplier.Builder createAttributes() {

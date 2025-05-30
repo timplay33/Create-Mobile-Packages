@@ -4,7 +4,7 @@ import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.blocks.BeePortStorage;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
-import de.theidler.create_mobile_packages.entities.robo_entity.Location;
+import de.theidler.create_mobile_packages.Location;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;

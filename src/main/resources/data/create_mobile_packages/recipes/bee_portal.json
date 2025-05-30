@@ -1,16 +1,20 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": false,
   "pattern": [
-    "AAA",
-    "ATA",
-    "AAA"
+    " OOO ",
+    "EOPOE",
+    " OOO "
   ],
   "key": {
-    "A": {
+    "O": {
       "item": "minecraft:obsidian"
     },
-    "T": {
+    "P": {
       "item": "create_mobile_packages:bee_port"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
     }
   },
   "result": {

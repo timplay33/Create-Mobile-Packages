@@ -6,15 +6,16 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 @JeiPlugin
-public class CMPJEI implements IModPlugin{
+public class CMPJEI implements IModPlugin {
     private static final ResourceLocation ID = CreateMobilePackages.asResource("jei_plugin");
 
     public static IJeiRuntime runtime;
 
     @Override
-    public ResourceLocation getPluginUid() {
+    public @NotNull ResourceLocation getPluginUid() {
         return ID;
     }
 
@@ -24,7 +25,7 @@ public class CMPJEI implements IModPlugin{
     }
 
     @Override
-    public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
+    public void onRuntimeAvailable(@NotNull IJeiRuntime jeiRuntime) {
         runtime = jeiRuntime;
     }
 }

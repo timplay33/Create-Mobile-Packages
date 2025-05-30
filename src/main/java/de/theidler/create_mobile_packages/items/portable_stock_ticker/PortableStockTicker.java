@@ -25,6 +25,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -63,26 +64,25 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     @Override
-    public Rarity getRarity(ItemStack pStack) {
+    public @NotNull Rarity getRarity(@NotNull ItemStack pStack) {
         return Rarity.UNCOMMON;
     }
 
-    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, IdentifiedInventory ignoredHandler,
-                                           String address, Player player) {
-        boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address);
+    public void broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, IdentifiedInventory ignoredHandler,
+                                        String address, Player player) {
+        super.broadcastPackageRequest(type, order, ignoredHandler, address);
         previouslyUsedAddress = address;
 
         if (player instanceof ServerPlayer) {
             ItemStack itemStack = player.getInventory().getItem(getIndexOfPortableStockTicker(player.getInventory()));
-                if (itemStack.getItem() instanceof PortableStockTicker) {
-                    saveAddressToStack(itemStack, address);
-                }
+            if (itemStack.getItem() instanceof PortableStockTicker) {
+                saveAddressToStack(itemStack, address);
+            }
         }
-        return result;
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext pContext) {
+    public @NotNull InteractionResult useOn(UseOnContext pContext) {
         ItemStack stack = pContext.getItemInHand();
         BlockPos pos = pContext.getClickedPos();
         Level level = pContext.getLevel();
@@ -97,27 +97,23 @@ public class PortableStockTicker extends StockCheckingItem {
                 stbe.saveAdditional(tag);
                 categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND));
             } else if (level.getBlockEntity(pos) instanceof PackagerLinkBlockEntity) {
-                    categories = new ArrayList<>();
+                categories = new ArrayList<>();
             }
             saveCategoriesToStack(stack, categories);
-            saveHiddenCategoriesByPlayerToStack(stack , hiddenCategoriesByPlayer);
+            saveHiddenCategoriesByPlayerToStack(stack, hiddenCategoriesByPlayer);
             return super.useOn(pContext);
         }
         return InteractionResult.PASS;
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, Player pPlayer, @NotNull InteractionHand pUsedHand) {
         ItemStack stack = pPlayer.getItemInHand(pUsedHand);
         previouslyUsedAddress = loadAddressFromStack(stack);
         categories = loadCategoriesFromStack(stack);
         hiddenCategoriesByPlayer = getHiddenCategoriesByPlayerFromStack(stack);
         if (!pLevel.isClientSide) {
-            InventorySummary summary = getAccurateSummary(stack);
-
-            List<BigItemStack> bigItemStacks = summary.getStacks();
-
-            if(!isTuned(stack)) {
+            if (!isTuned(stack)) {
                 pPlayer.displayClientMessage(Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
@@ -130,7 +126,8 @@ public class PortableStockTicker extends StockCheckingItem {
                 NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
                         (id, inv, ply) -> new PortableStockTickerMenu(id, inv, this),
                         Component.translatable("item.create_mobile_packages.portable_stock_ticker")
-                ), buf -> {});
+                ), buf -> {
+                });
             }
             return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
         }
@@ -138,7 +135,7 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
+    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltip, @NotNull TooltipFlag pFlag) {
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
         if (Screen.hasShiftDown()) {
             pTooltip.add(Component.literal(""));
@@ -152,6 +149,7 @@ public class PortableStockTicker extends StockCheckingItem {
             pTooltip.add(Component.translatable("create.tooltip.holdForDescription", Component.translatable("create.tooltip.keyShift").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
         }
     }
+
     private static final String ADDRESS_TAG = "PreviousAddress";
 
     public void saveAddressToStack(ItemStack stack, String address) {
@@ -161,9 +159,8 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     public String loadAddressFromStack(ItemStack stack) {
-        if (stack.hasTag() && stack.getTag().contains(ADDRESS_TAG)) {
+        if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains(ADDRESS_TAG))
             return stack.getTag().getString(ADDRESS_TAG);
-        }
         return null;
     }
 
@@ -174,11 +171,12 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     public List<ItemStack> loadCategoriesFromStack(ItemStack stack) {
-        if (stack.hasTag() && stack.getTag().contains("Categories")) {
+        if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains("Categories")) {
             List<ItemStack> readCategories = NBTHelper.readItemList(stack.getTag().getList("Categories", Tag.TAG_COMPOUND));
             readCategories.removeIf(itemStack -> !itemStack.isEmpty() && !(itemStack.getItem() instanceof FilterItem));
             return readCategories;
         }
+
         return new ArrayList<>();
     }
 
@@ -197,7 +195,7 @@ public class PortableStockTicker extends StockCheckingItem {
 
     public Map<UUID, List<Integer>> getHiddenCategoriesByPlayerFromStack(ItemStack stack) {
         Map<UUID, List<Integer>> hiddenCategoriesByPlayer = new HashMap<>();
-        if (stack.hasTag() && stack.getTag().contains("HiddenCategories")) {
+        if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains("HiddenCategories")) {
             CompoundTag tag = stack.getTag().getCompound("HiddenCategories");
             NBTHelper.iterateCompoundList(tag.getList("HiddenCategories", Tag.TAG_COMPOUND),
                     c -> hiddenCategoriesByPlayer.put(c.getUUID("Id"), IntStream.of(c.getIntArray("Indices"))

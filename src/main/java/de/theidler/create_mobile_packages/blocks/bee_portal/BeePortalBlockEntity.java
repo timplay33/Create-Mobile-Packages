@@ -2,7 +2,7 @@ package de.theidler.create_mobile_packages.blocks.bee_portal;
 
 import de.theidler.create_mobile_packages.blocks.BeePortStorage;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
-import de.theidler.create_mobile_packages.entities.robo_entity.Location;
+import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPPackets;
@@ -13,13 +13,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.items.ItemStackHandler;
 
 import static de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlock.IS_OPEN_TEXTURE;
 
@@ -28,7 +26,7 @@ import static de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBloc
  * to players or other drone ports using drones.
  */
 public class BeePortalBlockEntity extends BlockEntity {
-    private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
+    private RoboEntity entityOnTravel = null;
 
     /**
      * Constructor for the BeePortalBlockEntity.
@@ -50,22 +48,24 @@ public class BeePortalBlockEntity extends BlockEntity {
     public static void setOpen(BeePortalBlockEntity entity, boolean open) {
         if (entity == null || entity.level == null) return;
         entity.level.setBlockAndUpdate(entity.getBlockPos(), entity.getBlockState().setValue(IS_OPEN_TEXTURE, open));
-        entity.level.playSound(null, entity.getBlockPos(), open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE,
+        entity.level.playSound(null, entity.getBlockPos(), open ? SoundEvents.PORTAL_TRIGGER : SoundEvents.PORTAL_AMBIENT,
                 SoundSource.BLOCKS);
     }
 
-    public void sendDrone(RoboEntity re) {
-        if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
-            return;
-        }
+    public boolean sendDrone(RoboEntity re) {
+        if (entityOnTravel != null) return false;
 
         BeePortBlockEntity targetBlock = re.getTargetBlockEntity();
         Player targetPlayer = re.getTargetPlayer();
         Level targetLevel = targetBlock == null ? targetPlayer.level() : targetBlock.getLevel();
-        if (targetLevel == null) return;
+        if (targetLevel == null) return false;
         Vec3 spawnPos = getBlockPos().getCenter();
+        if (targetBlock != null && !targetBlock.canAcceptEntity(re, !re.getItemStack().isEmpty()))
+            return false;
+
         CMPPackets.getChannel()
                 .sendToServer(new RequestDimensionTeleport(targetLevel.dimension().location(), spawnPos, targetBlock == null ? targetPlayer.blockPosition() : targetBlock.getBlockPos(), re.getItemStack()));
+        return true;
     }
 
     /**
@@ -85,16 +85,16 @@ public class BeePortalBlockEntity extends BlockEntity {
         if (level != null && level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
             storage.remove(this);
-            if (roboBeeInventory.getStackInSlot(0).getCount() > 0) {
-                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
-            }
+            if (entityOnTravel != null)
+                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), CMPItems.ROBO_BEE.asStack()));
         }
 
         super.setRemoved();
     }
 
-    public void addBeeToRoboBeeInventory(int amount) {
-        roboBeeInventory.insertItem(0, new ItemStack(CMPItems.ROBO_BEE.get(), amount), false);
+    public synchronized void trySetEntityOnTravel(RoboEntity entity) {
+        if (entityOnTravel == null || entity == null)
+            entityOnTravel = entity;
     }
 
     public Location location() {

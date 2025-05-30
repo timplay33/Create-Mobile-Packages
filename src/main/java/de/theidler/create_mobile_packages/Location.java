@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.entities.robo_entity;
+package de.theidler.create_mobile_packages;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.dimension.DimensionType;

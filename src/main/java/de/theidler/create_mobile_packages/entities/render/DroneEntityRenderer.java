@@ -4,7 +4,6 @@ import com.simibubi.create.content.logistics.box.PackageStyles;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.models.RoboBeeModel;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
@@ -14,6 +13,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemStack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 
 public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel<RoboBeeEntity>> {
     private static final ResourceLocation TEXTURE = CreateMobilePackages.asResource("textures/entity/robo_bee.png");
@@ -23,12 +23,12 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
     }
 
     @Override
-    public ResourceLocation getTextureLocation(RoboBeeEntity pEntity) {
+    public @NotNull ResourceLocation getTextureLocation(@NotNull RoboBeeEntity pEntity) {
         return TEXTURE;
     }
 
     @Override
-    public void render(RoboBeeEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+    public void render(@NotNull RoboBeeEntity entity, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight) {
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
         ItemStack stack = entity.getItemStack();
 
@@ -40,22 +40,22 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
 
             poseStack.pushPose();
             poseStack.translate(-0.5D, 0 - (riggingOffset - 5) / 16 * heightScale, -0.5D);
-            poseStack.scale(1F, heightScale * 1F, 1F);
+            poseStack.scale(1F, heightScale, 1F);
             var modelManager = Minecraft.getInstance().getModelManager();
             var bakedModel = modelManager.getModel(riggingModel);
             Minecraft.getInstance().getItemRenderer().renderModelLists(
-                bakedModel,
-                ItemStack.EMPTY,
-                packedLight,
-                net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
-                poseStack,
-                buffer.getBuffer(ItemBlockRenderTypes.getRenderType(ItemStack.EMPTY, true))
+                    bakedModel,
+                    ItemStack.EMPTY,
+                    packedLight,
+                    net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+                    poseStack,
+                    buffer.getBuffer(bakedModel.getRenderTypes(ItemStack.EMPTY, true).get(0))
             );
             poseStack.popPose();
 
             if (!stack.isEmpty() && PackageItem.isPackage(stack)) {
                 poseStack.pushPose();
-                poseStack.translate(0.0D, 0-(riggingOffset-1) / 16 * heightScale, 0.0D);
+                poseStack.translate(0.0D, 0 - (riggingOffset - 1) / 16 * heightScale, 0.0D);
                 poseStack.scale(4F, heightScale * 4F, 4F);
                 Minecraft.getInstance().getItemRenderer().renderStatic(
                         stack,

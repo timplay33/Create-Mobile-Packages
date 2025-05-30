@@ -8,10 +8,14 @@ import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 public class LaunchPrepareState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
-        if (re.getStartBeePortBlockEntity() != null)
+        BeePortalBlockEntity startPortal = re.getStartBeePortalBlockEntity();
+        if (startPortal != null)
+            BeePortalBlockEntity.setOpen(startPortal, true);
+        else {
             BeePortBlockEntity.setOpen(re.getStartBeePortBlockEntity(), true);
-        else
-            BeePortalBlockEntity.setOpen(re.getStartBeePortalBlockEntity(), true);
+            if (re.getTargetPortalEntity() != null)
+                BeePortalBlockEntity.setOpen(re.getTargetPortalEntity(), true);
+        }
         re.setState(new LaunchAscendState());
     }
 }

@@ -1,13 +1,11 @@
 package de.theidler.create_mobile_packages.index.config;
 
 import net.createmod.catnip.config.ConfigBase;
+import org.jetbrains.annotations.NotNull;
 
 public class CMPCommon extends ConfigBase {
     @Override
-    public String getName() {
+    public @NotNull String getName() {
         return "common";
     }
-
-    private static class Comments {}
-
 }

@@ -1,6 +1,6 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
-import de.theidler.create_mobile_packages.entities.robo_entity.Location;
+import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
