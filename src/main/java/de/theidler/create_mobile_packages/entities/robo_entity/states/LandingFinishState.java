@@ -32,7 +32,7 @@ public class LandingFinishState implements RoboEntityState {
             }
         } else {
             if (targetBlock != null && init) {
-                BeePortBlockEntity.setOpen(targetBlock, false);
+                targetBlock.tryRemoveFromLandingQueue(re);
                 targetBlock.addBeeToRoboBeeInventory(1);
                 init = false;
             }

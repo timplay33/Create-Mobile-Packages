@@ -6,6 +6,7 @@
   ],
   "textures": {
     "0": "create_mobile_packages:block/bee_portal",
+    "1": "create_mobile_packages:block/bee_portal_top_nether",
     "particle": "create_mobile_packages:block/bee_portal"
   },
   "elements": [
@@ -59,12 +60,12 @@
         },
         "up": {
           "uv": [
-            4,
-            12,
+            16,
+            16,
             0,
-            8
+            0
           ],
-          "texture": "#0"
+          "texture": "#1"
         },
         "down": {
           "uv": [

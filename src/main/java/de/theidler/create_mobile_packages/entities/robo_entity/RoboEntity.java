@@ -81,18 +81,11 @@ public class RoboEntity extends Mob {
                         ? dpbe
                         : null;
             }
-
-            if (targetBlockEntity != null) {
-                setState(new LaunchPrepareState());
-            }
         }
 
         setItemStack(itemStack);
         setTargetFromItemStack(itemStack);
         setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
-
-        if (targetBlockEntity != null)
-            targetBlockEntity.tryAddToLandingQueue(this);
 
 
         BlockEntity spawn = level().getBlockEntity(spawnPos);
@@ -117,13 +110,6 @@ public class RoboEntity extends Mob {
 
         setState(new LaunchPrepareState());
     }
-
-//    @Override
-//    public boolean equals(Object pObject) {
-//        if (pObject instanceof RoboEntity re)
-//            return re.getUUID().equals(getUUID());
-//        return false;
-//    }
 
     @Override
     protected void defineSynchedData() {
@@ -176,34 +162,43 @@ public class RoboEntity extends Mob {
         this.targetPlayer = targetPlayer;
     }
 
-    private void updateTarget() {
+    public void updateTarget() {
         if (level().isClientSide) return;
         setTargetPlayerFromAddress();
         if (targetPlayer != null) {
-            if (targetPlayer.level().dimensionType() != level().dimensionType())
+            if (targetPlayer.level().dimensionType() != level().dimensionType()) {
                 targetPortalEntity = getClosestBeePortal(level(), position());
+                targetPortalEntity.tryAddToLandingQueue(this);
+            } else
+                targetPortalEntity = null;
             return;
         }
 
         if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this, !getItemStack().isEmpty()) || !Objects.equals(activeTargetAddress, targetAddress)) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
             activeTargetAddress = targetAddress;
-            if (targetBlockEntity == null) {
-                List<BeePortBlockEntity> allBEs = getMultidimensionalBeePorts(level(), Objects.equals(targetAddress, "") ? null : targetAddress, position(), this);
-                if (!allBEs.isEmpty()) targetBlockEntity = allBEs.get(0);
-            } else
-                targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, position(), this);
+            Vec3 pos = position();
+            List<BeePortBlockEntity> allBEs = getMultidimensionalBeePorts(level(), Objects.equals(targetAddress, "") ? null : targetAddress, pos, this);
+            if (!allBEs.isEmpty()) targetBlockEntity = allBEs.get(0);
 
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null)
-                    oldTarget.tryRemoveFromLandingQueue(null);
+                    oldTarget.tryRemoveFromLandingQueue(this);
                 if (targetBlockEntity != null)
                     targetBlockEntity.tryRemoveFromLandingQueue(this);
             }
         } else {
-            if (targetBlockEntity.location().dimensionType() != location().dimensionType())
+            if (targetBlockEntity.location().dimensionType() != location().dimensionType()) {
                 targetPortalEntity = getClosestBeePortal(level(), position());
+                targetPortalEntity.tryAddToLandingQueue(this);
+            } else
+                targetPortalEntity = null;
         }
+
+        if (targetBlockEntity != null)
+            targetBlockEntity.tryAddToLandingQueue(this);
+        else if (targetPortalEntity != null)
+            targetPortalEntity.tryAddToLandingQueue(this);
     }
 
     /**
@@ -274,7 +269,7 @@ public class RoboEntity extends Mob {
      * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
     public static BeePortBlockEntity getClosestBeePort(Level level, String address, Vec3 originPos, boolean hasPackage) {
-        final BeePortBlockEntity[] closest = {null};
+        BeePortBlockEntity closest = null;
         if (level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
             List<BeePortBlockEntity> allBEs = storage.getPorts();
@@ -283,12 +278,12 @@ public class RoboEntity extends Mob {
                 allBEs.removeIf(BE -> !PackageItem.matchAddress(address, BE.addressFilter));
 
             allBEs.removeIf(BE -> !BE.canAcceptEntity(null, hasPackage));
-            closest[0] = allBEs.stream()
+            closest = allBEs.stream()
                     .min(Comparator.comparingDouble(a -> a.getBlockPos().getCenter().distanceToSqr(originPos)))
                     .orElse(null);
         }
 
-        return closest[0];
+        return closest;
     }
 
     /**
@@ -304,14 +299,18 @@ public class RoboEntity extends Mob {
     public static List<BeePortBlockEntity> getMultidimensionalBeePorts(Level level, String address, Vec3 originPos, RoboEntity re) {
         BeePortBlockEntity closest = getClosestBeePort(level, address, originPos, re);
         List<BeePortBlockEntity> result = new ArrayList<>();
-        if (closest != null)
+        if (closest != null) {
             result.add(closest);
+            return result;
+        }
 
         if (level instanceof ServerLevel) {
             MinecraftServer server = Minecraft.getInstance().getSingleplayerServer();
             if (server == null) return result;
             Iterable<ServerLevel> levels = server.getAllLevels();
-            levels.forEach(beLevel -> result.add(getClosestBeePort(beLevel, address, originPos, re)));
+            levels.forEach(beLevel -> {
+                if (beLevel != level) result.add(getClosestBeePort(beLevel, address, originPos, re));
+            });
         }
 
         result.removeIf(Objects::isNull);
@@ -442,6 +441,10 @@ public class RoboEntity extends Mob {
 
     @Override
     public void remove(@NotNull RemovalReason pReason) {
+        if (getStartBeePortBlockEntity() != null)
+            getStartBeePortBlockEntity().tryRemoveFromLaunchingQueue(this);
+        if (getStartBeePortalBlockEntity() != null)
+            getStartBeePortalBlockEntity().tryRemoveFromLaunchingQueue(this);
         if (getTargetBlockEntity() != null)
             getTargetBlockEntity().tryRemoveFromLandingQueue(this);
         if (getTargetPortalEntity() != null)
@@ -459,14 +462,12 @@ public class RoboEntity extends Mob {
         if (!getItemStack().isEmpty()) {
             level().addFreshEntity(PackageEntity.fromItemStack(level(), position(), getItemStack()));
             setItemStack(ItemStack.EMPTY);
-            if (targetPlayer != null) {
-                targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(getX()), Math.round(getY()), Math.round(getZ()), level().dimensionType(), targetPlayer.getName().getString()), false);
-            }
+            if (targetPlayer != null)
+                targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(getX()), Math.round(getY()), Math.round(getZ()), level().dimensionTypeId().location().getPath(), targetPlayer.getName().getString()), false);
         }
     }
 
     public Player getTargetPlayer() {
-        updateTarget();
         return targetPlayer;
     }
 

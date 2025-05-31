@@ -9,8 +9,6 @@ import de.theidler.create_mobile_packages.index.CMPPackets;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestDimensionTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -22,8 +20,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
-
-import static de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlock.IS_OPEN_TEXTURE;
 
 /**
  * Represents a Drone Portal block entity that handles the teleportation of Robo Bees
@@ -42,19 +38,6 @@ public class BeePortalBlockEntity extends BlockEntity {
      */
     public BeePortalBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
-    }
-
-    /**
-     * Sets the open state of the drone portal and updates the block state and sound.
-     *
-     * @param entity The drone portal entity.
-     * @param open   Whether the portal is open.
-     */
-    public static void setOpen(BeePortalBlockEntity entity, boolean open) {
-        if (entity == null || entity.level == null) return;
-        entity.level.setBlockAndUpdate(entity.getBlockPos(), entity.getBlockState().setValue(IS_OPEN_TEXTURE, open));
-        entity.level.playSound(null, entity.getBlockPos(), open ? SoundEvents.PORTAL_TRIGGER : SoundEvents.PORTAL_AMBIENT,
-                SoundSource.BLOCKS);
     }
 
     public boolean sendDrone(@NotNull RoboEntity re) {
@@ -99,34 +82,24 @@ public class BeePortalBlockEntity extends BlockEntity {
         super.setRemoved();
     }
 
-    public synchronized void tryAddToLandingQueue(RoboEntity entity) {
-        if (entity != null && entityLandingQueue.stream().noneMatch(e -> e == entity)) {
-            BeePortalBlockEntity.setOpen(this, true);
+    public synchronized void tryAddToLandingQueue(@NotNull RoboEntity entity) {
+        if (entityLandingQueue.stream().noneMatch(e -> e == entity))
             entityLandingQueue.add(entity);
-        }
     }
 
-    public synchronized void tryRemoveFromLandingQueue(RoboEntity entity) {
-        if (!entityLandingQueue.isEmpty() && entityLandingQueue.peek() == entity)
+    public synchronized void tryRemoveFromLandingQueue(@NotNull RoboEntity entity) {
+        if (!entityLandingQueue.isEmpty())
             entityLandingQueue.remove(entity);
-
-        if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
-            BeePortalBlockEntity.setOpen(this, false);
     }
 
-    public synchronized void tryAddToLaunchingQueue(RoboEntity entity) {
-        if (entity != null && entityLaunchingQueue.stream().noneMatch(e -> e == entity)) {
-            BeePortalBlockEntity.setOpen(this, true);
+    public synchronized void tryAddToLaunchingQueue(@NotNull RoboEntity entity) {
+        if (entityLaunchingQueue.stream().noneMatch(e -> e == entity))
             entityLaunchingQueue.add(entity);
-        }
     }
 
-    public synchronized void tryRemoveFromLaunchingQueue(RoboEntity entity) {
-        if (!entityLaunchingQueue.isEmpty() && entityLaunchingQueue.peek() == entity)
+    public synchronized void tryRemoveFromLaunchingQueue(@NotNull RoboEntity entity) {
+        if (!entityLaunchingQueue.isEmpty())
             entityLaunchingQueue.remove(entity);
-
-        if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
-            BeePortalBlockEntity.setOpen(this, false);
     }
 
     public boolean isLandingPeek(RoboEntity entity) {

@@ -38,6 +38,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
 import java.util.Comparator;
@@ -227,17 +228,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         // Check if the item can be sent to a drone port.
         if (CMPConfigs.server().portToPort.get() && !PackageItem.matchAddress(address, addressFilter)) {
             BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, getBlockPos().getCenter(), null);
-            BeePortalBlockEntity targetPortal = null;
             if (beePortBlockEntity == null) {
                 List<BeePortBlockEntity> BEs = RoboEntity.getMultidimensionalBeePorts(level, address, getBlockPos().getCenter(), null);
-                if (!BEs.isEmpty()) {
+                if (!BEs.isEmpty())
                     beePortBlockEntity = BEs.get(0);
-                    targetPortal = RoboEntity.getClosestBeePortal(level, getBlockPos().getCenter());
-                }
             }
 
             if (beePortBlockEntity != null && beePortBlockEntity.hasSpace())
-                sendDrone(itemStack, slot, targetPortal);
+                sendDrone(itemStack, slot);
         }
     }
 
@@ -252,7 +250,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                     if (a.level == null)
                         return 3;
                     ResourceKey<Level> level = a.level.dimension();
-                    if (level.equals(Level.OVERWORLD))
+                    if (a.level.dimensionType() == location.dimensionType())
+                        return -1;
+                    else if (level.equals(Level.OVERWORLD))
                         return 0;
                     else if (level.equals(Level.NETHER))
                         return 1;
@@ -285,11 +285,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         sendItemThisTime = 2;
         CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
-        if (player.level() != level) {
-            BeePortalBlockEntity beePortal = RoboEntity.getClosestBeePortal(level, getBlockPos().getCenter());
-            sendDrone(itemStack, slot, beePortal);
-        } else
-            sendDrone(itemStack, slot);
+        sendDrone(itemStack, slot);
     }
 
     /**
@@ -299,16 +295,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @param slot      The inventory slot of the item.
      */
     private void sendDrone(ItemStack itemStack, int slot) {
-        sendDrone(itemStack, slot, null);
-    }
-
-    /**
-     * Sends a Create Mod package.
-     *
-     * @param itemStack The Create Mod package to send.
-     * @param slot      The inventory slot of the item.
-     */
-    private void sendDrone(ItemStack itemStack, int slot, BeePortalBlockEntity targetPortal) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
             if (level instanceof ServerLevel serverLevel)
                 if (entityLandingQueue.isEmpty())
@@ -322,8 +308,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         level.addFreshEntity(re);
         roboBeeInventory.getStackInSlot(0).shrink(1);
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
-        if (targetPortal != null)
-            targetPortal.tryAddToLandingQueue(re);
+        tryAddToLaunchingQueue(re);
     }
 
     private void sendDrone(Location tagetLocation) {
@@ -437,34 +422,42 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         super.remove();
     }
 
-    public synchronized void tryAddToLandingQueue(RoboEntity entity) {
-        if (entity != null && entityLandingQueue.stream().noneMatch(e -> e == entity)) {
+    public synchronized void tryAddToLandingQueue(@NotNull RoboEntity entity) {
+        if (entityLandingQueue.stream().noneMatch(e -> e == entity)) {
             BeePortBlockEntity.setOpen(this, true);
             entityLandingQueue.add(entity);
         }
     }
 
-    public synchronized void tryRemoveFromLandingQueue(RoboEntity entity) {
-        if (!entityLandingQueue.isEmpty() && entityLandingQueue.peek() == entity)
+    public synchronized void tryRemoveFromLandingQueue(@NotNull RoboEntity entity) {
+        if (!entityLandingQueue.isEmpty())
             entityLandingQueue.remove(entity);
 
         if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
             BeePortBlockEntity.setOpen(this, false);
     }
 
-    public synchronized void tryAddToLaunchingQueue(RoboEntity entity) {
-        if (entity != null && entityLaunchingQueue.stream().noneMatch(e -> e == entity)) {
+    public synchronized void tryAddToLaunchingQueue(@NotNull RoboEntity entity) {
+        if (entityLaunchingQueue.stream().noneMatch(e -> e == entity)) {
             BeePortBlockEntity.setOpen(this, true);
             entityLaunchingQueue.add(entity);
         }
     }
 
-    public synchronized void tryRemoveFromLaunchingQueue(RoboEntity entity) {
-        if (!entityLaunchingQueue.isEmpty() && entityLaunchingQueue.peek() == entity)
+    public synchronized void tryRemoveFromLaunchingQueue(@NotNull RoboEntity entity) {
+        if (!entityLaunchingQueue.isEmpty())
             entityLaunchingQueue.remove(entity);
 
         if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
             BeePortBlockEntity.setOpen(this, false);
+    }
+
+    public boolean isLandingPeek(RoboEntity entity) {
+        return entityLandingQueue.peek() == entity;
+    }
+
+    public boolean isLaunchingPeek(RoboEntity entity) {
+        return entityLaunchingQueue.peek() == entity;
     }
 
     /**
