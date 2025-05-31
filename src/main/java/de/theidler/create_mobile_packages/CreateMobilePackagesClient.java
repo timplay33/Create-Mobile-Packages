@@ -27,6 +27,7 @@ public class CreateMobilePackagesClient {
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(CMPEntities.ROBO_BEE_ENTITY.get(), DroneEntityRenderer::new);
     }
+
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(RoboBeeModel.LAYER_LOCATION, RoboBeeModel::createBodyLayer);
     }

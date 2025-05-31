@@ -15,21 +15,20 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
 @Mod(CreateMobilePackages.MODID)
-public class CreateMobilePackages
-{
+public class CreateMobilePackages {
     public static final String MODID = "create_mobile_packages";
     public static final String NAME = "Create: Mobile Packages";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(CreateMobilePackages.MODID);
     public static final RoboManager ROBO_MANAGER = new RoboManager();
 
-    public CreateMobilePackages() {
-        onCtor();
+    public CreateMobilePackages(FMLJavaModLoadingContext context) {
+        onCtor(context);
     }
 
-    public static void onCtor() {
-        ModLoadingContext modLoadingContext = ModLoadingContext.get();
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public static void onCtor(FMLJavaModLoadingContext context) {
+        ModLoadingContext modLoadingContext = new ModLoadingContext();
+        IEventBus modEventBus = context.getModEventBus();
         IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
         REGISTRATE.registerEventListeners(modEventBus);
 
@@ -43,15 +42,10 @@ public class CreateMobilePackages
         CMPEntities.register();
         CMPDisplaySources.register();
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> {
-            return () -> {
-                CreateMobilePackagesClient.onCtorClient(modEventBus, forgeEventBus);
-            };
-        });
-
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> CreateMobilePackagesClient.onCtorClient(modEventBus, forgeEventBus));
     }
 
     public static ResourceLocation asResource(String path) {
-        return new ResourceLocation(MODID, path);
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

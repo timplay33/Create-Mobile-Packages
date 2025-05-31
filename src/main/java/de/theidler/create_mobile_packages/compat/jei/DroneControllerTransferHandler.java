@@ -28,30 +28,31 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class DroneControllerTransferHandler implements IUniversalRecipeTransferHandler<PortableStockTickerMenu> {
 
-    private IJeiHelpers helpers;
+    private final IJeiHelpers helpers;
 
     public DroneControllerTransferHandler(IJeiHelpers helpers) {
         this.helpers = helpers;
     }
 
     @Override
-    public Class<? extends PortableStockTickerMenu> getContainerClass() {
+    public @NotNull Class<? extends PortableStockTickerMenu> getContainerClass() {
         return PortableStockTickerMenu.class;
     }
 
     @Override
-    public Optional<MenuType<PortableStockTickerMenu>> getMenuType() {
+    public @NotNull Optional<MenuType<PortableStockTickerMenu>> getMenuType() {
         return Optional.of(CMPMenuTypes.PORTABLE_STOCK_TICKER_MENU.get());
     }
 
     @Override
-    public @Nullable IRecipeTransferError transferRecipe(PortableStockTickerMenu container, Object object, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+    public @Nullable IRecipeTransferError transferRecipe(@NotNull PortableStockTickerMenu container, @NotNull Object object, @NotNull IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
         Level level = player.level();
         if (!(object instanceof Recipe<?> recipe))
             return null;

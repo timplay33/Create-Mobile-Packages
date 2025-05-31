@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,7 @@ public class RoboManagerSavedData extends SavedData {
     private Map<UUID, RoboEntity> robos = new HashMap<>();
 
     @Override
-    public CompoundTag save(CompoundTag nbt) {
+    public @NotNull CompoundTag save(CompoundTag nbt) {
         RoboManager roboManager = CreateMobilePackages.ROBO_MANAGER;
         CreateMobilePackages.LOGGER.info("Saving RoboManager...");
         nbt.put("Robos", NBTHelper.writeCompoundList(roboManager.robos.values(), robo -> {

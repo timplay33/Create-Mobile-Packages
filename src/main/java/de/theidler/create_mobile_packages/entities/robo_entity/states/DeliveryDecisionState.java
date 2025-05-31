@@ -8,8 +8,8 @@ public class DeliveryDecisionState implements RoboEntityState {
     public void tick(RoboEntity re) {
         if (re.getItemStack().isEmpty()) {
             re.setTargetAddress("");
+            re.setTargetPlayer(null);
             re.setState(new AdjustRotationToTarget());
-            return;
         }
         //TODO: implement option to deliver package from player
     }

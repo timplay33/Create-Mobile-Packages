@@ -23,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -34,7 +35,7 @@ public class StockCheckingItem extends Item {
     protected static UUID Freq;
 
     @Override
-    public boolean isFoil(ItemStack pStack) {
+    public boolean isFoil(@NotNull ItemStack pStack) {
         return isTuned(pStack);
     }
 
@@ -73,9 +74,9 @@ public class StockCheckingItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if(!isTuned(stack)) {
+        if (!isTuned(stack)) {
             player.displayClientMessage(Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);
             return super.use(level, player, hand);
         }
@@ -84,7 +85,7 @@ public class StockCheckingItem extends Item {
 
 
     @Override
-    public InteractionResult useOn(UseOnContext pContext) {
+    public @NotNull InteractionResult useOn(UseOnContext pContext) {
         //from com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem
         ItemStack stack = pContext.getItemInHand();
         BlockPos pos = pContext.getClickedPos();
@@ -106,16 +107,13 @@ public class StockCheckingItem extends Item {
             return InteractionResult.SUCCESS;
         }
 
-        InteractionResult useOn = super.useOn(pContext);
-        if (level.isClientSide || useOn == InteractionResult.FAIL)
-            return useOn;
-        return useOn;
+        return super.useOn(pContext);
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
+    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltip, @NotNull TooltipFlag pFlag) {
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
-        if (!isTuned(pStack))
+        if (!isTuned(pStack) || pStack.getTag() == null)
             return;
 
         CompoundTag tag = pStack.getTag()

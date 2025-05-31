@@ -44,6 +44,7 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
@@ -73,7 +74,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     public LerpedFloat itemScroll;
 
-    final int rows = 9;
     final int cols = 9;
     final int rowHeight = 20;
     final int colWidth = 20;
@@ -98,7 +98,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     public List<CraftableBigItemStack> recipesToOrder;
     private boolean scrollHandleActive;
     private InventorySummary forcedEntries;
-    private Set<Integer> hiddenCategories;
+    private final Set<Integer> hiddenCategories;
 
     public boolean refreshSearchNextTick;
     public boolean moveToTopNextTick;
@@ -234,7 +234,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
                 categoryY += rowHeight;
                 if (!categories.get(categoryIndex).hidden)
-                    categoryY += Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight;
+                    categoryY += (int) (Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight);
             }
 
             if (!anyItemsInCategory)
@@ -245,7 +245,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         }
 
         // Filter by search string
-        boolean modSearch = false;
+        boolean modSearch;
         boolean tagSearch = false;
         if ((modSearch = valueWithPrefix.startsWith("@")) || (tagSearch = valueWithPrefix.startsWith("#")))
             valueWithPrefix = valueWithPrefix.substring(1);
@@ -262,15 +262,12 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             List<BigItemStack> category = currentItemSource.get(categoryIndex);
             categories.get(categoryIndex).y = categoryY;
 
-            if (displayedItems.size() <= categoryIndex)
-                break;
-
             List<BigItemStack> displayedItemsInCategory = displayedItems.get(categoryIndex);
             for (BigItemStack entry : category) {
                 ItemStack stack = entry.stack;
 
                 if (modSearch) {
-                    if (ForgeRegistries.ITEMS.getKey(stack.getItem())
+                    if (Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(stack.getItem()))
                             .getNamespace()
                             .contains(value)) {
                         displayedItemsInCategory.add(entry);
@@ -291,22 +288,21 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                         .getString()
                         .toLowerCase(Locale.ROOT)
                         .contains(value)
-                        || ForgeRegistries.ITEMS.getKey(stack.getItem())
+                        || Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(stack.getItem()))
                         .getPath()
                         .contains(value)) {
                     displayedItemsInCategory.add(entry);
-                    continue;
                 }
             }
+
             if (displayedItemsInCategory.isEmpty())
                 continue;
             if (categoryIndex < currentItemSource.size() - 1)
                 anyItemsInCategory = true;
 
             categoryY += rowHeight;
-
             if (!categories.get(categoryIndex).hidden)
-                categoryY += Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight;
+                categoryY += (int) (Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight);
         }
         if (!anyItemsInCategory)
             categories.clear();
@@ -410,7 +406,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     }
 
     @Override
-    protected void renderBg(GuiGraphics pGuiGraphics, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphics pGuiGraphics, float partialTicks, int mouseX, int mouseY) {
+        assert minecraft != null;
         if (this != minecraft.screen)
             return; // stencil buffer does not cooperate with ponders gui fade out
 
@@ -520,6 +517,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         int itemWindowY = y + 17;
         int itemWindowY2 = y + windowHeight - 80;
 
+        assert UIRenderHelper.framebuffer != null;
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
         startStencil(pGuiGraphics, itemWindowX - 5, itemWindowY, itemWindowX2 - itemWindowX + 10,
                 itemWindowY2 - itemWindowY);
@@ -545,7 +543,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             pGuiGraphics.drawString(font, searchBox.getMessage(),
                     x + windowWidth / 2 - font.width(searchBox.getMessage()) / 2, searchBox.getY(), 0xff4A2D31, false);
 
-        // Something isnt right
+        // Something isn't right
         boolean allEmpty = displayedItems.isEmpty();
         if (allEmpty) {
             Component msg = getTroubleshootingMessage();
@@ -626,7 +624,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         }
 
         // Render JEI imported
-        if (recipesToOrder.size() > 0) {
+        if (!recipesToOrder.isEmpty()) {
             int jeiX = x + (windowWidth - colWidth * recipesToOrder.size()) / 2 + 1;
             int jeiY = orderY - 31;
             ms.pushPose();
@@ -665,10 +663,9 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             totalRows++;
             if (categories.size() > i && categories.get(i).hidden)
                 continue;
-            totalRows += Math.ceil(list.size() / (float) cols);
+            totalRows += (int) Math.ceil(list.size() / (float) cols);
         }
-        int maxScroll = (int) Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
-        return maxScroll;
+        return Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
     }
 
     private void renderItemEntry(GuiGraphics graphics, float scale, BigItemStack entry, boolean isStackHovered,
@@ -713,17 +710,16 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             graphics.renderItemDecorations(font, entry.stack, 1, 1, "");
         ms.translate(0, 0, 10);
         if (customCount > 1 || craftable)
-            drawItemCount(graphics, entry.count, customCount);
+            drawItemCount(graphics, customCount);
         ms.popPose();
     }
 
-    private void drawItemCount(GuiGraphics graphics, int count, int customCount) {
-        count = customCount;
-        String text = count >= 1000000 ? (count / 1000000) + "m"
-                : count >= 10000 ? (count / 1000) + "k"
-                : count >= 1000 ? ((count * 10) / 1000) / 10f + "k" : count >= 100 ? count + "" : " " + count;
+    private void drawItemCount(GuiGraphics graphics, int customCount) {
+        String text = customCount >= 1000000 ? (customCount / 1000000) + "m"
+                : customCount >= 10000 ? (customCount / 1000) + "k"
+                : customCount >= 1000 ? ((customCount * 10) / 1000) / 10f + "k" : customCount >= 100 ? customCount + "" : " " + customCount;
 
-        if (count >= BigItemStack.INF)
+        if (customCount >= BigItemStack.INF)
             text = "+";
 
         if (text.isBlank())
@@ -765,7 +761,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     }
 
     @Override
-    protected void renderForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    protected void renderForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         super.renderForeground(graphics, mouseX, mouseY, partialTicks);
         Couple<Integer> hoveredSlot = getHoveredSlot(mouseX, mouseY);
 
@@ -780,9 +776,10 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                     .get(slot);
 
             if (recipeHovered) {
+                if (minecraft == null) return;
                 ArrayList<Component> lines =
                         new ArrayList<>(entry.stack.getTooltipLines(minecraft.player, TooltipFlag.NORMAL));
-                if (lines.size() > 0)
+                if (!lines.isEmpty())
                     lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.get(0)
                             .copy()));
                 graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
@@ -854,7 +851,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (getMaxScroll() > 0 && lmb && pMouseX > barX && pMouseX <= barX + 8 && pMouseY > getGuiTop() + 15
                 && pMouseY < getGuiTop() + windowHeight - 82) {
             scrollHandleActive = true;
-            if (minecraft.isWindowActive())
+            if (minecraft != null && minecraft.isWindowActive())
                 GLFW.glfwSetInputMode(minecraft.getWindow()
                         .getWindow(), 208897, GLFW.GLFW_CURSOR_HIDDEN);
             return true;
@@ -1081,15 +1078,14 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             if (valid.isEmpty())
                 return Pair.of(0, List.of());
 
-            Collections.sort(valid,
-                    (bis1, bis2) -> -Integer.compare(summary.getCountOf(bis1.stack), summary.getCountOf(bis2.stack)));
+            valid.sort((bis1, bis2) -> -Integer.compare(summary.getCountOf(bis1.stack), summary.getCountOf(bis2.stack)));
             validEntriesByIngredient.add(valid);
         }
 
         // Used new items may have to be trimmed
         if (newTypeLimit != -1) {
             int toRemove = (int) validEntriesByIngredient.stream()
-                    .flatMap(l -> l.stream())
+                    .flatMap(Collection::stream)
                     .filter(entry -> getOrderForItem(entry.stack) == null)
                     .distinct()
                     .count() - newTypeLimit;
@@ -1158,7 +1154,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     public boolean mouseReleased(double pMouseX, double pMouseY, int pButton) {
         if (pButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && scrollHandleActive) {
             scrollHandleActive = false;
-            if (minecraft.isWindowActive())
+            if (minecraft != null && minecraft.isWindowActive())
                 GLFW.glfwSetInputMode(minecraft.getWindow()
                         .getWindow(), 208897, GLFW.GLFW_CURSOR_NORMAL);
         }
@@ -1195,7 +1191,9 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             if (existingOrder == null) {
                 if (itemsToOrder.size() >= cols || remove)
                     return true;
-                itemsToOrder.add(existingOrder = new BigItemStack(entry.stack.copyWithCount(1), 0));
+
+                if (entry != null)
+                    itemsToOrder.add(existingOrder = new BigItemStack(entry.stack.copyWithCount(1), 0));
                 playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
                 playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
             }
@@ -1232,7 +1230,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     @Override
     public boolean mouseDragged(double pMouseX, double pMouseY, int pButton, double pDragX, double pDragY) {
-        if (pButton != GLFW.GLFW_MOUSE_BUTTON_LEFT || !scrollHandleActive)
+        if (pButton != GLFW.GLFW_MOUSE_BUTTON_LEFT || !scrollHandleActive || minecraft == null)
             return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY);
 
         Window window = minecraft.getWindow();

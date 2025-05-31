@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 public class HiddenCategoriesPacket extends SimplePacketBase {
 
-    private List<Integer> indices;
+    private final List<Integer> indices;
 
     public HiddenCategoriesPacket(List<Integer> indices) {
         this.indices = indices;

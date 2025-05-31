@@ -1,4 +1,4 @@
-package de.theidler.create_mobile_packages.blocks.bee_port;
+package de.theidler.create_mobile_packages.blocks.bee_portal;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
@@ -7,9 +7,6 @@ import de.theidler.create_mobile_packages.index.CMPBlocks;
 import de.theidler.create_mobile_packages.index.CMPShapes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -19,10 +16,8 @@ import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -30,26 +25,22 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWrenchable {
-    public static final BooleanProperty IS_OPEN_TEXTURE = BooleanProperty.create("open");
+public class BeePortalBlock extends Block implements IBE<BeePortalBlockEntity>, IWrenchable {
     public static final DirectionProperty FACING = DirectionalBlock.FACING;
 
-    public BeePortBlock(Properties properties) {
+    public BeePortalBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any()
-                .setValue(FACING, Direction.NORTH)
-                .setValue(IS_OPEN_TEXTURE, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.@NotNull Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
-        pBuilder.add(IS_OPEN_TEXTURE, FACING);
+        pBuilder.add(FACING);
     }
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext pContext) {
-        return this.defaultBlockState().setValue(IS_OPEN_TEXTURE, false).setValue(FACING, pContext.getHorizontalDirection().getOpposite());
+        return this.defaultBlockState().setValue(FACING, pContext.getHorizontalDirection().getOpposite());
     }
 
     @Override
@@ -59,13 +50,13 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
     }
 
     @Override
-    public Class<BeePortBlockEntity> getBlockEntityClass() {
-        return BeePortBlockEntity.class;
+    public Class<BeePortalBlockEntity> getBlockEntityClass() {
+        return BeePortalBlockEntity.class;
     }
 
     @Override
-    public BlockEntityType<? extends BeePortBlockEntity> getBlockEntityType() {
-        return CMPBlockEntities.BEE_PORT.get();
+    public BlockEntityType<? extends BeePortalBlockEntity> getBlockEntityType() {
+        return CMPBlockEntities.BEE_PORTAL.get();
     }
 
     @Override
@@ -74,16 +65,11 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
     }
 
     @Override
-    public @NotNull List<ItemStack> getDrops(@NotNull BlockState pState, @NotNull LootParams.Builder pParams) {
+    public @NotNull List<ItemStack> getDrops(@NotNull BlockState pState, LootParams.@NotNull Builder pParams) {
         List<ItemStack> drops = super.getDrops(pState, pParams);
         if (drops.isEmpty())
-            drops.add(new ItemStack(CMPBlocks.BEE_PORT.asItem(), 1));
-        return drops;
-    }
+            drops.add(new ItemStack(CMPBlocks.BEE_PORTAL.asItem(), 1));
 
-    @Override
-    public @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level worldIn, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn,
-                                          @NotNull BlockHitResult hit) {
-        return onBlockEntityUse(worldIn, pos, be -> be.use(player));
+        return drops;
     }
 }

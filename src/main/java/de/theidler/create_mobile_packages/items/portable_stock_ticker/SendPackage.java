@@ -35,8 +35,8 @@ public class SendPackage extends SimplePacketBase {
         List<BigItemStack> stacks = new ArrayList<>();
         for (int i = 0; i < orderSize; i++) {
             stacks.add(new BigItemStack(
-                buffer.readItem(),
-                buffer.readVarInt()
+                    buffer.readItem(),
+                    buffer.readVarInt()
             ));
         }
         // Read the crafting information from the buffer
@@ -44,12 +44,12 @@ public class SendPackage extends SimplePacketBase {
         List<PackageOrderWithCrafts.CraftingEntry> craftingInformation = new ArrayList<>();
         for (int i = 0; i < craftingInfoSize; i++) {
             craftingInformation.add(
-                PackageOrderWithCrafts.CraftingEntry.read(buffer)
+                    PackageOrderWithCrafts.CraftingEntry.read(buffer)
             );
         }
         // Create the PackageOrderWithCrafts object
         order = new PackageOrderWithCrafts(
-            new PackageOrder(stacks),
+                new PackageOrder(stacks),
                 craftingInformation
         );
         encodeRequester = buffer.readBoolean();
@@ -64,9 +64,7 @@ public class SendPackage extends SimplePacketBase {
             buffer.writeVarInt(stack.count);
         });
         buffer.writeVarInt(order.orderedCrafts().size());
-        order.orderedCrafts().forEach(stack -> {
-            stack.write(buffer);
-        });
+        order.orderedCrafts().forEach(stack -> stack.write(buffer));
         buffer.writeBoolean(encodeRequester);
     }
 
@@ -96,11 +94,11 @@ public class SendPackage extends SimplePacketBase {
         PortableStockTicker pst = PortableStockTicker.find(player.getInventory());
         if (pst != null)
             pst.broadcastPackageRequest(
-                LogisticallyLinkedBehaviour.RequestType.PLAYER,
-                order,
-                null,
-                address,
-                player
+                    LogisticallyLinkedBehaviour.RequestType.PLAYER,
+                    order,
+                    null,
+                    address,
+                    player
             );
     }
 }
