@@ -22,10 +22,7 @@ public class LandingFinishState implements RoboEntityState {
         if (targetPortal != null) {
             Level targetLevel = targetBlock == null ? targetPlayer.level() : targetBlock.getLevel();
             if (targetLevel == null) return;
-            Vec3 position = targetLevel.dimension() == Level.END
-                    ? new Vec3(100, 49, 0)
-                    : targetPortal.getBlockPos().getCenter().multiply(1 / 8d, 1, 1 / 8d);
-            BeePortalBlockEntity exitPortal = RoboEntity.getClosestBeePortal(targetLevel, position);
+            BeePortalBlockEntity exitPortal = RoboEntity.getExitPortal(targetLevel, targetPortal.getBlockPos().getCenter());
             if (exitPortal != null && exitPortal.sendDrone(re)) {
                 targetPortal.tryRemoveFromLandingQueue(re);
                 re.remove(Entity.RemovalReason.CHANGED_DIMENSION);

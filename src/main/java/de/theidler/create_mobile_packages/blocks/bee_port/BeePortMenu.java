@@ -40,7 +40,7 @@ public class BeePortMenu extends PackagePortMenu {
         ClientLevel world = Minecraft.getInstance().level;
         if (world == null)
             return null;
-        
+
         BlockEntity blockEntity = world.getBlockEntity(readBlockPos);
         if (blockEntity instanceof BeePortBlockEntity beePortBlockEntity)
             return beePortBlockEntity;
@@ -126,9 +126,6 @@ public class BeePortMenu extends PackagePortMenu {
     }
 
     public boolean isBeeOnTravel() {
-        if (data != null) {
-            return data.get(1) == 1;
-        }
-        return false;
+        return data != null && data.get(1) == 1;
     }
 }

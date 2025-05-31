@@ -18,7 +18,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -29,7 +28,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -104,13 +102,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             RoboEntity re = getRoboEntity();
             if (re != null) {
                 BeePortalBlockEntity exitPortal = re.getExitPortal();
-                if (re.multidimensional() && exitPortal != null)
-                    this.data.set(0, RoboEntity.calcETA(re, exitPortal.getBlockPos().getCenter()));
-                else
-                    this.data.set(0, RoboEntity.calcETA(this.getBlockPos().getCenter(), re.position()));
+                if (re.multidimensional()) {
+                    if (exitPortal != null)
+                        this.data.set(0, RoboEntity.calcETA(re, exitPortal.getBlockPos().getCenter()));
+                } else
+                    this.data.set(0, RoboEntity.calcETA(re.position(), getBlockPos().getCenter()));
             }
 
-            this.data.set(1, this.entityLaunchingQueue.isEmpty() ? 0 : 1);
+            this.data.set(1, this.entityLandingQueue.isEmpty() ? 0 : 1);
         }
     }
 
@@ -214,11 +213,12 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             for (Player player : serverLevel.players()) {
                 if (player.getName().getString().equals(address)) {
                     if (player.level().dimensionType() != level.dimensionType()) {
-                        Vec3 position = player.level().dimension() == Level.END
-                                ? new Vec3(100, 49, 0)
-                                : player.blockPosition().getCenter().multiply(1 / 8d, 1, 1 / 8d);
-                        if (RoboEntity.isWithinRange(player.position(), position))
-                            sendToPlayer(player, itemStack, slot);
+                        BeePortalBlockEntity targetPortal = RoboEntity.getClosestBeePortal(level, getBlockPos().getCenter(), player.level());
+                        if (targetPortal != null && targetPortal.getLevel() != null) {
+                            BeePortalBlockEntity exitPortal = RoboEntity.getExitPortal(player.level(), targetPortal.getBlockPos().getCenter());
+                            if (exitPortal != null && RoboEntity.isWithinRange(player.position(), exitPortal.getBlockPos().getCenter()))
+                                sendToPlayer(player, itemStack, slot);
+                        }
                     } else if (RoboEntity.isWithinRange(player.position(), getBlockPos().getCenter()))
                         sendToPlayer(player, itemStack, slot);
                     return;
@@ -242,24 +242,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private static void requestRoboEntity(Location location, ServerLevel serverLevel) {
         BeePortBlockEntity result;
         BeePortStorage storage = BeePortStorage.get(serverLevel);
-        Stream<BeePortBlockEntity> allBEs = storage.getAllPorts().stream()
-                .filter((be) -> (be.location().dimensionType() != location.dimensionType()
+        Stream<BeePortBlockEntity> allBEs = storage.getAllPorts(serverLevel).stream()
+                .filter((be) -> (be.level != location.level()
                         || !be.getBlockPos().equals(location.position()))
                         && be.getRoboBeeInventory().getStackInSlot(0).getCount() > 0
-                ).sorted(Comparator.comparingInt(a -> {
-                    if (a.level == null)
-                        return 3;
-                    ResourceKey<Level> level = a.level.dimension();
-                    if (a.level.dimensionType() == location.dimensionType())
-                        return -1;
-                    else if (level.equals(Level.OVERWORLD))
-                        return 0;
-                    else if (level.equals(Level.NETHER))
-                        return 1;
-                    else if (level.equals(Level.END))
-                        return 2;
-                    return 3;
-                }));
+                );
 
         result = allBEs.min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(location.position()))).orElse(null);
         if (result != null) result.sendDrone(location);
@@ -276,7 +263,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
             if (getRoboEntity() == null) {
                 if (level instanceof ServerLevel serverLevel)
-                    requestRoboEntity(location(), serverLevel);
+                    requestRoboEntity(new Location(getBlockPos(), level), serverLevel);
                 return;
             }
 
@@ -298,7 +285,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
             if (level instanceof ServerLevel serverLevel)
                 if (entityLandingQueue.isEmpty())
-                    requestRoboEntity(location(), serverLevel);
+                    requestRoboEntity(new Location(getBlockPos(), level), serverLevel);
             return;
         }
 
@@ -522,9 +509,5 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     public ContainerData getData() {
         return data;
-    }
-
-    public Location location() {
-        return new Location(getBlockPos(), level != null ? level.dimensionType() : null);
     }
 }

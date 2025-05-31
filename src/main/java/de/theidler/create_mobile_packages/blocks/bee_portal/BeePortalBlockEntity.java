@@ -1,14 +1,15 @@
 package de.theidler.create_mobile_packages.blocks.bee_portal;
 
+import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.blocks.BeePortStorage;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
-import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestDimensionTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.StructureTags;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -83,8 +85,21 @@ public class BeePortalBlockEntity extends BlockEntity {
     }
 
     public synchronized void tryAddToLandingQueue(@NotNull RoboEntity entity) {
+        Level targetLevel = entity.getTargetPlayer() != null ? entity.getTargetPlayer().level() : entity.getTargetBlockEntity().getLevel();
+        if (!allowsToEnd(new Location(entity.blockPosition(), entity.level()), targetLevel)) return;
         if (entityLandingQueue.stream().noneMatch(e -> e == entity))
             entityLandingQueue.add(entity);
+    }
+
+    public boolean allowsToEnd(@NotNull Location location, @Nullable Level targetLevel) {
+        if (targetLevel != null && targetLevel.dimension() == Level.END) {
+            if (location.level().dimension() != Level.OVERWORLD || !(location.level() instanceof ServerLevel serverLevel))
+                return false;
+            BlockPos stronghold = serverLevel.findNearestMapStructure(StructureTags.EYE_OF_ENDER_LOCATED, location.position(), 10, false);
+            return stronghold != null && stronghold.closerToCenterThan(location.position().getCenter(), 100);
+        }
+
+        return true;
     }
 
     public synchronized void tryRemoveFromLandingQueue(@NotNull RoboEntity entity) {
@@ -108,10 +123,5 @@ public class BeePortalBlockEntity extends BlockEntity {
 
     public boolean isLaunchingPeek(RoboEntity entity) {
         return entityLaunchingQueue.peek() == entity;
-    }
-
-    public Location location() {
-        Level level = getLevel();
-        return level == null ? new Location(getBlockPos(), null) : new Location(getBlockPos(), level.dimensionType());
     }
 }

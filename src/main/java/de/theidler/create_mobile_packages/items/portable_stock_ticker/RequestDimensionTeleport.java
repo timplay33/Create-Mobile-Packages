@@ -1,10 +1,10 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
-import de.theidler.create_mobile_packages.blocks.BeePortStorage;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.Location;
+import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -17,8 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 import org.joml.Vector3f;
-
-import java.util.Comparator;
 
 public class RequestDimensionTeleport extends SimplePacketBase {
     private final ServerLevel serverLevel;
@@ -62,13 +60,9 @@ public class RequestDimensionTeleport extends SimplePacketBase {
     public boolean handle(NetworkEvent.Context context) {
         context.enqueueWork(() -> {
             if (serverLevel != null) {
-                BlockPos spawnBlockPos = new BlockPos(Math.round(spawnPos.x()), Math.round(spawnPos.y()), Math.round(spawnPos.z()));
-                BeePortStorage storage = BeePortStorage.get(serverLevel);
-                BeePortalBlockEntity exitPortal = storage.getPortals().stream()
-                        .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(spawnBlockPos)))
-                        .orElse(null);
+                BeePortalBlockEntity exitPortal = RoboEntity.getExitPortal(serverLevel, new Vec3(spawnPos));
                 if (exitPortal != null) {
-                    RoboBeeEntity drone = new RoboBeeEntity(serverLevel, itemStack, new Location(targetPos, serverLevel.dimensionType()), exitPortal.getBlockPos());
+                    RoboBeeEntity drone = new RoboBeeEntity(serverLevel, itemStack, new Location(targetPos, serverLevel), exitPortal.getBlockPos());
                     drone.setPackageHeightScale(1f);
                     serverLevel.addFreshEntity(drone);
                 }

@@ -517,6 +517,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         int itemWindowY = y + 17;
         int itemWindowY2 = y + windowHeight - 80;
 
+        assert UIRenderHelper.framebuffer != null;
         UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
         startStencil(pGuiGraphics, itemWindowX - 5, itemWindowY, itemWindowX2 - itemWindowX + 10,
                 itemWindowY2 - itemWindowY);
@@ -775,6 +776,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                     .get(slot);
 
             if (recipeHovered) {
+                if (minecraft == null) return;
                 ArrayList<Component> lines =
                         new ArrayList<>(entry.stack.getTooltipLines(minecraft.player, TooltipFlag.NORMAL));
                 if (!lines.isEmpty())
@@ -849,7 +851,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (getMaxScroll() > 0 && lmb && pMouseX > barX && pMouseX <= barX + 8 && pMouseY > getGuiTop() + 15
                 && pMouseY < getGuiTop() + windowHeight - 82) {
             scrollHandleActive = true;
-            if (minecraft.isWindowActive())
+            if (minecraft != null && minecraft.isWindowActive())
                 GLFW.glfwSetInputMode(minecraft.getWindow()
                         .getWindow(), 208897, GLFW.GLFW_CURSOR_HIDDEN);
             return true;
@@ -1152,7 +1154,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     public boolean mouseReleased(double pMouseX, double pMouseY, int pButton) {
         if (pButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && scrollHandleActive) {
             scrollHandleActive = false;
-            if (minecraft.isWindowActive())
+            if (minecraft != null && minecraft.isWindowActive())
                 GLFW.glfwSetInputMode(minecraft.getWindow()
                         .getWindow(), 208897, GLFW.GLFW_CURSOR_NORMAL);
         }
@@ -1189,7 +1191,9 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             if (existingOrder == null) {
                 if (itemsToOrder.size() >= cols || remove)
                     return true;
-                itemsToOrder.add(existingOrder = new BigItemStack(entry.stack.copyWithCount(1), 0));
+
+                if (entry != null)
+                    itemsToOrder.add(existingOrder = new BigItemStack(entry.stack.copyWithCount(1), 0));
                 playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
                 playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
             }
@@ -1226,7 +1230,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     @Override
     public boolean mouseDragged(double pMouseX, double pMouseY, int pButton, double pDragX, double pDragY) {
-        if (pButton != GLFW.GLFW_MOUSE_BUTTON_LEFT || !scrollHandleActive)
+        if (pButton != GLFW.GLFW_MOUSE_BUTTON_LEFT || !scrollHandleActive || minecraft == null)
             return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY);
 
         Window window = minecraft.getWindow();

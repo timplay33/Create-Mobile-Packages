@@ -71,8 +71,8 @@ public class RoboEntity extends Mob {
         damageCounter = 0;
         CreateMobilePackages.ROBO_MANAGER.addRobo(this);
         if (target != null) {
-            if (target.dimensionType() != level.dimensionType()) {
-                targetPortalEntity = getClosestBeePortal(level, position());
+            if (target.level() != level) {
+                targetPortalEntity = getClosestBeePortal(level, position(), target.level());
                 targetBlockEntity = level.getBlockEntity(target.position()) instanceof BeePortBlockEntity dpbe
                         ? dpbe
                         : null;
@@ -165,12 +165,12 @@ public class RoboEntity extends Mob {
     public void updateTarget() {
         if (level().isClientSide) return;
         setTargetPlayerFromAddress();
+        targetPortalEntity = null;
         if (targetPlayer != null) {
             if (targetPlayer.level().dimensionType() != level().dimensionType()) {
-                targetPortalEntity = getClosestBeePortal(level(), position());
+                targetPortalEntity = getClosestBeePortal(level(), position(), targetPlayer.level());
                 targetPortalEntity.tryAddToLandingQueue(this);
-            } else
-                targetPortalEntity = null;
+            }
             return;
         }
 
@@ -188,17 +188,20 @@ public class RoboEntity extends Mob {
                     targetBlockEntity.tryRemoveFromLandingQueue(this);
             }
         } else {
-            if (targetBlockEntity.location().dimensionType() != location().dimensionType()) {
-                targetPortalEntity = getClosestBeePortal(level(), position());
-                targetPortalEntity.tryAddToLandingQueue(this);
-            } else
-                targetPortalEntity = null;
+            if (targetBlockEntity.getLevel() != level())
+                targetPortalEntity = getClosestBeePortal(level(), position(), targetBlockEntity.getLevel());
         }
 
-        if (targetBlockEntity != null)
-            targetBlockEntity.tryAddToLandingQueue(this);
-        else if (targetPortalEntity != null)
+        if (targetPortalEntity != null) {
             targetPortalEntity.tryAddToLandingQueue(this);
+            Level targetLevel = targetPlayer != null ? targetPlayer.level() : targetBlockEntity.getLevel();
+            if (targetBlockEntity != null) {
+                assert targetLevel != null;
+                if (targetPortalEntity.allowsToEnd(new Location(blockPosition(), level()), targetLevel))
+                    targetBlockEntity.tryAddToLandingQueue(this);
+            }
+        } else if (targetBlockEntity != null)
+            targetBlockEntity.tryAddToLandingQueue(this);
     }
 
     /**
@@ -213,23 +216,21 @@ public class RoboEntity extends Mob {
         if (targetPlayer != null) {
             if (targetPlayer.level().dimensionType() != level().dimensionType()) {
                 if (targetPortalEntity == null) return null;
-                Location portalLocation = targetPortalEntity.location();
                 multidimensional = true;
-                if (isWithinRange(portalLocation.position().getCenter(), position()))
-                    return new Location(portalLocation.position().above().above(), portalLocation.dimensionType());
+                if (targetPortalEntity.getLevel() != null && isWithinRange(targetPortalEntity.getBlockPos().getCenter(), position()))
+                    return new Location(targetPortalEntity.getBlockPos().above().above(), targetPortalEntity.getLevel());
             } else if (isWithinRange(targetPlayer.position(), position()))
-                return new Location(targetPlayer.blockPosition().above().above(), targetPlayer.level().dimensionType());
+                return new Location(targetPlayer.blockPosition().above().above(), targetPlayer.level());
         } else if (targetBlockEntity != null) {
             Level targetLevel = targetBlockEntity.getLevel();
             if (targetLevel == null) return null;
-            if (targetLevel.dimensionType() != level().dimensionType()) {
+            if (targetLevel != level()) {
                 multidimensional = true;
                 if (targetPortalEntity == null) return null;
-                Location portalLocation = targetPortalEntity.location();
-                if (isWithinRange(portalLocation.position().getCenter(), position()))
-                    return new Location(portalLocation.position().above().above(), portalLocation.dimensionType());
+                if (isWithinRange(targetPortalEntity.getBlockPos().getCenter(), position()))
+                    return new Location(targetPortalEntity.getBlockPos().above().above(), targetPortalEntity.getLevel());
             } else if (isWithinRange(targetBlockEntity.getBlockPos().getCenter(), position()))
-                return new Location(targetBlockEntity.getBlockPos().above().above(), targetLevel.dimensionType());
+                return new Location(targetBlockEntity.getBlockPos().above().above(), targetLevel);
         }
 
         return null;
@@ -326,13 +327,16 @@ public class RoboEntity extends Mob {
      *
      * @return The closest BeePortalBlockEntity.
      */
-    public static BeePortalBlockEntity getClosestBeePortal(Level level, Vec3 originPos) {
+    public static BeePortalBlockEntity getClosestBeePortal(Level level, Vec3 originPos, Level targetLevel) {
         BeePortalBlockEntity closest = null;
         if (level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
-            List<BeePortalBlockEntity> allBEs = storage.getPortals().stream().filter(BE -> isWithinRange(BE.getBlockPos().getCenter(), originPos)).toList();
+            List<BeePortalBlockEntity> allBEs = storage.getPortals().stream()
+                    .filter(be -> isWithinRange(be.getBlockPos().getCenter(), originPos))
+                    .toList();
             closest = allBEs.stream()
-                    .min(Comparator.comparingDouble(a -> a.getBlockPos().getCenter().distanceToSqr(originPos)))
+                    .filter(be -> be.allowsToEnd(new Location(BlockPos.containing(originPos), level), targetLevel))
+                    .min(Comparator.comparingDouble(be -> be.getBlockPos().getCenter().distanceToSqr(originPos)))
                     .orElse(null);
         }
 
@@ -432,7 +436,7 @@ public class RoboEntity extends Mob {
      */
     public double getAngleToTarget() {
         Location targetLocation = getTargetLocation();
-        if (targetLocation == null || targetLocation.dimensionType() != level().dimensionType())
+        if (targetLocation == null || targetLocation.level() != level())
             return 0;
         return targetLocation.position() != null
                 ? Math.atan2(targetLocation.position().getZ() - getZ(), targetLocation.position().getX() - getX())
@@ -487,10 +491,15 @@ public class RoboEntity extends Mob {
                 ? targetPlayer.level()
                 : targetBlockEntity != null ? targetBlockEntity.getLevel() : null;
         if (!multidimensional || targetPortal == null || targetLevel == null) return null;
+        return getExitPortal(targetLevel, targetPortal.getBlockPos().getCenter());
+    }
+
+    @Nullable
+    public static BeePortalBlockEntity getExitPortal(Level targetLevel, Vec3 originPos) {
         Vec3 position = targetLevel.dimension() == Level.END
                 ? new Vec3(100, 49, 0)
-                : targetPortal.getBlockPos().getCenter().multiply(1 / 8d, 1, 1 / 8d);
-        return RoboEntity.getClosestBeePortal(targetLevel, position);
+                : originPos.multiply(1 / 8d, 1, 1 / 8d);
+        return getClosestBeePortal(targetLevel, position, null);
     }
 
     /**
@@ -547,7 +556,7 @@ public class RoboEntity extends Mob {
     public void lookAtTarget() {
         if (level().isClientSide()) return;
         Location targetLocation = getTargetLocation();
-        if (targetLocation == null || targetLocation.dimensionType() != level().dimensionType()) return;
+        if (targetLocation == null || targetLocation.level() != level()) return;
         if (targetLocation.position() != null) {
             Vec3 direction = new Vec3(targetLocation.position().getX(), targetLocation.position().getY(), targetLocation.position().getZ()).subtract(position()).normalize();
             entityData.set(ROT_YAW, (float) Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90);
@@ -666,10 +675,6 @@ public class RoboEntity extends Mob {
         }
 
         return true;
-    }
-
-    public Location location() {
-        return new Location(blockPosition(), level().dimensionType());
     }
 
     public boolean multidimensional() {
