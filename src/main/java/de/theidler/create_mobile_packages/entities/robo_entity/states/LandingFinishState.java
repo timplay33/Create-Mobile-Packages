@@ -18,6 +18,7 @@ public class LandingFinishState implements RoboEntityState {
         BeePortBlockEntity targetBlock = re.getTargetBlockEntity();
         Player targetPlayer = re.getTargetPlayer();
         BeePortalBlockEntity targetPortal = re.getTargetPortalEntity();
+        re.setTargetVelocity(Vec3.ZERO);
         if (targetPortal != null) {
             Level targetLevel = targetBlock == null ? targetPlayer.level() : targetBlock.getLevel();
             if (targetLevel == null) return;

@@ -91,16 +91,16 @@ public class RoboEntity extends Mob {
         setTargetFromItemStack(itemStack);
         setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
 
-        if (targetPortalEntity != null)
-            targetPortalEntity.tryAddToLandingQueue(this);
-        else if (targetBlockEntity != null) {
-            targetBlockEntity.trySetEntityOnTravel(this);
-        }
+        if (targetBlockEntity != null)
+            targetBlockEntity.tryAddToLandingQueue(this);
 
 
         BlockEntity spawn = level().getBlockEntity(spawnPos);
         if (spawn instanceof BeePortBlockEntity dpbe) startBeePortBlockEntity = dpbe;
-        else if (spawn instanceof BeePortalBlockEntity dpbe) startBeePortalBlockEntity = dpbe;
+        else if (spawn instanceof BeePortalBlockEntity dpbe) {
+            startBeePortalBlockEntity = dpbe;
+            startBeePortalBlockEntity.tryAddToLaunchingQueue(this);
+        }
 
         if (!level().isClientSide()) entityData.set(ROT_YAW, (float) getSnapAngle(getAngleToTarget()));
 
@@ -118,12 +118,12 @@ public class RoboEntity extends Mob {
         setState(new LaunchPrepareState());
     }
 
-    @Override
-    public boolean equals(Object pObject) {
-        if (pObject instanceof RoboEntity re)
-            return re.getUUID().equals(getUUID());
-        return false;
-    }
+//    @Override
+//    public boolean equals(Object pObject) {
+//        if (pObject instanceof RoboEntity re)
+//            return re.getUUID().equals(getUUID());
+//        return false;
+//    }
 
     @Override
     protected void defineSynchedData() {
@@ -196,9 +196,9 @@ public class RoboEntity extends Mob {
 
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null)
-                    oldTarget.trySetEntityOnTravel(null);
+                    oldTarget.tryRemoveFromLandingQueue(null);
                 if (targetBlockEntity != null)
-                    targetBlockEntity.trySetEntityOnTravel(this);
+                    targetBlockEntity.tryRemoveFromLandingQueue(this);
             }
         } else {
             if (targetBlockEntity.location().dimensionType() != location().dimensionType())
@@ -442,14 +442,15 @@ public class RoboEntity extends Mob {
 
     @Override
     public void remove(@NotNull RemovalReason pReason) {
-        if (pReason != RemovalReason.CHANGED_DIMENSION)
-            handleItemStackOnRemove();
         if (getTargetBlockEntity() != null)
-            getTargetBlockEntity().trySetEntityOnTravel(null);
+            getTargetBlockEntity().tryRemoveFromLandingQueue(this);
         if (getTargetPortalEntity() != null)
             getTargetPortalEntity().tryRemoveFromLandingQueue(this);
         if (getExitPortal() != null)
             getExitPortal().tryRemoveFromLaunchingQueue(this);
+
+        if (pReason != RemovalReason.CHANGED_DIMENSION)
+            handleItemStackOnRemove();
 
         super.remove(pReason);
     }
@@ -481,10 +482,10 @@ public class RoboEntity extends Mob {
     @Nullable
     public BeePortalBlockEntity getExitPortal() {
         BeePortalBlockEntity targetPortal = getTargetPortalEntity();
-        Level targetLevel = targetBlockEntity == null ? targetPlayer.level() : targetBlockEntity.getLevel();
-        if (!multidimensional || targetPortal == null || targetLevel == null)
-            return null;
-
+        Level targetLevel = targetPlayer != null
+                ? targetPlayer.level()
+                : targetBlockEntity != null ? targetBlockEntity.getLevel() : null;
+        if (!multidimensional || targetPortal == null || targetLevel == null) return null;
         Vec3 position = targetLevel.dimension() == Level.END
                 ? new Vec3(100, 49, 0)
                 : targetPortal.getBlockPos().getCenter().multiply(1 / 8d, 1, 1 / 8d);

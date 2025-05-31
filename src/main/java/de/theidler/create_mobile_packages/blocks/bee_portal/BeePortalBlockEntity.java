@@ -93,40 +93,48 @@ public class BeePortalBlockEntity extends BlockEntity {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
             storage.remove(this);
             if (!entityLandingQueue.isEmpty() || !entityLaunchingQueue.isEmpty())
-                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), CMPItems.ROBO_BEE.asStack()));
+                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), CMPItems.ROBO_BEE.asStack(entityLandingQueue.size() + entityLaunchingQueue.size())));
         }
 
         super.setRemoved();
     }
 
     public synchronized void tryAddToLandingQueue(RoboEntity entity) {
-        if (entity != null && entityLandingQueue.stream().noneMatch(e -> e.equals(entity))) {
+        if (entity != null && entityLandingQueue.stream().noneMatch(e -> e == entity)) {
             BeePortalBlockEntity.setOpen(this, true);
             entityLandingQueue.add(entity);
         }
     }
 
     public synchronized void tryRemoveFromLandingQueue(RoboEntity entity) {
-        if (!entityLandingQueue.isEmpty() && !entityLandingQueue.peek().equals(entity))
-            entityLandingQueue.poll();
+        if (!entityLandingQueue.isEmpty() && entityLandingQueue.peek() == entity)
+            entityLandingQueue.remove(entity);
 
         if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
             BeePortalBlockEntity.setOpen(this, false);
     }
 
     public synchronized void tryAddToLaunchingQueue(RoboEntity entity) {
-        if (entity != null && entityLaunchingQueue.stream().noneMatch(e -> e.equals(entity))) {
+        if (entity != null && entityLaunchingQueue.stream().noneMatch(e -> e == entity)) {
             BeePortalBlockEntity.setOpen(this, true);
             entityLaunchingQueue.add(entity);
         }
     }
 
     public synchronized void tryRemoveFromLaunchingQueue(RoboEntity entity) {
-        if (!entityLaunchingQueue.isEmpty() && !entityLaunchingQueue.peek().equals(entity))
-            entityLaunchingQueue.poll();
+        if (!entityLaunchingQueue.isEmpty() && entityLaunchingQueue.peek() == entity)
+            entityLaunchingQueue.remove(entity);
 
         if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
             BeePortalBlockEntity.setOpen(this, false);
+    }
+
+    public boolean isLandingPeek(RoboEntity entity) {
+        return entityLandingQueue.peek() == entity;
+    }
+
+    public boolean isLaunchingPeek(RoboEntity entity) {
+        return entityLaunchingQueue.peek() == entity;
     }
 
     public Location location() {

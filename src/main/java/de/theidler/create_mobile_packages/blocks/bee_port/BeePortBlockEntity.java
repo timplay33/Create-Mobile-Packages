@@ -39,8 +39,10 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
+import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Stream;
 
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
@@ -53,7 +55,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
-    private RoboEntity entityOnTravel = null;
+    //    private RoboEntity entityOnTravel = null;
+    private final Queue<RoboEntity> entityLandingQueue = new ArrayDeque<>();
+    private final Queue<RoboEntity> entityLaunchingQueue = new ArrayDeque<>();
     private final ContainerData data = new SimpleContainerData(2);
     private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
 
@@ -105,7 +109,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                     this.data.set(0, RoboEntity.calcETA(this.getBlockPos().getCenter(), re.position()));
             }
 
-            this.data.set(1, this.entityOnTravel != null ? 1 : 0);
+            this.data.set(1, this.entityLaunchingQueue.isEmpty() ? 0 : 1);
         }
     }
 
@@ -144,11 +148,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     private void tryPullingFromAdjacentInventories() {
-        if (hasFullInventory(entityOnTravel != null ? 1 : 0)) return;
+        if (hasFullInventory(entityLandingQueue.size())) return;
 
         getAdjacentInventories().forEach((inventory) -> {
             if (inventory == null) return;
-            if (hasFullInventory(entityOnTravel != null ? 1 : 0)) return;
+            if (hasFullInventory(entityLandingQueue.size())) return;
             for (int i = 0; i < inventory.getSlots(); i++) {
                 ItemStack itemStack = inventory.getStackInSlot(i);
                 if (!itemStack.isEmpty() && PackageItem.isPackage(itemStack)) {
@@ -223,17 +227,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         // Check if the item can be sent to a drone port.
         if (CMPConfigs.server().portToPort.get() && !PackageItem.matchAddress(address, addressFilter)) {
             BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, getBlockPos().getCenter(), null);
-            BeePortalBlockEntity beePortalBlockEntity = null;
+            BeePortalBlockEntity targetPortal = null;
             if (beePortBlockEntity == null) {
                 List<BeePortBlockEntity> BEs = RoboEntity.getMultidimensionalBeePorts(level, address, getBlockPos().getCenter(), null);
                 if (!BEs.isEmpty()) {
                     beePortBlockEntity = BEs.get(0);
-                    beePortalBlockEntity = RoboEntity.getClosestBeePortal(level, getBlockPos().getCenter());
+                    targetPortal = RoboEntity.getClosestBeePortal(level, getBlockPos().getCenter());
                 }
             }
 
             if (beePortBlockEntity != null && beePortBlockEntity.hasSpace())
-                sendDrone(itemStack, slot, beePortalBlockEntity);
+                sendDrone(itemStack, slot, targetPortal);
         }
     }
 
@@ -270,7 +274,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     private void sendToPlayer(Player player, ItemStack itemStack, int slot) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
-            if (entityOnTravel == null) {
+            if (getRoboEntity() == null) {
                 if (level instanceof ServerLevel serverLevel)
                     requestRoboEntity(location(), serverLevel);
                 return;
@@ -307,7 +311,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private void sendDrone(ItemStack itemStack, int slot, BeePortalBlockEntity targetPortal) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
             if (level instanceof ServerLevel serverLevel)
-                if (entityOnTravel == null) requestRoboEntity(location(), serverLevel);
+                if (entityLandingQueue.isEmpty())
+                    requestRoboEntity(location(), serverLevel);
             return;
         }
 
@@ -418,9 +423,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
             storage.remove(this);
 
-            if (entityOnTravel != null) {
-                entityOnTravel.setTargetVelocity(Vec3.ZERO);
-                entityOnTravel.setState(new AdjustRotationToTarget());
+            if (!entityLaunchingQueue.isEmpty()) {
+                entityLaunchingQueue.forEach(e -> {
+                    e.setTargetVelocity(Vec3.ZERO);
+                    e.setState(new AdjustRotationToTarget());
+                });
             }
 
             if (roboBeeInventory.getStackInSlot(0).getCount() > 0)
@@ -428,6 +435,36 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
 
         super.remove();
+    }
+
+    public synchronized void tryAddToLandingQueue(RoboEntity entity) {
+        if (entity != null && entityLandingQueue.stream().noneMatch(e -> e == entity)) {
+            BeePortBlockEntity.setOpen(this, true);
+            entityLandingQueue.add(entity);
+        }
+    }
+
+    public synchronized void tryRemoveFromLandingQueue(RoboEntity entity) {
+        if (!entityLandingQueue.isEmpty() && entityLandingQueue.peek() == entity)
+            entityLandingQueue.remove(entity);
+
+        if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
+            BeePortBlockEntity.setOpen(this, false);
+    }
+
+    public synchronized void tryAddToLaunchingQueue(RoboEntity entity) {
+        if (entity != null && entityLaunchingQueue.stream().noneMatch(e -> e == entity)) {
+            BeePortBlockEntity.setOpen(this, true);
+            entityLaunchingQueue.add(entity);
+        }
+    }
+
+    public synchronized void tryRemoveFromLaunchingQueue(RoboEntity entity) {
+        if (!entityLaunchingQueue.isEmpty() && entityLaunchingQueue.peek() == entity)
+            entityLaunchingQueue.remove(entity);
+
+        if (entityLandingQueue.isEmpty() && entityLaunchingQueue.isEmpty())
+            BeePortBlockEntity.setOpen(this, false);
     }
 
     /**
@@ -469,13 +506,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public boolean canAcceptEntity(RoboEntity entity, Boolean hasPackage) {
         if (this.isRemoved()) return false;
         if (entity == null) return hasPackage ? hasSpace() : !hasFullRoboSlot(1);
-        if (entityOnTravel != null && entityOnTravel != entity) return false;
+        if (!entityLandingQueue.contains(entity)) return false;
         return hasPackage ? hasSpace() : !hasFullRoboSlot(1);
-    }
-
-    public synchronized void trySetEntityOnTravel(RoboEntity entity) {
-        if (entityOnTravel == null || entity == null)
-            entityOnTravel = entity;
     }
 
     public ItemStackHandler getRoboBeeInventory() {
@@ -492,7 +524,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     public RoboEntity getRoboEntity() {
-        return entityOnTravel;
+        return entityLandingQueue.peek();
     }
 
     public ContainerData getData() {

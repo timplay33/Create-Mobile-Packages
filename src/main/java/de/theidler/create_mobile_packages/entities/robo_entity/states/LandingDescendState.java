@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
+import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
@@ -13,13 +14,13 @@ public class LandingDescendState implements RoboEntityState {
     public void tick(RoboEntity re) {
         BeePortBlockEntity targetBlock = re.getTargetBlockEntity();
         BeePortalBlockEntity targetPortal = re.getTargetPortalEntity();
-        if (targetBlock == null && targetPortal == null) return;
-        if (targetBlock != null && !targetBlock.canAcceptEntity(re, !re.getItemStack().isEmpty())) {
+        if (targetBlock == null) return;
+        if (!targetBlock.canAcceptEntity(re, !re.getItemStack().isEmpty())) {
             re.setTargetVelocity(Vec3.ZERO);
             return;
         }
 
-        Vec3 targetPos = (targetPortal == null ? targetBlock : targetPortal).getBlockPos().getCenter();
+        Vec3 targetPos = targetPortal != null ? targetPortal.getBlockPos().getCenter() : targetBlock.getBlockPos().getCenter();
         Vec3 direction = re.position().vectorTo(targetPos).normalize();
         re.setTargetVelocity(direction.scale(1 / 20.0)); // fixed speed of 1 block per second
 

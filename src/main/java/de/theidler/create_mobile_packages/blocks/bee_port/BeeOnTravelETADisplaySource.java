@@ -18,7 +18,6 @@ public class BeeOnTravelETADisplaySource extends SingleLineDisplaySource {
         boolean isTraveling = bpbe.getData().get(1) == 1;
         if (!isTraveling)
             return Component.empty();
-
         return Component.literal(String.valueOf(eta));
     }
 

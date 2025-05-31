@@ -13,13 +13,11 @@ public class LandingPrepareState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
         Location targetLocation = re.getTargetLocation();
+        re.setTargetVelocity(Vec3.ZERO);
         if (targetLocation != null) {
+            if (re.getTargetPortalEntity() != null && !re.getTargetPortalEntity().isLandingPeek(re)) return;
             if (init) {
-                BeePortBlockEntity.setOpen(re.getTargetBlockEntity(), true);
                 BeePortalBlockEntity exitPortal = re.getExitPortal();
-                if (exitPortal != null)
-                    exitPortal.tryAddToLaunchingQueue(re);
-
                 Vec3 newPos = targetLocation.position().getCenter().subtract(0, 0.5, 0);
                 re.setPos(newPos);
                 init = false;
