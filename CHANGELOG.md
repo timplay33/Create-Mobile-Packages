@@ -1,5 +1,18 @@
 
 ------------------------------------------------------
+Create: Mobile Packages - v0.5.1 - 02.06.2025
+------------------------------------------------------
+
+### Bug Fixes
+- Fixed Portable Stock Ticker not saving the address when the player closes the GUI
+- Fixed Robo Bee Port is considered full at 63 Robo Bees instead of 64
+- Added Robo Bee in a Robo Bee Port can now be refilled with a hopper or a chute
+- Fixed java.util.ConcurrentModificationException: null in RoboManager
+- Fixed Robo Bees not Stopping when the target becomes null (Example: when Port becomes full while a Robo Bee is landing)
+- Added missing Robo Bee Port rotation Textures
+- Fixed a manually placed Robo Bee flies to the closest Port to 0,0,0 instead of the closest Port to the Robo Bee
+
+------------------------------------------------------
 Create: Mobile Packages - v0.5.0 - 25.02.2025
 ------------------------------------------------------
 
