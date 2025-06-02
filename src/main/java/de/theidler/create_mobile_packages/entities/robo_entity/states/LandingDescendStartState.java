@@ -10,9 +10,11 @@ public class LandingDescendStartState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
         if (re.getTargetBlockEntity() != null && !re.getTargetBlockEntity().canAcceptEntity(re, !re.getItemStack().isEmpty())) {
+            re.setTargetVelocity(Vec3.ZERO);
             return;
         }
         if (re.getTargetBlockEntity() == null) {
+            re.setTargetVelocity(Vec3.ZERO);
             return;
         }
         Vec3 target = re.getTargetBlockEntity().getBlockPos().getCenter().subtract(0, 0.5, 0);

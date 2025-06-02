@@ -1372,6 +1372,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     @Override
     public void removed() {
         CMPPackets.getChannel().sendToServer(new HiddenCategoriesPacket(new ArrayList<>(hiddenCategories)));
+        CMPPackets.getChannel().sendToServer(new SendPackage(PackageOrderWithCrafts.empty(), addressBox.getValue(), true));
         super.removed();
     }
 }
