@@ -14,6 +14,7 @@ import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
+import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -52,9 +53,77 @@ import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS
  */
 public class BeePortBlockEntity extends PackagePortBlockEntity {
 
+    private final ContainerData data = new SimpleContainerData(2);
+    private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
+    private final IItemHandler handler = new IItemHandler() {
+        @Override
+        public int getSlots() {
+            return inventory.getSlots() + roboBeeInventory.getSlots();
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            if (slot < inventory.getSlots()) {
+                return inventory.getStackInSlot(slot);
+            } else {
+                return roboBeeInventory.getStackInSlot(slot - inventory.getSlots());
+            }
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            if (stack.getItem() instanceof RoboBeeItem) {
+                if (slot >= inventory.getSlots()) {
+                    return roboBeeInventory.insertItem(slot - inventory.getSlots(), stack, simulate);
+                } else {
+                    return stack; // Reject insertion into defaultInventory
+                }
+            } else {
+                if (slot < inventory.getSlots()) {
+                    return inventory.insertItem(slot, stack, simulate);
+                } else {
+                    return stack; // Reject insertion into roboInventory
+                }
+            }
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            if (slot < inventory.getSlots()) {
+                return inventory.extractItem(slot, amount, simulate);
+            } else {
+                return roboBeeInventory.extractItem(slot - inventory.getSlots(), amount, simulate);
+            }
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            if (slot < inventory.getSlots()) {
+                return inventory.getSlotLimit(slot);
+            } else {
+                return roboBeeInventory.getSlotLimit(slot - inventory.getSlots());
+            }
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            if (stack.getItem() instanceof RoboBeeItem) {
+                if (slot >= inventory.getSlots()) {
+                    return roboBeeInventory.isItemValid(slot - inventory.getSlots(), stack);
+                } else {
+                    return false;
+                }
+            } else {
+                if (slot < inventory.getSlots()) {
+                    return inventory.isItemValid(slot, stack);
+                } else {
+                    return false;
+                }
+            }
+        }
+    };
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
-    //    private RoboEntity entityOnTravel = null;
     private final Queue<RoboEntity> entityLandingQueue = new ArrayDeque<>();
     private final Queue<RoboEntity> entityLaunchingQueue = new ArrayDeque<>();
     private final ContainerData data = new SimpleContainerData(2);
@@ -69,7 +138,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     public BeePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
-        itemHandler = LazyOptional.of(() -> inventory);
+        itemHandler = LazyOptional.of(() -> handler);
     }
 
     @Override
@@ -178,7 +247,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         BlockEntity blockEntity = level.getBlockEntity(worldPosition.relative(side));
         if (blockEntity == null || blockEntity instanceof FrogportBlockEntity)
             return null;
-        return blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side.getOpposite()).resolve().orElse(null);
+        return blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side.getOpposite())
+                .orElse(null);
     }
 
     /**
@@ -225,7 +295,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                 }
             }
 
-        // Check if the item can be sent to a drone port.
+        // Check if the item can be sent to another drone port.
         if (CMPConfigs.server().portToPort.get() && !PackageItem.matchAddress(address, addressFilter)) {
             BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, getBlockPos().getCenter(), null);
             if (beePortBlockEntity == null) {
@@ -468,12 +538,16 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     /**
-     * Checks if the drone port has space.
+     * Checks if the drone port is full.
      *
-     * @return True if the drone port is not full, false otherwise.
+     * @return True if the drone port is full, false otherwise.
      */
-    public boolean hasSpace() {
-        return !(hasFullInventory(0) || hasFullRoboSlot(1));
+    public boolean isFull() {
+        return isFull(0);
+    }
+
+    public boolean isFull(int slotsToLeaveEmpty) {
+        return hasFullInventory(slotsToLeaveEmpty) || hasFullRoboSlot(0);
     }
 
     /**
@@ -485,9 +559,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     public boolean canAcceptEntity(RoboEntity entity, Boolean hasPackage) {
         if (this.isRemoved()) return false;
-        if (entity == null) return hasPackage ? hasSpace() : !hasFullRoboSlot(1);
+        if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(0);
         if (!entityLandingQueue.contains(entity)) return false;
-        return hasPackage ? hasSpace() : !hasFullRoboSlot(1);
+        return hasPackage ? !isFull() : !hasFullRoboSlot(0);
+    }
+
+    public synchronized boolean trySetEntityOnTravel(RoboEntity entity) {
+        if (entityOnTravel == null || entity == null) {
+            entityOnTravel = entity;
+            return true;
+        }
+        return false;
     }
 
     public ItemStackHandler getRoboBeeInventory() {

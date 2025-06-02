@@ -2,6 +2,10 @@
   "variants": {
     "facing=north,open=false": { "model": "create_mobile_packages:block/bee_port" },
     "facing=north,open=true": { "model": "create_mobile_packages:block/bee_port_open" },
+    "facing=up,open=false": { "model": "create_mobile_packages:block/bee_port" },
+    "facing=up,open=true": { "model": "create_mobile_packages:block/bee_port_open" },
+    "facing=down,open=false": { "model": "create_mobile_packages:block/bee_port" },
+    "facing=down,open=true": { "model": "create_mobile_packages:block/bee_port_open" },
     "facing=south,open=false": { "model": "create_mobile_packages:block/bee_port", "y": 180 },
     "facing=south,open=true": { "model": "create_mobile_packages:block/bee_port_open", "y": 180 },
     "facing=west,open=false": { "model": "create_mobile_packages:block/bee_port", "y": 270 },

@@ -191,6 +191,17 @@ public class RoboEntity extends Mob {
         } else {
             if (targetBlockEntity.getLevel() != level())
                 targetPortalEntity = getClosestBeePortal(level(), position());
+            if (targetBlockEntity == null && targetPlayer == null) {
+                setTargetVelocity(Vec3.ZERO);
+            }
+        }
+
+        // Check if there is a new target block entity that is closer than the current one
+        BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+        if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
+            if (targetBlockEntity != null) targetBlockEntity.tryRemoveFromLandingQueue(null);
+            targetBlockEntity = newTargetBlockEntity;
+            targetBlockEntity.tryAddToLandingQueue(this);
         }
 
         if (targetPortalEntity != null)
@@ -231,11 +242,11 @@ public class RoboEntity extends Mob {
         return null;
     }
 
-    public static boolean isWithinRange(Vec3 targetPos, Vec3 originPos) {
+    public static boolean isWithinRange(BlockPos targetPos, BlockPos originPos) {
         int maxDistance = CMPConfigs.server().beeMaxDistance.get();
         if (targetPos == null || originPos == null) return false;
         if (maxDistance == -1) return true;
-        return targetPos.distanceToSqr(originPos) <= maxDistance * maxDistance;
+        return targetPos.distSqr(originPos) <= maxDistance * maxDistance;
     }
 
     /**
@@ -428,8 +439,7 @@ public class RoboEntity extends Mob {
      */
     public double getAngleToTarget() {
         Location targetLocation = getTargetLocation();
-        if (targetLocation == null || targetLocation.level() != level())
-            return 0;
+        if (targetLocation == null || targetLocation.level() != level()) return 0;
         return targetLocation.position() != null
                 ? Math.atan2(targetLocation.position().getZ() - getZ(), targetLocation.position().getX() - getX())
                 : 0;
@@ -464,6 +474,7 @@ public class RoboEntity extends Mob {
     }
 
     public Player getTargetPlayer() {
+        updateTarget();
         return targetPlayer;
     }
 
@@ -512,11 +523,12 @@ public class RoboEntity extends Mob {
     /**
      * Calculates the estimated time of arrival (ETA) to the specified targetPosition.
      *
-     * @param targetPos The Vec3 to calculate the ETA for.
+     * @param targetPosition The Vec3 to calculate the ETA for.
      * @return The ETA in seconds.
      */
-    public static int calcETA(Vec3 targetPos, Vec3 currentPos) {
-        double distance = targetPos.distanceTo(currentPos);
+    public static int calcETA(Vec3 targetPosition, Vec3 currentPosition) {
+        if (targetPosition == null || currentPosition == null) return Integer.MAX_VALUE;
+        double distance = targetPosition.distanceTo(currentPosition);
         return (int) (distance / CMPConfigs.server().beeSpeed.get()) + 1;
     }
 
@@ -527,7 +539,7 @@ public class RoboEntity extends Mob {
      * @param exitPortalPos The position of the BeePortal to enter the target dimension.
      * @return The ETA in seconds.
      */
-    public static int calcETA(RoboEntity re, Vec3 exitPortalPos) {
+    public static int calcETA(RoboEntity re) {
         Vec3 targetPos = null;
         BeePortBlockEntity targetBlock = re.getTargetBlockEntity();
         Player targetPlayer = re.getTargetPlayer();
@@ -539,7 +551,7 @@ public class RoboEntity extends Mob {
         BeePortalBlockEntity targetPortal = re.getTargetPortalEntity();
         if (targetPortal == null || targetPos == null)
             return Integer.MAX_VALUE;
-        return calcETA(re.position(), targetPortal.getBlockPos().getCenter()) + calcETA(exitPortalPos, targetPos);
+        return calcETA(re.position(), targetPortal.getBlockPos().getCenter()) + calcETA(re.getExitPortal().getBlockPos().getCenter(), targetPos);
     }
 
     /**
@@ -585,9 +597,9 @@ public class RoboEntity extends Mob {
         float deltaYaw = targetYaw - currentYaw;
         deltaYaw = (deltaYaw > 180) ? deltaYaw - 360 : (deltaYaw < -180) ? deltaYaw + 360 : deltaYaw;
         float rotationSpeed = CMPConfigs.server().beeRotationSpeed.get();
-        if (Math.abs(deltaYaw) > rotationSpeed)
+        if (Math.abs(deltaYaw) > rotationSpeed) {
             currentYaw += (deltaYaw > 0) ? rotationSpeed : -rotationSpeed;
-        else
+        } else
             currentYaw = targetYaw;
 
         entityData.set(ROT_YAW, currentYaw);
@@ -626,7 +638,7 @@ public class RoboEntity extends Mob {
     }
 
     public void setTargetAddress(String address) {
-        targetAddress = address;
+        this.targetAddress = address;
         updateTarget();
     }
 

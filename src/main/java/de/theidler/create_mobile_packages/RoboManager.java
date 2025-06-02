@@ -32,23 +32,18 @@ public class RoboManager {
     }
 
     private synchronized void tickRobos(Level level) {
-        List<UUID> toRemove = new ArrayList<>();
-
-        for (Map.Entry<UUID, RoboEntity> entry : robos.entrySet()) {
-            UUID id = entry.getKey();
+        Iterator<Map.Entry<UUID, RoboEntity>> it = robos.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<UUID, RoboEntity> entry = it.next();
             RoboEntity robo = entry.getValue();
 
             level.guardEntityTick(entity -> {}, robo);
             robo.roboMangerTick();
 
             if (robo.isRemoved()) {
-                toRemove.add(id);
+                it.remove();
             }
         }
-        for (UUID id : toRemove) {
-            robos.remove(id);
-        }
-
     }
 
     public void addRobo(RoboEntity robo) {
