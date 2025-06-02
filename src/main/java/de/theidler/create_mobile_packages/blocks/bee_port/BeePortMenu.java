@@ -6,7 +6,7 @@ import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
@@ -19,7 +19,7 @@ public class BeePortMenu extends PackagePortMenu {
 
     private ContainerData data;
 
-    public BeePortMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    public BeePortMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
         if (contentHolder instanceof BeePortBlockEntity beePortBlockEntity) {
             this.data = beePortBlockEntity.getData();
@@ -34,7 +34,7 @@ public class BeePortMenu extends PackagePortMenu {
     }
 
     @Override
-    protected BeePortBlockEntity createOnClient(FriendlyByteBuf extraData) {
+    protected BeePortBlockEntity createOnClient(RegistryFriendlyByteBuf extraData) {
         BlockPos readBlockPos = extraData.readBlockPos();
         ClientLevel world = Minecraft.getInstance().level;
         BlockEntity blockEntity = world.getBlockEntity(readBlockPos);

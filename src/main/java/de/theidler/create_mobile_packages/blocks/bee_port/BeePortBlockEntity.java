@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.blocks.bee_port;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
+import com.simibubi.create.foundation.item.ItemHandlerWrapper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
@@ -12,8 +13,10 @@ import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -28,10 +31,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -128,20 +131,24 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     public BeePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
-        itemHandler = LazyOptional.of(() -> handler);
+        itemHandler = handler;
+    }
+
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        //TODO: do something??
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
-        tag.put("RoboBeeInventory", roboBeeInventory.serializeNBT());
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
+        tag.put("RoboBeeInventory", roboBeeInventory.serializeNBT(registries));
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         if (tag.contains("RoboBeeInventory")) {
-            roboBeeInventory.deserializeNBT(tag.getCompound("RoboBeeInventory"));
+            roboBeeInventory.deserializeNBT(registries, tag.getCompound("RoboBeeInventory"));
         }
     }
 
@@ -225,8 +232,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         BlockEntity blockEntity = level.getBlockEntity(worldPosition.relative(side));
         if (blockEntity == null || blockEntity instanceof FrogportBlockEntity)
             return null;
-        return blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side.getOpposite())
-                .orElse(null);
+        return level.getCapability(Capabilities.ItemHandler.BLOCK, blockEntity.getBlockPos(), side.getOpposite());
     }
 
     /**
@@ -275,7 +281,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     private static void requestRoboEntity(Level level, BlockPos blockPos) {
-        level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
+        if (level instanceof ServerLevel serverLevel) {
+            DronePortTracker tracker = DronePortTracker.get(serverLevel);
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
             allBEs.removeIf(be -> be.getBlockPos().equals(blockPos));
             allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
@@ -285,7 +292,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             if (target != null) {
                 target.sendDrone(blockPos);
             }
-        });
+        }
     }
 
     /**
@@ -417,8 +424,9 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!level.isClientSide){
-            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
+        if (level instanceof ServerLevel serverLevel) {
+            DronePortTracker tracker = DronePortTracker.get(serverLevel);
+            tracker.add(this);
         }
     }
 
@@ -427,8 +435,9 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      */
     @Override
     public void remove() {
-        if (!level.isClientSide) {
-            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
+        if (level instanceof ServerLevel serverLevel) {
+            DronePortTracker tracker = DronePortTracker.get(serverLevel);
+            tracker.remove(this);
             if (entityOnTravel != null) {
                 entityOnTravel.setTargetVelocity(Vec3.ZERO);
                 entityOnTravel.setState(new AdjustRotationToTarget());

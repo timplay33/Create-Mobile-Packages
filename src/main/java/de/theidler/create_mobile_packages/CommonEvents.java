@@ -1,24 +1,23 @@
 package de.theidler.create_mobile_packages;
 
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraft.client.Minecraft;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class CommonEvents {
 
     @SubscribeEvent
-    public static void onWorldTick(TickEvent.LevelTickEvent event) {
-        if (event.phase == TickEvent.Phase.START)
+    public static void onWorldTick(LevelTickEvent event) {
+        Level world = event.getLevel();
+        if (world.isClientSide() && Minecraft.getInstance().hasSingleplayerServer())
             return;
-        if (event.side == LogicalSide.CLIENT && Minecraft.getInstance().hasSingleplayerServer()) {
-                return;
-        }
-        CreateMobilePackages.ROBO_MANAGER.tick(event.level);
+        CreateMobilePackages.ROBO_MANAGER.tick(world);
     }
 
     @SubscribeEvent

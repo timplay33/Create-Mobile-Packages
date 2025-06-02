@@ -1,13 +1,13 @@
 package de.theidler.create_mobile_packages.compat;
 
 import net.createmod.catnip.lang.Lang;
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.ModList;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -33,18 +33,18 @@ public enum Mods {
     }
 
     public Block getBlock(String id) {
-        return ForgeRegistries.BLOCKS.getValue(rl(id));
+        return BuiltInRegistries.BLOCK.get(rl(id));
     }
 
     public Item getItem(String id) {
-        return ForgeRegistries.ITEMS.getValue(rl(id));
+        return BuiltInRegistries.ITEM.get(rl(id));
     }
 
     public boolean contains(ItemLike entry) {
         if (!isLoaded())
             return false;
         Item asItem = entry.asItem();
-        return asItem != null && CatnipServices.REGISTRIES.getKeyOrThrow(asItem)
+        return asItem != null && RegisteredObjectsHelper.getKeyOrThrow(asItem)
                 .getNamespace()
                 .equals(id);
     }

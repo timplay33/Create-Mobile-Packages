@@ -24,7 +24,7 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -62,11 +62,6 @@ public class PortableStockTicker extends StockCheckingItem {
         return -1;
     }
 
-    @Override
-    public Rarity getRarity(ItemStack pStack) {
-        return Rarity.UNCOMMON;
-    }
-
     public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, IdentifiedInventory ignoredHandler,
                                            String address, Player player) {
         boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address);
@@ -94,8 +89,8 @@ public class PortableStockTicker extends StockCheckingItem {
         if (!level.isClientSide() && player.isShiftKeyDown()) {
             if (level.getBlockEntity(pos) instanceof StockTickerBlockEntity stbe) {
                 CompoundTag tag = new CompoundTag();
-                stbe.saveAdditional(tag);
-                categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND));
+                stbe.saveAdditional(tag, level.registryAccess());
+                categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND), level.registryAccess());
             } else if (level.getBlockEntity(pos) instanceof PackagerLinkBlockEntity) {
                     categories = new ArrayList<>();
             }
@@ -138,20 +133,21 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
-        super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext tooltipContext, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, tooltipContext, tooltipComponents, tooltipFlag);
         if (Screen.hasShiftDown()) {
-            pTooltip.add(Component.literal(""));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.summary").withStyle(ChatFormatting.YELLOW));
-            pTooltip.add(Component.literal(""));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.condition1").withStyle(ChatFormatting.GRAY));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1").withStyle(ChatFormatting.YELLOW));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.condition2").withStyle(ChatFormatting.GRAY));
-            pTooltip.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2").withStyle(ChatFormatting.YELLOW));
+            tooltipComponents.add(Component.literal(""));
+            tooltipComponents.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.summary").withStyle(ChatFormatting.YELLOW));
+            tooltipComponents.add(Component.literal(""));
+            tooltipComponents.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.condition1").withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1").withStyle(ChatFormatting.YELLOW));
+            tooltipComponents.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.condition2").withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.translatable("item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2").withStyle(ChatFormatting.YELLOW));
         } else {
-            pTooltip.add(Component.translatable("create.tooltip.holdForDescription", Component.translatable("create.tooltip.keyShift").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.translatable("create.tooltip.holdForDescription", Component.translatable("create.tooltip.keyShift").withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
         }
     }
+
     private static final String ADDRESS_TAG = "PreviousAddress";
 
     public void saveAddressToStack(ItemStack stack, String address) {

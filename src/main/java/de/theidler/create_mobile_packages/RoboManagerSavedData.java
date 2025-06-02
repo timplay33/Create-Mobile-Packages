@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages;
 
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import net.createmod.catnip.nbt.NBTHelper;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
@@ -14,18 +15,6 @@ import java.util.UUID;
 public class RoboManagerSavedData extends SavedData {
 
     private Map<UUID, RoboEntity> robos = new HashMap<>();
-
-    @Override
-    public CompoundTag save(CompoundTag nbt) {
-        RoboManager roboManager = CreateMobilePackages.ROBO_MANAGER;
-        CreateMobilePackages.LOGGER.info("Saving RoboManager...");
-        nbt.put("Robos", NBTHelper.writeCompoundList(roboManager.robos.values(), robo -> {
-            CompoundTag roboTag = new CompoundTag();
-            roboTag.putInt("Id", robo.getId());
-            return roboTag;
-        }));
-        return nbt;
-    }
 
     public static RoboManagerSavedData load(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(RoboManagerSavedData::load, RoboManagerSavedData::new, "robo_manager");
@@ -44,5 +33,17 @@ public class RoboManagerSavedData extends SavedData {
 
     public Map<UUID, RoboEntity> getRobos() {
         return robos;
+    }
+
+    @Override
+    public CompoundTag save(CompoundTag nbt, HolderLookup.Provider provider) {
+        RoboManager roboManager = CreateMobilePackages.ROBO_MANAGER;
+        CreateMobilePackages.LOGGER.info("Saving RoboManager...");
+        nbt.put("Robos", NBTHelper.writeCompoundList(roboManager.robos.values(), robo -> {
+            CompoundTag roboTag = new CompoundTag();
+            roboTag.putInt("Id", robo.getId());
+            return roboTag;
+        }));
+        return nbt;
     }
 }

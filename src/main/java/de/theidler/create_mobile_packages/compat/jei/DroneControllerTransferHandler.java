@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.compat.jei;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
+import com.simibubi.create.foundation.blockEntity.LegacyRecipeWrapper;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerMenu;
@@ -16,17 +17,16 @@ import mezz.jei.common.transfer.RecipeTransferOperationsResult;
 import mezz.jei.common.transfer.RecipeTransferUtil;
 import mezz.jei.library.transfer.RecipeTransferErrorMissingSlots;
 import mezz.jei.library.transfer.RecipeTransferErrorTooltip;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,20 +51,25 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
     }
 
     @Override
-    public @Nullable IRecipeTransferError transferRecipe(PortableStockTickerMenu container, Object object, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+    public @Nullable IRecipeTransferError transferRecipe(PortableStockTickerMenu container, Object object,
+                                                         IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
         Level level = player.level();
-        if (!(object instanceof Recipe<?> recipe))
+        if (!(object instanceof RecipeHolder<?> recipe))
             return null;
         MutableObject<IRecipeTransferError> result = new MutableObject<>();
         if (level.isClientSide())
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> result
-                    .setValue(transferRecipeOnClient(container, recipe, recipeSlots, player, maxTransfer, doTransfer)));
+            //noinspection unchecked
+            CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> result
+                    .setValue(transferRecipeOnClient(container, (RecipeHolder<Recipe<?>>) recipe, recipeSlots, player, maxTransfer, doTransfer)));
         return result.getValue();
     }
 
-    private IRecipeTransferError transferRecipeOnClient(PortableStockTickerMenu container, Recipe<?> recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+    private @Nullable IRecipeTransferError transferRecipeOnClient(PortableStockTickerMenu container, RecipeHolder<Recipe<?>> recipeHolder,
+                                                                  IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
         if (!(container.screenReference instanceof PortableStockTickerScreen screen))
             return null;
+
+        Recipe<?> recipe = recipeHolder.value();
 
         for (CraftableBigItemStack cbis : screen.recipesToOrder)
             if (cbis.recipe == recipe)
@@ -81,13 +86,14 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
                 summary.add(stack);
             }
         }
-        Container outputDummy = new RecipeWrapper(new ItemStackHandler(9));
+
+        Container outputDummy = new LegacyRecipeWrapper(new ItemStackHandler(9));
         List<Slot> craftingSlots = new ArrayList<>();
         for (int i = 0; i < outputDummy.getContainerSize(); i++)
             craftingSlots.add(new Slot(outputDummy, i, 0, 0));
 
         List<BigItemStack> stacksByCount = summary.getStacksByCount();
-        Container inputDummy = new RecipeWrapper(new ItemStackHandler(stacksByCount.size()));
+        Container inputDummy = new LegacyRecipeWrapper(new ItemStackHandler(stacksByCount.size()));
         Map<Slot, ItemStack> availableItemStacks = new HashMap<>();
         for (int j = 0; j < stacksByCount.size(); j++) {
             BigItemStack bigItemStack = stacksByCount.get(j);
