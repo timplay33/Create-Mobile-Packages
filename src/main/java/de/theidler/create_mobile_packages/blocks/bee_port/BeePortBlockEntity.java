@@ -470,7 +470,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     }
 
     public boolean isFull(int slotsToLeaveEmpty) {
-        return hasFullInventory(slotsToLeaveEmpty) || hasFullRoboSlot(1);
+        return hasFullInventory(slotsToLeaveEmpty) || hasFullRoboSlot(0);
     }
 
     /**
@@ -482,9 +482,9 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      */
     public boolean canAcceptEntity(RoboEntity entity, Boolean hasPackage) {
         if (this.isRemoved()) return false;
-        if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(1);
+        if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(0);
         if (entityOnTravel != null && entityOnTravel != entity) return false;
-        return hasPackage ? !isFull() : !hasFullRoboSlot(1);
+        return hasPackage ? !isFull() : !hasFullRoboSlot(0);
     }
 
     public synchronized boolean trySetEntityOnTravel(RoboEntity entity) {
