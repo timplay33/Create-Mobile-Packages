@@ -134,6 +134,9 @@ public class RoboEntity extends Mob {
                     targetBlockEntity.trySetEntityOnTravel(this);
                 }
             }
+            if (targetBlockEntity == null && targetPlayer == null) {
+                setTargetVelocity(Vec3.ZERO);
+            }
         }
     }
 
