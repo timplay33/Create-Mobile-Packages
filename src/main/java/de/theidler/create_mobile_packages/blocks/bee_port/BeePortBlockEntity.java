@@ -213,7 +213,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             for (Player player : serverLevel.players()) {
                 if (player.getName().getString().equals(address)) {
                     if (player.level().dimensionType() != level.dimensionType()) {
-                        BeePortalBlockEntity targetPortal = RoboEntity.getClosestBeePortal(level, getBlockPos().getCenter(), player.level());
+                        BeePortalBlockEntity targetPortal = RoboEntity.getClosestBeePortal(level, getBlockPos().getCenter());
                         if (targetPortal != null && targetPortal.getLevel() != null) {
                             BeePortalBlockEntity exitPortal = RoboEntity.getExitPortal(player.level(), targetPortal.getBlockPos().getCenter());
                             if (exitPortal != null && RoboEntity.isWithinRange(player.position(), exitPortal.getBlockPos().getCenter()))

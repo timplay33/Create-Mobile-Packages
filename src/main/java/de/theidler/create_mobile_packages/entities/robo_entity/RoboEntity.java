@@ -5,6 +5,7 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.blocks.BeePortStorage;
+import de.theidler.create_mobile_packages.blocks.BeePortalConnection;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
@@ -322,18 +323,16 @@ public class RoboEntity extends Mob {
      * @return The closest BeePortalBlockEntity.
      */
     public static BeePortalBlockEntity getClosestBeePortal(Level level, Vec3 originPos) {
-        BeePortalBlockEntity closest = null;
         if (level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
-            List<BeePortalBlockEntity> allBEs = storage.getPortals().stream()
-                    .filter(be -> isWithinRange(be.getBlockPos().getCenter(), originPos))
-                    .toList();
-            closest = allBEs.stream()
-                    .min(Comparator.comparingDouble(be -> be.getBlockPos().getCenter().distanceToSqr(originPos)))
+            BeePortalConnection connection = storage.getPortalConnections().stream()
+                    .min(Comparator.comparingDouble(c -> BeePortalConnection.distanceToTarget(c, new Location(BlockPos.containing(originPos), level), null)))
                     .orElse(null);
+            if (connection != null)
+                return connection.portalA().getLevel() == level ? connection.portalA() : connection.portalB();
         }
 
-        return closest;
+        return null;
     }
 
     @Override

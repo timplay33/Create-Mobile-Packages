@@ -18,7 +18,7 @@ import java.util.Objects;
 
 public class BeePortStorage extends SavedData {
     private final List<BeePortBlockEntity> ports = new ArrayList<>();
-    private final List<BeePortalBlockEntity> portals = new ArrayList<>();
+    private final List<BeePortalConnection> portalConnections = new ArrayList<>();
 
     public static BeePortStorage create() {
         return new BeePortStorage();
@@ -70,8 +70,8 @@ public class BeePortStorage extends SavedData {
         return result;
     }
 
-    public List<BeePortalBlockEntity> getPortals() {
-        return new ArrayList<>(portals.stream().filter(Objects::nonNull).toList());
+    public List<BeePortalConnection> getPortalConnections() {
+        return new ArrayList<>(portalConnections.stream().filter(Objects::nonNull).toList());
     }
 
     public void add(@NotNull BeePortBlockEntity beePort) {
@@ -80,10 +80,11 @@ public class BeePortStorage extends SavedData {
             ports.add(beePort);
     }
 
-    public void add(@NotNull BeePortalBlockEntity beePortal) {
-        Level level = beePortal.getLevel();
-        if (level instanceof ServerLevel && !portals.contains(beePortal))
-            portals.add(beePortal);
+    public void add(@NotNull BeePortalBlockEntity portalA, @NotNull BeePortalBlockEntity portalB) {
+        if (portalA.getLevel() instanceof ServerLevel && portalB.getLevel() instanceof ServerLevel
+                && portalConnections.stream().noneMatch(c -> c.contains(portalA, portalB))
+                && portalConnections.stream().noneMatch(c -> c.connectionExists(portalA, portalB)))
+            portalConnections.add(new BeePortalConnection(portalA, portalB));
     }
 
     public void remove(@NotNull BeePortBlockEntity beePort) {
@@ -95,6 +96,6 @@ public class BeePortStorage extends SavedData {
     public void remove(@NotNull BeePortalBlockEntity beePortal) {
         Level level = beePortal.getLevel();
         if (level instanceof ServerLevel)
-            portals.remove(beePortal);
+            portalConnections.removeIf(c -> c.portalA() == beePortal || c.portalB() == beePortal);
     }
 }

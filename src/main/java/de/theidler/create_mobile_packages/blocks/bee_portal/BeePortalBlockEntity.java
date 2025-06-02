@@ -63,10 +63,6 @@ public class BeePortalBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level instanceof ServerLevel serverLevel) {
-            BeePortStorage storage = BeePortStorage.get(serverLevel);
-            storage.add(this);
-        }
     }
 
     @Override
