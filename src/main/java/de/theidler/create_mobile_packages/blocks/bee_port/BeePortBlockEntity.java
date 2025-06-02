@@ -126,8 +126,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
     private final Queue<RoboEntity> entityLandingQueue = new ArrayDeque<>();
     private final Queue<RoboEntity> entityLaunchingQueue = new ArrayDeque<>();
-    private final ContainerData data = new SimpleContainerData(2);
-    private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
 
     /**
      * Constructor for the BeePortBlockEntity.
@@ -173,7 +171,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                 BeePortalBlockEntity exitPortal = re.getExitPortal();
                 if (re.multidimensional()) {
                     if (exitPortal != null)
-                        this.data.set(0, RoboEntity.calcETA(re, exitPortal.getBlockPos().getCenter()));
+                        this.data.set(0, RoboEntity.calcETA(re));
                 } else
                     this.data.set(0, RoboEntity.calcETA(re.position(), getBlockPos().getCenter()));
             }
@@ -286,10 +284,10 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                         BeePortalBlockEntity targetPortal = RoboEntity.getClosestBeePortal(level, getBlockPos().getCenter());
                         if (targetPortal != null && targetPortal.getLevel() != null) {
                             BeePortalBlockEntity exitPortal = RoboEntity.getExitPortal(player.level(), targetPortal.getBlockPos().getCenter());
-                            if (exitPortal != null && RoboEntity.isWithinRange(player.position(), exitPortal.getBlockPos().getCenter()))
+                            if (exitPortal != null && RoboEntity.isWithinRange(player.blockPosition(), exitPortal.getBlockPos()))
                                 sendToPlayer(player, itemStack, slot);
                         }
-                    } else if (RoboEntity.isWithinRange(player.position(), getBlockPos().getCenter()))
+                    } else if (RoboEntity.isWithinRange(player.blockPosition(), getBlockPos()))
                         sendToPlayer(player, itemStack, slot);
                     return;
                 }
@@ -297,14 +295,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to another drone port.
         if (CMPConfigs.server().portToPort.get() && !PackageItem.matchAddress(address, addressFilter)) {
-            BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, getBlockPos().getCenter(), null);
+            BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, getBlockPos(), null);
             if (beePortBlockEntity == null) {
-                List<BeePortBlockEntity> BEs = RoboEntity.getMultidimensionalBeePorts(level, address, getBlockPos().getCenter(), null);
+                List<BeePortBlockEntity> BEs = RoboEntity.getMultidimensionalBeePorts(level, address, getBlockPos(), null);
                 if (!BEs.isEmpty())
                     beePortBlockEntity = BEs.get(0);
             }
 
-            if (beePortBlockEntity != null && beePortBlockEntity.hasSpace())
+            if (beePortBlockEntity != null && !beePortBlockEntity.isFull())
                 sendDrone(itemStack, slot);
         }
     }
@@ -562,14 +560,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(0);
         if (!entityLandingQueue.contains(entity)) return false;
         return hasPackage ? !isFull() : !hasFullRoboSlot(0);
-    }
-
-    public synchronized boolean trySetEntityOnTravel(RoboEntity entity) {
-        if (entityOnTravel == null || entity == null) {
-            entityOnTravel = entity;
-            return true;
-        }
-        return false;
     }
 
     public ItemStackHandler getRoboBeeInventory() {

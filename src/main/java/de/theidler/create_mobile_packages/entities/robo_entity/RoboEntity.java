@@ -150,7 +150,7 @@ public class RoboEntity extends Mob {
             for (ServerLevel serverLevel : serverLevels)
                 for (Player player : serverLevel.players()) {
                     if (player.getName().getString().equals(address)
-                            && RoboEntity.isWithinRange(player.position(), position())) {
+                            && RoboEntity.isWithinRange(player.blockPosition(), blockPosition())) {
                         setTargetPlayer(player);
                         return;
                     }
@@ -178,7 +178,7 @@ public class RoboEntity extends Mob {
         if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this, !getItemStack().isEmpty()) || !Objects.equals(activeTargetAddress, targetAddress)) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
             activeTargetAddress = targetAddress;
-            Vec3 pos = position();
+            BlockPos pos = blockPosition();
             List<BeePortBlockEntity> allBEs = getMultidimensionalBeePorts(level(), Objects.equals(targetAddress, "") ? null : targetAddress, pos, this);
             if (!allBEs.isEmpty()) targetBlockEntity = allBEs.get(0);
 
@@ -199,7 +199,7 @@ public class RoboEntity extends Mob {
         // Check if there is a new target block entity that is closer than the current one
         BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
         if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
-            if (targetBlockEntity != null) targetBlockEntity.tryRemoveFromLandingQueue(null);
+            if (targetBlockEntity != null) targetBlockEntity.tryRemoveFromLandingQueue(this);
             targetBlockEntity = newTargetBlockEntity;
             targetBlockEntity.tryAddToLandingQueue(this);
         }
@@ -223,9 +223,9 @@ public class RoboEntity extends Mob {
             if (targetPlayer.level().dimensionType() != level().dimensionType()) {
                 if (targetPortalEntity == null) return null;
                 multidimensional = true;
-                if (targetPortalEntity.getLevel() != null && isWithinRange(targetPortalEntity.getBlockPos().getCenter(), position()))
+                if (targetPortalEntity.getLevel() != null && isWithinRange(targetPortalEntity.getBlockPos(), blockPosition()))
                     return new Location(targetPortalEntity.getBlockPos().above().above(), targetPortalEntity.getLevel());
-            } else if (isWithinRange(targetPlayer.position(), position()))
+            } else if (isWithinRange(targetPlayer.blockPosition(), blockPosition()))
                 return new Location(targetPlayer.blockPosition().above().above(), targetPlayer.level());
         } else if (targetBlockEntity != null) {
             Level targetLevel = targetBlockEntity.getLevel();
@@ -233,9 +233,9 @@ public class RoboEntity extends Mob {
             if (targetLevel != level()) {
                 multidimensional = true;
                 if (targetPortalEntity == null) return null;
-                if (isWithinRange(targetPortalEntity.getBlockPos().getCenter(), position()))
+                if (isWithinRange(targetPortalEntity.getBlockPos(), blockPosition()))
                     return new Location(targetPortalEntity.getBlockPos().above().above(), targetPortalEntity.getLevel());
-            } else if (isWithinRange(targetBlockEntity.getBlockPos().getCenter(), position()))
+            } else if (isWithinRange(targetBlockEntity.getBlockPos(), blockPosition()))
                 return new Location(targetBlockEntity.getBlockPos().above().above(), targetLevel);
         }
 
@@ -260,8 +260,8 @@ public class RoboEntity extends Mob {
      * @param address The address to filter by, or {@code null} for no filtering.
      * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
-    public static BeePortBlockEntity getClosestBeePort(Level level, String address, Vec3 originPos, @Nullable RoboEntity re) {
-        return getClosestBeePort(level, address, originPos, re == null || !re.getItemStack().isEmpty() || !Objects.equals(re.activeTargetAddress, re.targetAddress));
+    public static BeePortBlockEntity getClosestBeePort(Level level, String address, BlockPos originPos, @Nullable RoboEntity re) {
+        return getClosestBeePort(level, address, originPos, re != null && (!re.getItemStack().isEmpty() || !Objects.equals(re.activeTargetAddress, re.targetAddress)));
     }
 
     /**
@@ -275,18 +275,18 @@ public class RoboEntity extends Mob {
      * @param address The address to filter by, or {@code null} for no filtering.
      * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
-    public static BeePortBlockEntity getClosestBeePort(Level level, String address, Vec3 originPos, boolean hasPackage) {
+    public static BeePortBlockEntity getClosestBeePort(Level level, String address, BlockPos originPos, boolean hasPackage) {
         BeePortBlockEntity closest = null;
         if (level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
             List<BeePortBlockEntity> allBEs = storage.getPorts();
-            allBEs.removeIf(BE -> !isWithinRange(BE.getBlockPos().getCenter(), originPos));
+            allBEs.removeIf(BE -> !isWithinRange(BE.getBlockPos(), originPos));
             if (address != null)
                 allBEs.removeIf(BE -> !PackageItem.matchAddress(address, BE.addressFilter));
 
             allBEs.removeIf(BE -> !BE.canAcceptEntity(null, hasPackage));
             closest = allBEs.stream()
-                    .min(Comparator.comparingDouble(a -> a.getBlockPos().getCenter().distanceToSqr(originPos)))
+                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(originPos)))
                     .orElse(null);
         }
 
@@ -303,7 +303,7 @@ public class RoboEntity extends Mob {
      * @param address The address to filter by, or {@code null} for no filtering.
      * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
-    public static List<BeePortBlockEntity> getMultidimensionalBeePorts(Level level, String address, Vec3 originPos, RoboEntity re) {
+    public static List<BeePortBlockEntity> getMultidimensionalBeePorts(Level level, String address, BlockPos originPos, RoboEntity re) {
         BeePortBlockEntity closest = getClosestBeePort(level, address, originPos, re);
         List<BeePortBlockEntity> result = new ArrayList<>();
         if (closest != null) {
@@ -515,7 +515,7 @@ public class RoboEntity extends Mob {
         if (multidimensional) {
             BeePortalBlockEntity exitPortal = getExitPortal();
             if (exitPortal == null) return;
-            player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(this, exitPortal.getBlockPos().getCenter())), true);
+            player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(this)), true);
         } else
             player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player.position(), position())), true);
     }
@@ -535,8 +535,7 @@ public class RoboEntity extends Mob {
     /**
      * Calculates the estimated time of arrival (ETA) to the specified targetPosition of a different dimension.
      *
-     * @param re            The RoboEntity that transports the package.
-     * @param exitPortalPos The position of the BeePortal to enter the target dimension.
+     * @param re The RoboEntity that transports the package.
      * @return The ETA in seconds.
      */
     public static int calcETA(RoboEntity re) {
