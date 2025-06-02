@@ -72,7 +72,7 @@ public class RoboEntity extends Mob {
         CreateMobilePackages.ROBO_MANAGER.addRobo(this);
         if (target != null) {
             if (target.level() != level) {
-                targetPortalEntity = getClosestBeePortal(level, position(), target.level());
+                targetPortalEntity = getClosestBeePortal(level, position());
                 targetBlockEntity = level.getBlockEntity(target.position()) instanceof BeePortBlockEntity dpbe
                         ? dpbe
                         : null;
@@ -168,7 +168,7 @@ public class RoboEntity extends Mob {
         targetPortalEntity = null;
         if (targetPlayer != null) {
             if (targetPlayer.level().dimensionType() != level().dimensionType()) {
-                targetPortalEntity = getClosestBeePortal(level(), position(), targetPlayer.level());
+                targetPortalEntity = getClosestBeePortal(level(), position());
                 targetPortalEntity.tryAddToLandingQueue(this);
             }
             return;
@@ -189,7 +189,7 @@ public class RoboEntity extends Mob {
             }
         } else {
             if (targetBlockEntity.getLevel() != level())
-                targetPortalEntity = getClosestBeePortal(level(), position(), targetBlockEntity.getLevel());
+                targetPortalEntity = getClosestBeePortal(level(), position());
         }
 
         if (targetPortalEntity != null)
@@ -321,7 +321,7 @@ public class RoboEntity extends Mob {
      *
      * @return The closest BeePortalBlockEntity.
      */
-    public static BeePortalBlockEntity getClosestBeePortal(Level level, Vec3 originPos, Level targetLevel) {
+    public static BeePortalBlockEntity getClosestBeePortal(Level level, Vec3 originPos) {
         BeePortalBlockEntity closest = null;
         if (level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
@@ -492,7 +492,7 @@ public class RoboEntity extends Mob {
         Vec3 position = targetLevel.dimension() == Level.END
                 ? new Vec3(100, 49, 0)
                 : originPos.multiply(1 / 8d, 1, 1 / 8d);
-        return getClosestBeePortal(targetLevel, position, null);
+        return getClosestBeePortal(targetLevel, position);
     }
 
     /**

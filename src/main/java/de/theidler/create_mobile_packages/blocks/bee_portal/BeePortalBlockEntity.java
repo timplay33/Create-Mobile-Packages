@@ -1,6 +1,5 @@
 package de.theidler.create_mobile_packages.blocks.bee_portal;
 
-import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.blocks.BeePortStorage;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
@@ -9,7 +8,6 @@ import de.theidler.create_mobile_packages.index.CMPPackets;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestDimensionTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.StructureTags;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -18,7 +16,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
