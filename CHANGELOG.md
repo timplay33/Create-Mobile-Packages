@@ -12,6 +12,17 @@ Create: Mobile Packages - v0.5.1 - 02.06.2025
 - Added missing Robo Bee Port rotation Textures
 - Fixed a manually placed Robo Bee flies to the closest Port to 0,0,0 instead of the closest Port to the Robo Bee
 
+### Translations
+
+- Updated Russian translation
+- Updated French translation
+- Updated English translation
+- Updated Portuguese (Brazilian) translation
+- Added Polish translation
+- Added Swedish translation
+- Updated Chinese (Simplified Han script) translation
+- Updated German translation
+
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.0 - 25.02.2025
 ------------------------------------------------------
