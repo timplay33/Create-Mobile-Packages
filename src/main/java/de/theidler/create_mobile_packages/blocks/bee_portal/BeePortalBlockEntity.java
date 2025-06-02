@@ -85,21 +85,8 @@ public class BeePortalBlockEntity extends BlockEntity {
     }
 
     public synchronized void tryAddToLandingQueue(@NotNull RoboEntity entity) {
-        Level targetLevel = entity.getTargetPlayer() != null ? entity.getTargetPlayer().level() : entity.getTargetBlockEntity().getLevel();
-        if (!allowsToEnd(new Location(entity.blockPosition(), entity.level()), targetLevel)) return;
         if (entityLandingQueue.stream().noneMatch(e -> e == entity))
             entityLandingQueue.add(entity);
-    }
-
-    public boolean allowsToEnd(@NotNull Location location, @Nullable Level targetLevel) {
-        if (targetLevel != null && targetLevel.dimension() == Level.END) {
-            if (location.level().dimension() != Level.OVERWORLD || !(location.level() instanceof ServerLevel serverLevel))
-                return false;
-            BlockPos stronghold = serverLevel.findNearestMapStructure(StructureTags.EYE_OF_ENDER_LOCATED, location.position(), 10, false);
-            return stronghold != null && stronghold.closerToCenterThan(location.position().getCenter(), 100);
-        }
-
-        return true;
     }
 
     public synchronized void tryRemoveFromLandingQueue(@NotNull RoboEntity entity) {

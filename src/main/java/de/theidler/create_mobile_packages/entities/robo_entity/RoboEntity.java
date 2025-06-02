@@ -192,15 +192,9 @@ public class RoboEntity extends Mob {
                 targetPortalEntity = getClosestBeePortal(level(), position(), targetBlockEntity.getLevel());
         }
 
-        if (targetPortalEntity != null) {
+        if (targetPortalEntity != null)
             targetPortalEntity.tryAddToLandingQueue(this);
-            Level targetLevel = targetPlayer != null ? targetPlayer.level() : targetBlockEntity.getLevel();
-            if (targetBlockEntity != null) {
-                assert targetLevel != null;
-                if (targetPortalEntity.allowsToEnd(new Location(blockPosition(), level()), targetLevel))
-                    targetBlockEntity.tryAddToLandingQueue(this);
-            }
-        } else if (targetBlockEntity != null)
+        if (targetBlockEntity != null)
             targetBlockEntity.tryAddToLandingQueue(this);
     }
 
@@ -335,7 +329,6 @@ public class RoboEntity extends Mob {
                     .filter(be -> isWithinRange(be.getBlockPos().getCenter(), originPos))
                     .toList();
             closest = allBEs.stream()
-                    .filter(be -> be.allowsToEnd(new Location(BlockPos.containing(originPos), level), targetLevel))
                     .min(Comparator.comparingDouble(be -> be.getBlockPos().getCenter().distanceToSqr(originPos)))
                     .orElse(null);
         }
