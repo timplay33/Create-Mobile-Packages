@@ -134,6 +134,18 @@ public class RoboEntity extends Mob {
                     targetBlockEntity.trySetEntityOnTravel(this);
                 }
             }
+            if (targetBlockEntity == null && targetPlayer == null) {
+                setTargetVelocity(Vec3.ZERO);
+            }
+        }
+        // Check if there is a new target block entity that is closer than the current one
+        BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+        if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
+            if (targetBlockEntity != null) {
+                targetBlockEntity.trySetEntityOnTravel(null);
+            }
+            targetBlockEntity = newTargetBlockEntity;
+            targetBlockEntity.trySetEntityOnTravel(this);
         }
     }
 
