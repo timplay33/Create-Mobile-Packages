@@ -7,6 +7,8 @@ import de.theidler.create_mobile_packages.entities.models.RoboBeeModel;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import net.minecraft.client.Minecraft;
@@ -41,7 +43,7 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
             poseStack.translate(-0.5D, 0 - (riggingOffset - 5) / 16 * heightScale, -0.5D);
             poseStack.scale(1F, heightScale * 1F, 1F);
             var modelManager = Minecraft.getInstance().getModelManager();
-            var bakedModel = modelManager.getModel(riggingModel);
+            var bakedModel = modelManager.getModel(new ModelResourceLocation(riggingModel, "inventory"));
             Minecraft.getInstance().getItemRenderer().renderModelLists(
                 bakedModel,
                 ItemStack.EMPTY,
@@ -73,7 +75,7 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
 
     public static PackageStyles.PackageStyle getStyleFromStack(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return null;
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         for (PackageStyles.PackageStyle style : PackageStyles.STYLES) {
             if (style.getItemId().equals(itemId)) {
                 return style;

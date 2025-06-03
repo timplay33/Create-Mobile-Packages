@@ -7,7 +7,6 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import de.theidler.create_mobile_packages.compat.FactoryLogisticsCompat;
 import de.theidler.create_mobile_packages.compat.Mods;
-import de.theidler.create_mobile_packages.items.drone_controller.LogisticallyLinkedItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;

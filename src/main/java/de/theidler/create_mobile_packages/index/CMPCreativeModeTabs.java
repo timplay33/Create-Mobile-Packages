@@ -38,7 +38,7 @@ public class CMPCreativeModeTabs {
 
         private List<Item> collectBlocks(Predicate<Item> exclusionPredicate) {
             List<Item> items = new ReferenceArrayList<>();
-            for (RegistryEntry<Block> entry : CreateMobilePackages.REGISTRATE.getAll(Registries.BLOCK)) {
+            for (RegistryEntry<Block, Block> entry : CreateMobilePackages.REGISTRATE.getAll(Registries.BLOCK)) {
                 if (!CreateRegistrate.isInCreativeTab(entry, CMPCreativeModeTabs.CREATE_MOBILE_PACKAGES_TAB))
                     continue;
                 Item item = entry.get()
@@ -56,7 +56,7 @@ public class CMPCreativeModeTabs {
             List<Item> items = new ReferenceArrayList<>();
 
 
-            for (RegistryEntry<Item> entry : CreateMobilePackages.REGISTRATE.getAll(Registries.ITEM)) {
+            for (RegistryEntry<Item, Item> entry : CreateMobilePackages.REGISTRATE.getAll(Registries.ITEM)) {
                 if (!CreateRegistrate.isInCreativeTab(entry, CMPCreativeModeTabs.CREATE_MOBILE_PACKAGES_TAB))
                     continue;
                 Item item = entry.get();

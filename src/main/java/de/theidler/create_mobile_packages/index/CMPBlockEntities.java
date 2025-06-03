@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.index;
 
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
+import com.simibubi.create.foundation.item.ItemHandlerWrapper;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
@@ -32,7 +33,7 @@ public class CMPBlockEntities {
 
         public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
             super(pType, pPos, pBlockState);
-            itemHandler = LazyOptional.of(() -> inventory);
+            itemHandler = new ItemHandlerWrapper(inventory);
         }
 
         @Override
@@ -48,7 +49,7 @@ public class CMPBlockEntities {
 
             // Save old data
             CompoundTag data = new CompoundTag();
-            dummy.saveAdditional(data);
+            dummy.saveAdditional(data, level.registryAccess());
 
             // Replace block
             level.removeBlockEntity(pos);
@@ -57,7 +58,7 @@ public class CMPBlockEntities {
             // Restore data to new block entity
             BlockEntity newBe = level.getBlockEntity(pos);
             if (newBe instanceof BeePortBlockEntity beePort) {
-                beePort.load(data);
+                beePort.loadWithComponents(data, level.registryAccess());
             }
         }
 

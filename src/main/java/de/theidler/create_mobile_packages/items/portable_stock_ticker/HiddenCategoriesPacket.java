@@ -37,6 +37,6 @@ public class HiddenCategoriesPacket implements ServerboundPacketPayload {
 
     @Override
     public PacketTypeProvider getTypeProvider() {
-        return null;
+        return de.theidler.create_mobile_packages.index.CMPPackets.HIDDEN_CATEGORIES;
     }
 }

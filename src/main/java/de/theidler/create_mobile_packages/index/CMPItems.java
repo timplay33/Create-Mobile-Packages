@@ -11,6 +11,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
+import static de.theidler.create_mobile_packages.CreateMobilePackages.CMP_FREQ;
+
 
 public class CMPItems {
 
@@ -44,7 +46,9 @@ public class CMPItems {
         public void inventoryTick(ItemStack pStack, Level pLevel, Entity pEntity, int pSlotId, boolean pIsSelected) {
             if (!pLevel.isClientSide && pEntity instanceof Player player) {
                 ItemStack replacement = new ItemStack(CMPItems.PORTABLE_STOCK_TICKER.get());
-                replacement.setTag(pStack.getTag()); // preserve NBT
+                if (pStack.has(CMP_FREQ)) {// preserve NBT
+                    replacement.set(CMP_FREQ, pStack.get(CMP_FREQ));
+                }
                 player.getInventory().setItem(pSlotId, replacement);
             }
         }

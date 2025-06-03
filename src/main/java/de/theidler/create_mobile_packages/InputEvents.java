@@ -1,8 +1,8 @@
 package de.theidler.create_mobile_packages;
 
 import de.theidler.create_mobile_packages.index.CMPKeys;
-import de.theidler.create_mobile_packages.index.CMPPackets;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.OpenPortableStockTicker;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -17,7 +17,7 @@ public class InputEvents {
         if (Minecraft.getInstance().screen != null)
             return;
         if (CMPKeys.OPEN_PORTABLE_STOCK_TICKER.isPressed()) {
-            CMPPackets.getChannel().sendToServer(new OpenPortableStockTicker());
+            CatnipServices.NETWORK.sendToServer(new OpenPortableStockTicker());
         }
     }
 }

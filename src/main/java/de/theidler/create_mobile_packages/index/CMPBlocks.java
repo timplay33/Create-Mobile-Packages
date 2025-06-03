@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 
 import static com.simibubi.create.api.behaviour.display.DisplaySource.displaySource;
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
+import static de.theidler.create_mobile_packages.CreateMobilePackages.CMP_FREQ;
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
 
@@ -58,7 +59,6 @@ public class CMPBlocks {
         public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
             if (!level.isClientSide && entity instanceof Player player) {
                 ItemStack replacement = new ItemStack(CMPBlocks.BEE_PORT.asStack().getItem(), stack.getCount());
-                replacement.setTag(stack.getTag());
                 player.getInventory().setItem(slot, replacement);
             }
         }

@@ -19,6 +19,7 @@ import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
+import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
@@ -39,6 +40,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -122,7 +124,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     protected void containerTick() {
         super.containerTick();
         addressBox.tick();
-        ClientScreenStorage.tick(menu.droneController.getFrequency());
+        ClientScreenStorage.tick(menu.portableStockTicker.getFrequency());
 
         if (forcedEntries != null && !forcedEntries.isEmpty()) {
             InventorySummary summary = new InventorySummary();
@@ -269,7 +271,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 ItemStack stack = entry.stack;
 
                 if (modSearch) {
-                    if (ForgeRegistries.ITEMS.getKey(stack.getItem())
+                    if (BuiltInRegistries.ITEM.getKey(stack.getItem())
                             .getNamespace()
                             .contains(value)) {
                         displayedItemsInCategory.add(entry);
@@ -290,7 +292,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                         .getString()
                         .toLowerCase(Locale.ROOT)
                         .contains(value)
-                        || ForgeRegistries.ITEMS.getKey(stack.getItem())
+                        || BuiltInRegistries.ITEM.getKey(stack.getItem())
                         .getPath()
                         .contains(value)) {
                     displayedItemsInCategory.add(entry);
@@ -348,7 +350,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         addressBox.setTextColor(0x714A40);
         addressBox.setValue(previouslyUsedAddress);
         addRenderableWidget(addressBox);
-        ClientScreenStorage.manualUpdate(menu.droneController.getFrequency());
+        ClientScreenStorage.manualUpdate(menu.portableStockTicker.getFrequency());
 
         if (initial) {
             playUiSound(SoundEvents.WOOD_HIT, 0.5f, 1.5f);
@@ -780,7 +782,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
             if (recipeHovered) {
                 ArrayList<Component> lines =
-                        new ArrayList<>(entry.stack.getTooltipLines(minecraft.player, TooltipFlag.NORMAL));
+                        new ArrayList<>(entry.stack.getTooltipLines(Item.TooltipContext.of(minecraft.level), minecraft.player, TooltipFlag.NORMAL));
                 if (lines.size() > 0)
                     lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.get(0)
                             .copy()));
@@ -1069,7 +1071,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                     if (asBis.count > 0)
                         valid.add(asBis);
                     for (ItemStack visitedStack : visited) {
-                        if (!ItemHandlerHelper.canItemStacksStack(visitedStack, entry.stack))
+                        if (!ItemStack.isSameItemSameComponents(visitedStack, entry.stack))
                             continue;
                         visitedStack.grow(1);
                         continue Entries;
@@ -1101,7 +1103,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         for (ItemStack visitedItem : visited) {
             for (List<BigItemStack> list : validEntriesByIngredient) {
                 for (BigItemStack entry : list) {
-                    if (!ItemHandlerHelper.canItemStacksStack(entry.stack, visitedItem))
+                    if (!ItemStack.isSameItemSameComponents(entry.stack, visitedItem))
                         continue;
                     entry.count = entry.count / visitedItem.getCount();
                 }
@@ -1371,8 +1373,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     @Override
     public void removed() {
-        CMPPackets.getChannel().sendToServer(new HiddenCategoriesPacket(new ArrayList<>(hiddenCategories)));
-        CMPPackets.getChannel().sendToServer(new SendPackage(PackageOrderWithCrafts.empty(), addressBox.getValue(), true));
+        CatnipServices.NETWORK.sendToServer(new HiddenCategoriesPacket(new ArrayList<>(hiddenCategories)));
+        CatnipServices.NETWORK.sendToServer(new SendPackage(PackageOrderWithCrafts.empty(), addressBox.getValue()));
         super.removed();
     }
 }
