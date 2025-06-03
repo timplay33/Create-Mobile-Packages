@@ -43,7 +43,7 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
             poseStack.translate(-0.5D, 0 - (riggingOffset - 5) / 16 * heightScale, -0.5D);
             poseStack.scale(1F, heightScale * 1F, 1F);
             var modelManager = Minecraft.getInstance().getModelManager();
-            var bakedModel = modelManager.getModel(new ModelResourceLocation(riggingModel, "inventory"));
+            var bakedModel = modelManager.getModel(ModelResourceLocation.standalone(riggingModel));
             Minecraft.getInstance().getItemRenderer().renderModelLists(
                 bakedModel,
                 ItemStack.EMPTY,
