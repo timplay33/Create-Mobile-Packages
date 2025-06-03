@@ -25,9 +25,7 @@ public class CMPCreativeModeTabs {
             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
             .icon(() -> CMPBlocks.BEE_PORT.get().asItem().getDefaultInstance())
             .title(Component.translatable("itemGroup.create_mobile_packages"))
-            .displayItems((itemDisplayParameters, output) -> CreateMobilePackages.REGISTRATE.getAll(Registries.ITEM).forEach((item -> {
-                output.accept(item.get());
-            })))
+            .displayItems(new RegistrateDisplayItemsGenerator())
             .build());
 
     public static void register(IEventBus modEventBus) {
