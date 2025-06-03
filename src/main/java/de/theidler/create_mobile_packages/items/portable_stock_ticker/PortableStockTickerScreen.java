@@ -1340,7 +1340,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         }
 
         CatnipServices.NETWORK.sendToServer(
-                new SendPackage(new PackageOrderWithCrafts(new PackageOrder(itemsToOrder), List.of()),
+                new SendPackage(order,
                         addressBox.getValue()));
         menu.portableStockTicker.previouslyUsedAddress = addressBox.getValue();
 
