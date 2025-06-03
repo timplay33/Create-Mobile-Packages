@@ -53,6 +53,7 @@ public class RoboBeeItem extends Item {
         }
 
         level.addFreshEntity(roboBee);
+        roboBee.setRequest(false);
         context.getItemInHand().shrink(1);
 
         return InteractionResult.SUCCESS;

@@ -290,7 +290,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                     .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(blockPos)))
                     .orElse(null);
             if (target != null) {
-                target.sendDrone(blockPos);
+                target.sendDrone(blockPos, true);
             }
         }
     }
@@ -332,16 +332,18 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         sendItemThisTime = 2;
         RoboBeeEntity drone = new RoboBeeEntity(level, itemStack, null, this.getBlockPos());
         level.addFreshEntity(drone);
+        drone.setRequest(false);
         roboBeeInventory.getStackInSlot(0).shrink(1);
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
-    private void sendDrone(BlockPos tagetPos) {
+    private void sendDrone(BlockPos tagetPos, boolean request) {
         if (this.roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
             return;
         }
         sendItemThisTime = 2;
         RoboBeeEntity drone = new RoboBeeEntity(level, ItemStack.EMPTY, tagetPos, this.getBlockPos());
         level.addFreshEntity(drone);
+        drone.setRequest(request);
         roboBeeInventory.getStackInSlot(0).shrink(1);
     }
 

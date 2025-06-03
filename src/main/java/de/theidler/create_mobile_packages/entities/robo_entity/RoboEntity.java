@@ -48,6 +48,7 @@ public class RoboEntity extends Mob {
     private BeePortBlockEntity startBeePortBlockEntity;
     private String targetAddress = "";
     private int damageCounter;
+    private boolean isRequest = true;
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
@@ -139,14 +140,16 @@ public class RoboEntity extends Mob {
                 setTargetVelocity(Vec3.ZERO);
             }
         }
-        // Check if there is a new target block entity that is closer than the current one
-        BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
-        if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
-            if (targetBlockEntity != null) {
-                targetBlockEntity.trySetEntityOnTravel(null);
+        if (!isRequest) {
+            // Check if there is a new target block entity that is closer than the current one
+            BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+            if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
+                if (targetBlockEntity != null) {
+                    targetBlockEntity.trySetEntityOnTravel(null);
+                }
+                targetBlockEntity = newTargetBlockEntity;
+                targetBlockEntity.trySetEntityOnTravel(this);
             }
-            targetBlockEntity = newTargetBlockEntity;
-            targetBlockEntity.trySetEntityOnTravel(this);
         }
     }
 
@@ -470,5 +473,9 @@ public class RoboEntity extends Mob {
         }
 
         return true;
+    }
+
+    public void setRequest(boolean request) {
+        this.isRequest = request;
     }
 }
