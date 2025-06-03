@@ -11,8 +11,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-import static de.theidler.create_mobile_packages.CreateMobilePackages.CMP_FREQ;
-
+import static de.theidler.create_mobile_packages.index.CMPDataComponents.CMP_FREQ;
 
 public class CMPItems {
 

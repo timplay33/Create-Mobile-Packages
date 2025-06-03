@@ -20,7 +20,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 
 import static com.simibubi.create.api.behaviour.display.DisplaySource.displaySource;
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
-import static de.theidler.create_mobile_packages.CreateMobilePackages.CMP_FREQ;
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
 

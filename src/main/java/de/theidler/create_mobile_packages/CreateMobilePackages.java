@@ -39,25 +39,6 @@ public class CreateMobilePackages
             .defaultCreativeTab((ResourceKey<CreativeModeTab>) null)
             .setTooltipModifierFactory(item -> new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                     .andThen(TooltipModifier.mapNull(KineticStats.create(item))));
-    public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES =
-            DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, MODID);
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CustomData>> CMP_FREQ =
-            DATA_COMPONENT_TYPES.register("cmp_freq", () -> DataComponentType.<CustomData>builder()
-                    .persistent(CustomData.CODEC)
-                    .networkSynchronized(CustomData.STREAM_CODEC)
-                    .build());
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> ADDRESS_TAG =
-            DATA_COMPONENT_TYPES.register("address_tag", () -> DataComponentType.<String>builder()
-                    .persistent(Codec.STRING)
-                    .build());
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<List<ItemStack>>> CATEGORIES =
-            DATA_COMPONENT_TYPES.register("categories", () -> DataComponentType.<List<ItemStack>>builder()
-                    .persistent(ItemStack.CODEC.listOf())
-                    .build());
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Map<UUID, List<Integer>>>> HIDDEN_CATEGORIES =
-            DATA_COMPONENT_TYPES.register("hidden_categories", () -> DataComponentType.<Map<UUID, List<Integer>>>builder()
-                    .persistent(Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.INT.listOf()))
-                    .build());
     public static final RoboManager ROBO_MANAGER = new RoboManager();
 
     public CreateMobilePackages(IEventBus eventBus, ModContainer modContainer) {
@@ -68,7 +49,6 @@ public class CreateMobilePackages
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
         REGISTRATE.registerEventListeners(modEventBus);
 
-        DATA_COMPONENT_TYPES.register(modEventBus);
         CMPCreativeModeTabs.register(modEventBus);
         CMPBlocks.register();
         CMPItems.register();
@@ -78,6 +58,7 @@ public class CreateMobilePackages
         CMPConfigs.register(modLoadingContext, modContainer);
         CMPEntities.register();
         CMPDisplaySources.register();
+        CMPDataComponents.register(modEventBus);
     }
 
     public static ResourceLocation asResource(String path) {

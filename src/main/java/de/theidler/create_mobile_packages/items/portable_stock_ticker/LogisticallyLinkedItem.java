@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-import static de.theidler.create_mobile_packages.CreateMobilePackages.CMP_FREQ;
+import static de.theidler.create_mobile_packages.index.CMPDataComponents.CMP_FREQ;
 
 public class LogisticallyLinkedItem extends Item {
 
@@ -35,12 +35,12 @@ public class LogisticallyLinkedItem extends Item {
 	}
 
 	public static boolean isTuned(ItemStack pStack) {
-		return pStack.has(CMP_FREQ.get());
+		return pStack.has(CMP_FREQ);
 	}
 
 	@Nullable
 	public static UUID networkFromStack(ItemStack pStack) {
-		CompoundTag tag = pStack.getOrDefault(CMP_FREQ.get(), CustomData.EMPTY).copyTag();
+		CompoundTag tag = pStack.getOrDefault(CMP_FREQ, CustomData.EMPTY).copyTag();
 		if (!tag.hasUUID("Freq"))
 			return null;
 		return tag.getUUID("Freq");
@@ -51,7 +51,7 @@ public class LogisticallyLinkedItem extends Item {
                                 @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag tooltipFlag) {
 		super.appendHoverText(stack, tooltipContext, tooltipComponents, tooltipFlag);
 
-		CompoundTag tag = stack.getOrDefault(CMP_FREQ.get(), CustomData.EMPTY).copyTag();
+		CompoundTag tag = stack.getOrDefault(CMP_FREQ, CustomData.EMPTY).copyTag();
 		if (!tag.hasUUID("Freq"))
 			return;
 
@@ -97,11 +97,11 @@ public class LogisticallyLinkedItem extends Item {
 	}
 
 	public static void assignFrequency(ItemStack stack, Player player, UUID frequency) {
-		CompoundTag tag = stack.getOrDefault(CMP_FREQ.get(), CustomData.EMPTY).copyTag();
+		CompoundTag tag = stack.getOrDefault(CMP_FREQ, CustomData.EMPTY).copyTag();
 		tag.putUUID("Freq", frequency);
 
 		player.displayClientMessage(CreateLang.translateDirect("logistically_linked.tuned"), true);
 
-		stack.set(CMP_FREQ.get(), CustomData.of(tag));
+		stack.set(CMP_FREQ, CustomData.of(tag));
 	}
 }
