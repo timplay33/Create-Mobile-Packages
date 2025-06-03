@@ -10,7 +10,7 @@ public class LandingPrepareState implements RoboEntityState {
 
     @Override
     public void tick(RoboEntity re) {
-        Location targetLocation = re.getTargetLocation();
+        Location targetLocation = re.getTargetLocation(false);
         re.setTargetVelocity(Vec3.ZERO);
         if (targetLocation != null) {
             if (re.getTargetPortalEntity() != null && !re.getTargetPortalEntity().isLandingPeek(re)

@@ -1,20 +1,25 @@
 package de.theidler.create_mobile_packages.blocks;
 
+import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+
+import static de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity.isWithinRange;
 
 public class BeePortStorage extends SavedData {
     private final List<BeePortBlockEntity> ports = new ArrayList<>();
@@ -70,8 +75,31 @@ public class BeePortStorage extends SavedData {
         return result;
     }
 
+    public BeePortalBlockEntity getClosestBeePortal(BlockPos originPos, Level originLevel) {
+        List<BeePortalBlockEntity> allBEs = new ArrayList<>();
+        for (BeePortalConnection c : portalConnections) {
+            BeePortalBlockEntity portalA = c.portalA();
+            BeePortalBlockEntity portalB = c.portalA();
+            if (portalA.getLevel() == originLevel && isWithinRange(portalA.getBlockPos(), originPos))
+                allBEs.add(portalA);
+            if (portalB.getLevel() == originLevel && isWithinRange(portalB.getBlockPos(), originPos))
+                allBEs.add(portalB);
+        }
+
+        return allBEs.stream()
+                .min(Comparator.comparingDouble(be -> be.getBlockPos().distSqr(originPos)))
+                .orElse(null);
+    }
+
     public List<BeePortalConnection> getPortalConnections() {
         return new ArrayList<>(portalConnections.stream().filter(Objects::nonNull).toList());
+    }
+
+    public BeePortalConnection getPortalConnection(BlockPos originPos, Location targetLocation) {
+        // TODO: Create connection paths through multiple dimensions if needed
+        return getPortalConnections().stream()
+                .min(Comparator.comparingDouble(c -> BeePortalConnection.distanceToTarget(c, new Location(originPos, targetLocation.level()), targetLocation.position().getCenter())))
+                .orElse(null);
     }
 
     public void add(@NotNull BeePortBlockEntity beePort) {

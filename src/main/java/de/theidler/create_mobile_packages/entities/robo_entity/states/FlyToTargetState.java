@@ -10,9 +10,9 @@ public class FlyToTargetState implements RoboEntityState {
 
     @Override
     public void tick(RoboEntity re) {
-        Location targetLocation = re.getTargetLocation();
+        Location targetLocation = re.getTargetLocation(false);
         if (targetLocation == null || targetLocation.position() == null) return;
-
+        
         if (re.position().distanceTo(targetLocation.position().getCenter()) <= CMPConfigs.server().beeSpeed.get() / 12f) {
             if (re.getTargetPlayer() != null && re.getTargetPortalEntity() != null)
                 re.updateDisplay(re.getTargetPlayer());

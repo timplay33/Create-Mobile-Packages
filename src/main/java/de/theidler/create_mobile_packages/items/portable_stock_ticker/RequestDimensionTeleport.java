@@ -1,6 +1,8 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
+import de.theidler.create_mobile_packages.blocks.BeePortStorage;
+import de.theidler.create_mobile_packages.blocks.BeePortalConnection;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.Location;
@@ -60,7 +62,8 @@ public class RequestDimensionTeleport extends SimplePacketBase {
     public boolean handle(NetworkEvent.Context context) {
         context.enqueueWork(() -> {
             if (serverLevel != null) {
-                BeePortalBlockEntity exitPortal = RoboEntity.getExitPortal(serverLevel, new Vec3(spawnPos));
+                BeePortStorage storage = BeePortStorage.get(serverLevel);
+                BeePortalBlockEntity exitPortal = storage.getClosestBeePortal(BlockPos.containing(new Vec3(spawnPos)), serverLevel);
                 if (exitPortal != null) {
                     RoboBeeEntity drone = new RoboBeeEntity(serverLevel, itemStack, new Location(targetPos, serverLevel), exitPortal.getBlockPos());
                     drone.setPackageHeightScale(1f);

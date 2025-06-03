@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
+import de.theidler.create_mobile_packages.blocks.BeePortalConnection;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
@@ -22,7 +23,9 @@ public class LandingFinishState implements RoboEntityState {
         if (targetPortal != null) {
             Level targetLevel = targetBlock == null ? targetPlayer.level() : targetBlock.getLevel();
             if (targetLevel == null) return;
-            BeePortalBlockEntity exitPortal = RoboEntity.getExitPortal(targetLevel, targetPortal.getBlockPos().getCenter());
+            BeePortalConnection portalConnection = re.getPortalConnection();
+            if (portalConnection == null) return;
+            BeePortalBlockEntity exitPortal = portalConnection.getExit(re);
             if (exitPortal != null && exitPortal.sendDrone(re)) {
                 targetPortal.tryRemoveFromLandingQueue(re);
                 re.remove(Entity.RemovalReason.CHANGED_DIMENSION);

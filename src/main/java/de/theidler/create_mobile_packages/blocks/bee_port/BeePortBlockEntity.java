@@ -5,7 +5,7 @@ import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.BeePortStorage;
-import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
+import de.theidler.create_mobile_packages.blocks.BeePortalConnection;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
@@ -165,12 +165,13 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
 
         // Update Client Data
-        if (level != null && !level.isClientSide()) {
+        if (level != null && level instanceof ServerLevel serverLevel) {
             RoboEntity re = getRoboEntity();
             if (re != null) {
-                BeePortalBlockEntity exitPortal = re.getExitPortal();
+                BeePortStorage storage = BeePortStorage.get(serverLevel);
+                BeePortalConnection portalConnection = storage.getPortalConnection(getBlockPos(), re.getTargetLocation());
                 if (re.multidimensional()) {
-                    if (exitPortal != null)
+                    if (portalConnection != null)
                         this.data.set(0, RoboEntity.calcETA(re));
                 } else
                     this.data.set(0, RoboEntity.calcETA(re.position(), getBlockPos().getCenter()));
@@ -280,13 +281,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         for (ServerLevel serverLevel : serverLevels)
             for (Player player : serverLevel.players()) {
                 if (player.getName().getString().equals(address)) {
-                    if (player.level().dimensionType() != level.dimensionType()) {
-                        BeePortalBlockEntity targetPortal = RoboEntity.getClosestBeePortal(level, getBlockPos().getCenter());
-                        if (targetPortal != null && targetPortal.getLevel() != null) {
-                            BeePortalBlockEntity exitPortal = RoboEntity.getExitPortal(player.level(), targetPortal.getBlockPos().getCenter());
-                            if (exitPortal != null && RoboEntity.isWithinRange(player.blockPosition(), exitPortal.getBlockPos()))
-                                sendToPlayer(player, itemStack, slot);
-                        }
+                    if (serverLevel.dimensionType() != level.dimensionType()) {
+                        BeePortStorage storage = BeePortStorage.get(serverLevel);
+                        BeePortalConnection portalConnection = storage.getPortalConnection(getBlockPos(), new Location(player.blockPosition(), serverLevel));
+                        if (portalConnection != null)
+                            sendToPlayer(player, itemStack, slot);
                     } else if (RoboEntity.isWithinRange(player.blockPosition(), getBlockPos()))
                         sendToPlayer(player, itemStack, slot);
                     return;
@@ -302,8 +301,16 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                     beePortBlockEntity = BEs.get(0);
             }
 
-            if (beePortBlockEntity != null && !beePortBlockEntity.isFull())
-                sendDrone(itemStack, slot);
+            if (beePortBlockEntity != null && !beePortBlockEntity.isFull()) {
+                if (beePortBlockEntity.level == level)
+                    sendDrone(itemStack, slot);
+                else if (level instanceof ServerLevel serverLevel) {
+                    BeePortStorage storage = BeePortStorage.get(serverLevel);
+                    BeePortalConnection portalConnection = storage.getPortalConnection(getBlockPos(), beePortBlockEntity.location());
+                    if (portalConnection != null)
+                        sendDrone(itemStack, slot);
+                }
+            }
         }
     }
 
@@ -581,5 +588,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     public ContainerData getData() {
         return data;
+    }
+
+    public Location location() {
+        return new Location(getBlockPos(), level);
     }
 }
