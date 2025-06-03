@@ -1,3 +1,9 @@
+------------------------------------------------------
+Create: Mobile Packages - v0.5.2 - unreleased
+------------------------------------------------------
+
+### Bug Fixes
+- Fixed Port not beeing able to request a bee
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.1 - 02.06.2025
@@ -24,7 +30,7 @@ Create: Mobile Packages - v0.5.1 - 02.06.2025
 - Updated German translation
 
 ------------------------------------------------------
-Create: Mobile Packages - v0.5.0 - 25.02.2025
+Create: Mobile Packages - v0.5.0 - 25.05.2025
 ------------------------------------------------------
 
 ### Changes
