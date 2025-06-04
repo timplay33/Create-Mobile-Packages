@@ -1,9 +1,7 @@
 package de.theidler.create_mobile_packages.index;
 
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.items.drone_controller.BigItemStackListPacket;
-import de.theidler.create_mobile_packages.items.drone_controller.RequestStockUpdate;
-import de.theidler.create_mobile_packages.items.drone_controller.SendPackage;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
 import net.createmod.catnip.net.base.BasePacketPayload;
 import net.createmod.catnip.net.base.CatnipPacketRegistry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -16,6 +14,8 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
     // Client to Server
     LOGISTICS_PACKAGE_REQUEST(SendPackage.class, SendPackage.STREAM_CODEC),
     REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate.STREAM_CODEC),
+    HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket.STREAM_CODEC),
+    OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker.STREAM_CODEC),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket.STREAM_CODEC);

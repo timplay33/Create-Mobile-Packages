@@ -3,6 +3,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.78'
+    id 'com.hypherionmc.modutils.modpublisher' version '2.1.7'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -27,7 +28,8 @@ ext.branchName = rawBranchName ? rawBranchName.replaceAll("[^a-zA-Z0-9._-]", "_"
 base {
     archivesName = "${mod_id}-${minecraft_version}"
     group = 'de.theidler.'+ mod_id
-    version = mod_version + (buildNumber ? "-${buildNumber}" : '') + (branchName ? "-${branchName}" : '')
+    def isMainBranch = rawBranchName == "mc1.21.1/main"
+    version = mod_version + (!isMainBranch && buildNumber ? "-${buildNumber}" : '') + (!isMainBranch && branchName ? "-${branchName}" : '')
 }
 
 // Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
@@ -121,6 +123,12 @@ repositories {
     maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
     maven { url = "https://mvn.devos.one/snapshots" } // Registrate
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
+
+    maven {
+        // location of the maven that hosts JEI files since January 2023
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+    }
 }
 
 dependencies {
@@ -144,12 +152,14 @@ dependencies {
 
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html    
     implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
     implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+    
+    implementation("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -206,3 +216,33 @@ idea {
         downloadJavadoc = true
     }
 }
+
+publisher {
+
+    apiKeys {
+        modrinth System.getenv("MODRINTH_API_TOKEN")
+        curseforge System.getenv("CURSEFORGE_API_TOKEN")
+    }
+
+    setDebug(false)
+    setCurseID("1232978")
+    setModrinthID("1vXRfEHZ")
+    setVersionType("release")
+    setChangelog("https://github.com/timplay33/Create-Mobile-Packages/blob/mc1.21.1/main/CHANGELOG.md")
+    setVersion("1.21.1-${project.mod_version}")
+    setDisplayName("Create: Mobile Packages 1.21.1-${project.mod_version}")
+    setGameVersions("1.21.1")
+    setLoaders("neoforge")
+    setCurseEnvironment("both")
+    setArtifact(jar.archiveFile.get() )
+    setJavaVersions([JavaVersion.VERSION_21])
+
+    modrinthDepends {
+        required "create"
+    }
+
+    curseDepends {
+        required "create"
+    }
+}
+

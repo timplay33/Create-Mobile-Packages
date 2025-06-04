@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.entities;
 
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
+import de.theidler.create_mobile_packages.index.CMPEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -12,16 +13,20 @@ import net.minecraft.world.level.Level;
 
 public class RoboBeeEntity extends RoboEntity {
 
-    public RoboBeeEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos spawnPos) {
-        super(type, level, itemStack, spawnPos);
+    public RoboBeeEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
+        super(type, level, itemStack, targetPos, spawnPos);
         this.setNoGravity(true);
         this.noPhysics = true;
         this.setNoAi(true);
         this.setPersistenceRequired();
     }
 
+    public RoboBeeEntity(Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
+        this(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, targetPos, spawnPos);
+    }
+
     public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
-        return new RoboBeeEntity(type, level, ItemStack.EMPTY, new BlockPos(0, 0, 0));
+        return new RoboBeeEntity(type, level, ItemStack.EMPTY, null, new BlockPos(0, 0, 0));
     }
 
     // No AI goals; movement is entirely controlled via tick().
