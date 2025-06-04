@@ -1,6 +1,9 @@
 ------------------------------------------------------
-Create: Mobile Packages - v0.5.2 - unreleased
+Create: Mobile Packages - v0.5.2 - 04.06.2025
 ------------------------------------------------------
+
+### Additions
+- Automated Publishing to Modrinth & CurseForge
 
 ### Bug Fixes
 - Fixed Port not beeing able to request a bee
