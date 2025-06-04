@@ -20,7 +20,7 @@
     }
   },
   "result": {
-    "item": "create_mobile_packages:robo_bee",
+    "id": "create_mobile_packages:robo_bee",
     "count": 1
   }
 }
