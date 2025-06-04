@@ -5,6 +5,7 @@ import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,10 +23,10 @@ public class LandingFinishState implements RoboEntityState {
         re.setTargetVelocity(Vec3.ZERO);
         if (targetPortal != null) {
             Level targetLevel = targetBlock == null ? targetPlayer.level() : targetBlock.getLevel();
-            if (targetLevel == null) return;
+            if (!(targetLevel instanceof ServerLevel serverLevel)) return;
             BeePortalConnection portalConnection = re.getPortalConnection();
             if (portalConnection == null) return;
-            BeePortalBlockEntity exitPortal = portalConnection.getExit(re);
+            BeePortalBlockEntity exitPortal = portalConnection.getCurrent(serverLevel);
             if (exitPortal != null && exitPortal.sendDrone(re)) {
                 targetPortal.tryRemoveFromLandingQueue(re);
                 re.remove(Entity.RemovalReason.CHANGED_DIMENSION);

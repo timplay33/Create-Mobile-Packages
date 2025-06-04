@@ -1,12 +1,10 @@
-package de.theidler.create_mobile_packages.items.portable_stock_ticker;
+package de.theidler.create_mobile_packages.blocks.bee_portal;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.blocks.BeePortStorage;
 import de.theidler.create_mobile_packages.blocks.BeePortalConnection;
-import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.Location;
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -21,19 +19,19 @@ import net.minecraftforge.network.NetworkEvent;
 import org.joml.Vector3f;
 
 public class RequestDimensionTeleport extends SimplePacketBase {
-    private final ServerLevel serverLevel;
-    private final Vector3f spawnPos;
+    private final ServerLevel targetLevel;
+    private final Vector3f originPos;
     private final BlockPos targetPos;
     private final ItemStack itemStack;
 
-    public RequestDimensionTeleport(ResourceLocation resLocation, Vec3 spawnPos, BlockPos targetPos, ItemStack itemStack) {
+    public RequestDimensionTeleport(ResourceLocation resLocation, Vec3 originPos, BlockPos targetPos, ItemStack itemStack) {
         IntegratedServer server = Minecraft.getInstance().getSingleplayerServer();
         if (server != null)
-            this.serverLevel = server.getLevel(ResourceKey.create(Registries.DIMENSION, resLocation));
+            this.targetLevel = server.getLevel(ResourceKey.create(Registries.DIMENSION, resLocation));
         else
-            this.serverLevel = null; // TODO: Make it work for multiplayer
+            this.targetLevel = null; // TODO: Make it work for multiplayer
 
-        this.spawnPos = spawnPos.toVector3f();
+        this.originPos = originPos.toVector3f();
         this.targetPos = targetPos;
         this.itemStack = itemStack;
     }
@@ -41,19 +39,19 @@ public class RequestDimensionTeleport extends SimplePacketBase {
     public RequestDimensionTeleport(FriendlyByteBuf buffer) {
         IntegratedServer server = Minecraft.getInstance().getSingleplayerServer();
         if (server != null)
-            serverLevel = server.getLevel(ResourceKey.create(Registries.DIMENSION, buffer.readResourceLocation()));
+            targetLevel = server.getLevel(ResourceKey.create(Registries.DIMENSION, buffer.readResourceLocation()));
         else
-            serverLevel = null; // TODO: Make it work for multiplayer
+            targetLevel = null; // TODO: Make it work for multiplayer
 
-        spawnPos = buffer.readVector3f();
+        originPos = buffer.readVector3f();
         targetPos = buffer.readBlockPos();
         itemStack = buffer.readItem();
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        buffer.writeResourceLocation(serverLevel.dimension().location());
-        buffer.writeVector3f(spawnPos);
+        buffer.writeResourceLocation(targetLevel.dimension().location());
+        buffer.writeVector3f(originPos);
         buffer.writeBlockPos(targetPos);
         buffer.writeItem(itemStack);
     }
@@ -61,13 +59,15 @@ public class RequestDimensionTeleport extends SimplePacketBase {
     @Override
     public boolean handle(NetworkEvent.Context context) {
         context.enqueueWork(() -> {
-            if (serverLevel != null) {
-                BeePortStorage storage = BeePortStorage.get(serverLevel);
-                BeePortalBlockEntity exitPortal = storage.getClosestBeePortal(BlockPos.containing(new Vec3(spawnPos)), serverLevel);
+            if (targetLevel != null) {
+                BeePortStorage storage = BeePortStorage.get(targetLevel);
+                BeePortalConnection portalConnection = storage.getPortalConnection(BlockPos.containing(new Vec3(originPos)), new Location(targetPos, targetLevel));
+                BeePortalBlockEntity exitPortal = portalConnection.getCurrent(targetLevel);
+//                        storage.getClosestBeePortal(BlockPos.containing(new Vec3(spawnPos)), targetLevel);
                 if (exitPortal != null) {
-                    RoboBeeEntity drone = new RoboBeeEntity(serverLevel, itemStack, new Location(targetPos, serverLevel), exitPortal.getBlockPos());
+                    RoboBeeEntity drone = new RoboBeeEntity(targetLevel, itemStack, new Location(targetPos, targetLevel), exitPortal.getBlockPos());
                     drone.setPackageHeightScale(1f);
-                    serverLevel.addFreshEntity(drone);
+                    targetLevel.addFreshEntity(drone);
                 }
             }
         });

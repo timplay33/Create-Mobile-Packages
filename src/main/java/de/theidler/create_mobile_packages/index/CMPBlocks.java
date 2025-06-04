@@ -6,6 +6,8 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlock;
+import de.theidler.create_mobile_packages.items.bee_portal.BeePortalItem;
+import net.minecraft.world.item.Item;
 
 import static com.simibubi.create.api.behaviour.display.DisplaySource.displaySource;
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
@@ -28,7 +30,7 @@ public class CMPBlocks {
     public static final BlockEntry<BeePortalBlock> BEE_PORTAL = CreateMobilePackages.REGISTRATE.block("bee_portal", BeePortalBlock::new)
             .initialProperties(SharedProperties::wooden)
             .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
-            .item()
+            .item(BeePortalItem::new)
             .transform(customItemModel())
             .register();
 

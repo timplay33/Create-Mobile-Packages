@@ -75,15 +75,15 @@ public class RoboEntity extends Mob {
             if (target.level() != level) {
                 if (level instanceof ServerLevel serverLevel) {
                     BeePortStorage storage = BeePortStorage.get(serverLevel);
-                    targetPortalEntity = storage.getClosestBeePortal(blockPosition(), serverLevel);
+                    BeePortalConnection portalConnection = storage.getPortalConnection(blockPosition(), getTargetLocation());
+                    targetPortalEntity = portalConnection.getCurrent(serverLevel);
                 }
 
                 targetBlockEntity = null;
-            } else {
+            } else
                 targetBlockEntity = level.getBlockEntity(target.position()) instanceof BeePortBlockEntity dpbe
                         ? dpbe
                         : null;
-            }
         }
 
         setItemStack(itemStack);
@@ -166,18 +166,17 @@ public class RoboEntity extends Mob {
     }
 
     public void updateTarget() {
-        if (level().isClientSide) return;
+        if (!(level() instanceof ServerLevel serverLevel)) return;
         setTargetPlayerFromAddress();
         targetPortalEntity = null;
         if (targetPlayer != null) {
             if (targetPlayer.level().dimensionType() != level().dimensionType()) {
-                if (level() instanceof ServerLevel serverLevel) {
-                    BeePortStorage storage = BeePortStorage.get(serverLevel);
-                    targetPortalEntity = storage.getClosestBeePortal(blockPosition(), serverLevel);
-                }
-
+                BeePortStorage storage = BeePortStorage.get(serverLevel);
+                BeePortalConnection portalConnection = storage.getPortalConnection(blockPosition(), new Location(targetPlayer.blockPosition(), targetPlayer.level()));
+                targetPortalEntity = portalConnection.getCurrent(serverLevel);
                 targetPortalEntity.tryAddToLandingQueue(this);
             }
+
             return;
         }
 
@@ -187,20 +186,26 @@ public class RoboEntity extends Mob {
             BlockPos pos = blockPosition();
             List<BeePortBlockEntity> allBEs = getMultidimensionalBeePorts(level(), Objects.equals(targetAddress, "") ? null : targetAddress, pos, this);
             if (!allBEs.isEmpty()) targetBlockEntity = allBEs.get(0);
-
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null)
                     oldTarget.tryRemoveFromLandingQueue(this);
-                if (targetBlockEntity != null)
+                if (targetBlockEntity != null) {
                     targetBlockEntity.tryRemoveFromLandingQueue(this);
+                }
+            }
+
+            if (targetBlockEntity != null && targetBlockEntity.getLevel() != level()) {
+                BeePortStorage storage = BeePortStorage.get(serverLevel);
+                BeePortalConnection portalConnection = storage.getPortalConnection(blockPosition(), targetBlockEntity.location());
+                targetPortalEntity = portalConnection.getCurrent(serverLevel);
             }
         } else {
             if (targetBlockEntity.getLevel() != level()) {
-                if (level() instanceof ServerLevel serverLevel) {
-                    BeePortStorage storage = BeePortStorage.get(serverLevel);
-                    targetPortalEntity = storage.getClosestBeePortal(blockPosition(), serverLevel);
-                }
+                BeePortStorage storage = BeePortStorage.get(serverLevel);
+                BeePortalConnection portalConnection = storage.getPortalConnection(blockPosition(), targetBlockEntity.location());
+                targetPortalEntity = portalConnection.getCurrent(serverLevel);
             }
+
             if (targetBlockEntity == null && targetPlayer == null) {
                 setTargetVelocity(Vec3.ZERO);
             }
@@ -545,9 +550,9 @@ public class RoboEntity extends Mob {
             targetPos = targetPlayer.position();
 
         BeePortalConnection portalConnection = re.getPortalConnection();
-        if (portalConnection == null || targetPos == null)
+        if (portalConnection == null || targetPos == null || !(re.level() instanceof ServerLevel serverLevel))
             return Integer.MAX_VALUE;
-        return calcETA(re.position(), portalConnection.getTarget(re).getBlockPos().getCenter()) + calcETA(portalConnection.getExit(re).getBlockPos().getCenter(), targetPos);
+        return calcETA(re.position(), portalConnection.getCurrent(serverLevel).getBlockPos().getCenter()) + calcETA(portalConnection.getExit(serverLevel).getBlockPos().getCenter(), targetPos);
     }
 
     /**

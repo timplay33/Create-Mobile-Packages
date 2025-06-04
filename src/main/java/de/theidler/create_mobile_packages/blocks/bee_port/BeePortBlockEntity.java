@@ -38,6 +38,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Comparator;
@@ -52,7 +53,7 @@ import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS
  * to players or other drone ports using drones.
  */
 public class BeePortBlockEntity extends PackagePortBlockEntity {
-
+    private final @Nullable Integer Id;
     private final ContainerData data = new SimpleContainerData(2);
     private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
     private final IItemHandler handler = new IItemHandler() {
@@ -137,6 +138,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public BeePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
         itemHandler = LazyOptional.of(() -> handler);
+        Id = getLevel() instanceof ServerLevel serverLevel ? BeePortStorage.newPortId(serverLevel) : null;
     }
 
     @Override
@@ -592,5 +594,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     public Location location() {
         return new Location(getBlockPos(), level);
+    }
+
+    public @Nullable Integer getId() {
+        return Id;
     }
 }

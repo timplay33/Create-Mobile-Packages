@@ -5,7 +5,6 @@ import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPPackets;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestDimensionTeleport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -14,7 +13,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
@@ -48,12 +46,11 @@ public class BeePortalBlockEntity extends BlockEntity {
         Player targetPlayer = re.getTargetPlayer();
         Level targetLevel = targetBlock == null ? targetPlayer.level() : targetBlock.getLevel();
         if (targetLevel == null) return false;
-        Vec3 spawnPos = getBlockPos().getCenter();
         if (targetBlock != null && !targetBlock.canAcceptEntity(re, !re.getItemStack().isEmpty()))
             return false;
 
         CMPPackets.getChannel()
-                .sendToServer(new RequestDimensionTeleport(targetLevel.dimension().location(), spawnPos, targetBlock == null ? targetPlayer.blockPosition() : targetBlock.getBlockPos(), re.getItemStack()));
+                .sendToServer(new RequestDimensionTeleport(targetLevel.dimension().location(), getBlockPos().getCenter(), targetBlock == null ? targetPlayer.blockPosition() : targetBlock.getBlockPos(), re.getItemStack()));
         return true;
     }
 
@@ -63,11 +60,16 @@ public class BeePortalBlockEntity extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
+
+        if (level instanceof ServerLevel serverLevel) {
+            BeePortStorage storage = BeePortStorage.get(serverLevel);
+            storage.createConnection(this);
+        }
     }
 
     @Override
     public void setRemoved() {
-        if (level != null && level instanceof ServerLevel serverLevel) {
+        if (level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
             storage.remove(this);
             if (!entityLandingQueue.isEmpty() || !entityLaunchingQueue.isEmpty())
