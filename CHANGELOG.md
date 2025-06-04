@@ -1,7 +1,8 @@
 
 ------------------------------------------------------
-Create: Mobile Packages - v0.5.0 - unreleased
+Create: Mobile Packages - v0.5.0 1.21.1 - 04.06.2025
 ------------------------------------------------------
+
 
 ### Changes
 
@@ -29,6 +30,7 @@ Create: Mobile Packages - v0.5.0 - unreleased
 - Added Keybind to open a Portable Stock Ticker being in the player inventory (default: `G`)
 - Updated Ponder for the Robo Bee Port
 - Added Tooltip to the Robo Bee Item
+- Automated Publishing to Modrinth & CurseForge
 
 ### Bug Fixes
 
@@ -49,6 +51,7 @@ Create: Mobile Packages - v0.5.0 - unreleased
 - Fixed Robo Bees not Stopping when the target becomes null (Example: when Port becomes full while a Robo Bee is landing)
 - Added missing Robo Bee Port rotation Textures
 - Fixed a manually placed Robo Bee flies to the closest Port to 0,0,0 instead of the closest Port to the Robo Bee
+- Fixed Port not beeing able to request a bee
 
 ### Translations
 
@@ -61,4 +64,3 @@ Create: Mobile Packages - v0.5.0 - unreleased
 - Updated English translation
 - Added Polish translation
 - Added Swedish translation
-
