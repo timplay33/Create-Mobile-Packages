@@ -6,6 +6,7 @@
     }
   ],
   "result": {
-    "item": "create_mobile_packages:portable_stock_ticker"
+    "id": "create_mobile_packages:portable_stock_ticker",
+    "count": 1
   }
 }
