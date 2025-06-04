@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'com.hypherionmc.modutils.modpublisher' version '2.1.7'
 }
 
 version = mod_version
@@ -242,3 +243,35 @@ publishing {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
+
+publisher {
+
+    apiKeys {
+        modrinth System.getenv("MODRINTH_API_TOKEN")
+        curseforge System.getenv("CURSEFORGE_API_TOKEN")
+    }
+
+    setDebug(false)
+    setCurseID("1232978")
+    setModrinthID("1vXRfEHZ")
+    setVersionType("release")
+    setChangelog("https://github.com/timplay33/Create-Mobile-Packages/blob/mc1.20.1/main/README.md")
+    setVersion("1.20.1-${project.mod_version}")
+    setDisplayName("Create: Mobile Packages ${project.mod_version}")
+    setGameVersions("1.20.1")
+    setLoaders("forge")
+    setCurseEnvironment("both")
+    setArtifact(jar)
+    setJavaVersions([JavaVersion.VERSION_17])
+
+    modrinthDepends {
+        required "create"
+        optional "create_factory_logistics"
+    }
+
+    curseDepends {
+        required "create"
+        optional "create-factory-logistics"
+    }
+}
+
