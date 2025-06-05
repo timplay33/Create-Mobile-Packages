@@ -35,7 +35,7 @@
     "create_mobile_packages.ponder.pull_from_chest.text_1": "将包裹放入箱子。",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "将地址为玩家名的包裹放入运输蜂停泊港内。",
     "create_mobile_packages.ponder.robo_bee_port.text_4": "此时，停泊港会使运输蜂携带包裹出发，并前往对应的玩家处。",
-    "create_mobile_packages.ponder.port_to_port.header": "P2P",
+    "create_mobile_packages.ponder.port_to_port.header": "港对港运输",
     "create_mobile_packages.ponder.push_to_chest.text_3": "包裹将被放入物品栏中的存储方块，例如箱子。",
     "create_mobile_packages.ponder.crafter_setup.text_1": "这是用于自动制作和运输蜂停泊港的设置。",
     "create_mobile_packages.ponder.crafter_setup.text_4": "仓库管理器连接到一个 3x3 的机械工匠，该工匠会制作物品。",
