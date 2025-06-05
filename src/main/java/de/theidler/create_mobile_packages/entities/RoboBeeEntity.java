@@ -26,7 +26,9 @@ public class RoboBeeEntity extends RoboEntity {
     }
 
     public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
-        return new RoboBeeEntity(type, level, ItemStack.EMPTY, null, new BlockPos(0, 0, 0));
+        RoboBeeEntity entity = new RoboBeeEntity(type, level, ItemStack.EMPTY, null, new BlockPos(0, 0, 0));
+        entity.setRequest(false);
+        return entity;
     }
 
     // No AI goals; movement is entirely controlled via tick().

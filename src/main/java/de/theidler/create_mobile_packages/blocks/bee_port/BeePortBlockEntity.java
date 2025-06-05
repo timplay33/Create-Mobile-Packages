@@ -503,11 +503,18 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     }
 
     public synchronized boolean trySetEntityOnTravel(RoboEntity entity) {
-        if (entityOnTravel == null || entity == null) {
+        if (entityOnTravel == null) {
             entityOnTravel = entity;
             return true;
         }
         return false;
+    }
+
+    public synchronized void releaseEntityOnTravel(RoboEntity entity) {
+        if (entityOnTravel == entity) {
+            CreateMobilePackages.LOGGER.info("Releasing entity on travel: {}", entity);
+            entityOnTravel = null;
+        }
     }
 
     public ItemStackHandler getRoboBeeInventory() {
