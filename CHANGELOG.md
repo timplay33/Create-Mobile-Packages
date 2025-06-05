@@ -1,4 +1,13 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.5.3 - unreleased
+------------------------------------------------------
+
+### Bug Fixes
+- Fixed ConcurrentModificationException in RoboManager
+- Fixed Build.gradle publishing settings
+- Fixed Robo Bee spawned by summon command flying to the closest Port to 0,0,0
+
+------------------------------------------------------
 Create: Mobile Packages - v0.5.2 - 04.06.2025
 ------------------------------------------------------
 
