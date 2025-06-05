@@ -16,7 +16,8 @@ ext.branchName = rawBranchName ? rawBranchName.replaceAll("[^a-zA-Z0-9._-]", "_"
 base {
     archivesName = "${mod_id}-${minecraft_version}"
     group = 'de.theidler.'+ mod_id
-    version = mod_version + (buildNumber ? "-${buildNumber}" : '') + (branchName ? "-${branchName}" : '')
+    def isMainBranch = rawBranchName == "mc1.20.1/main"
+    version = mod_version + (!isMainBranch && buildNumber ? "-${buildNumber}" : '') + (!isMainBranch && branchName ? "-${branchName}" : '')
 }
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
@@ -255,9 +256,9 @@ publisher {
     setCurseID("1232978")
     setModrinthID("1vXRfEHZ")
     setVersionType("release")
-    setChangelog("https://github.com/timplay33/Create-Mobile-Packages/blob/mc1.20.1/main/README.md")
+    setChangelog("https://github.com/timplay33/Create-Mobile-Packages/blob/mc1.20.1/main/CHANGELOG.md")
     setVersion("1.20.1-${project.mod_version}")
-    setDisplayName("Create: Mobile Packages ${project.mod_version}")
+    setDisplayName("Create: Mobile Packages 1.20.1-${project.mod_version}")
     setGameVersions("1.20.1")
     setLoaders("forge")
     setCurseEnvironment("both")
@@ -274,4 +275,3 @@ publisher {
         optional "create-factory-logistics"
     }
 }
-
