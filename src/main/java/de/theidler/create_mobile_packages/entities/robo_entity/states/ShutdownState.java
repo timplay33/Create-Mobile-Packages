@@ -6,6 +6,6 @@ import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 public class ShutdownState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
-        re.discard();
+        re.setRemoved(true); 
     }
 }
