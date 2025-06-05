@@ -17,7 +17,7 @@ public class InputEvents {
         if (Minecraft.getInstance().screen != null)
             return;
         if (CMPKeys.OPEN_PORTABLE_STOCK_TICKER.isPressed()) {
-            CatnipServices.NETWORK.sendToServer(new OpenPortableStockTicker());
+            CatnipServices.NETWORK.sendToServer(OpenPortableStockTicker.INSTANCE);
         }
     }
 }

@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
+import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.net.base.ServerboundPacketPayload;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -24,6 +25,6 @@ public class OpenPortableStockTicker implements ServerboundPacketPayload {
 
     @Override
     public PacketTypeProvider getTypeProvider() {
-        return null;
+        return CMPPackets.OPEN_PORTABLE_STOCK_TICKER;
     }
 }
