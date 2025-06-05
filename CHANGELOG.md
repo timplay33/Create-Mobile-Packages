@@ -1,3 +1,12 @@
+------------------------------------------------------
+Create: Mobile Packages - v0.5.2 1.21.1 - unreleased
+------------------------------------------------------
+
+### Bug Fixes
+- Fixed Portable Stock Ticker hotkey crashing the game
+- Fixed Robo Bee Port Bee slot limit
+- Fixed multiple Robo Bees being able to fly to the same Port at the same time
+- Fixed Robo Bee spawned by summon command flying to the closest Port to 0,0,0
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.1 1.21.1 - 04.06.2025
