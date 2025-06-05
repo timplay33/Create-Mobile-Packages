@@ -32,17 +32,27 @@ public class RoboManager {
     }
 
     private synchronized void tickRobos(Level level) {
-        List<Map.Entry<UUID, RoboEntity>> entries = new ArrayList<>(robos.entrySet());
-        for (Map.Entry<UUID, RoboEntity> entry : entries) {
-            RoboEntity robo = entry.getValue();
+        try {
+            List<UUID> keys = new ArrayList<>(robos.keySet());
+            for (UUID uuid : keys) {
+                RoboEntity robo = robos.get(uuid);
 
-            level.guardEntityTick(entity -> {
-            }, robo);
-
-            robo.roboMangerTick();
-            if (robo.isRemoved()) {
-                robos.remove(robo.getUUID());
+                if (robo != null) {
+                    try {
+                        level.guardEntityTick(entity -> {
+                        }, robo);
+                        robo.roboMangerTick();
+                    } catch (Exception e) {
+                        System.err.println("Exception ticking RoboEntity " + uuid);
+                        e.printStackTrace();
+                    }
+                    if (robo.isRemoved() && robos.get(uuid) != null) {
+                        robos.remove(uuid);
+                    }
+                }
             }
+        } catch (Exception e) {
+            CreateMobilePackages.LOGGER.error("Error during RoboManager tick", e);
         }
     }
 
