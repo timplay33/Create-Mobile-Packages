@@ -468,7 +468,11 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     }
 
     public boolean hasFullRoboSlot(int leaveEmpty) {
-        return roboBeeInventory.getStackInSlot(0).getCount() >= roboBeeInventory.getSlotLimit(0) - leaveEmpty;
+        ItemStack stack = roboBeeInventory.getStackInSlot(0);
+        if (stack.isEmpty()) {
+            return false;
+        }
+        return stack.getCount() >= stack.getMaxStackSize() - leaveEmpty;
     }
 
     /**
