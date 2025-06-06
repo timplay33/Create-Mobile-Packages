@@ -6,6 +6,8 @@ Create: Mobile Packages - v0.5.3 - unreleased
 - Fixed ConcurrentModificationException in RoboManager
 - Fixed Build.gradle publishing settings
 - Fixed Robo Bee spawned by summon command flying to the closest Port to 0,0,0
+- Fixed rendering of non-standard packages carried by Robo Bees
+- Fixed Support for multiple Portable Stock Tickers in the same inventory By preferring the item in the Main Hand
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.2 - 04.06.2025

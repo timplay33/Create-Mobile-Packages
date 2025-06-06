@@ -11,9 +11,11 @@ public class PortableStockTickerMenu extends AbstractContainerMenu {
     public Object screenReference;
     public Player player;
 
-    public PortableStockTickerMenu(int id, Inventory playerInventory, PortableStockTicker portableStockTicker) {
+    public PortableStockTickerMenu(int id, Inventory playerInventory) {
         super(CMPMenuTypes.PORTABLE_STOCK_TICKER_MENU.get(), id);
-        this.portableStockTicker = portableStockTicker;
+        ItemStack stack = PortableStockTicker.find(playerInventory);
+        if (stack != null && stack.getItem() instanceof PortableStockTicker pst)
+            this.portableStockTicker = pst;
         this.player = playerInventory.player;
     }
 
