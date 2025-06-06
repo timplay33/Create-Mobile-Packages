@@ -61,7 +61,7 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
 
         if (!stack.isEmpty()) {
             poseStack.pushPose();
-            poseStack.translate(0.0D, 0 - (riggingOffset - PackageItem.getHeight(stack) - (modelKey != null && modelKey.getNamespace().equals("create_factory_logistics") ? 5 : 1) / 16f) * heightScale, 0.0D);
+            poseStack.translate(0.0D, 0-(riggingOffset - 1 + 3/16f) * heightScale, 0.0D);
             poseStack.scale(2F, heightScale * 2F, 2F);
             Minecraft.getInstance().getItemRenderer().renderStatic(
                     stack,
