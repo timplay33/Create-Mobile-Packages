@@ -114,8 +114,7 @@ public class RoboEntity extends Mob {
 
     private Player getTargetPlayerFromAddress() {
         return level().players().stream()
-                .filter(player -> player.getName().getString().equals(PackageItem.getAddress(this.getItemStack())))
-                .findFirst().orElse(null);
+                .filter(player -> BeePortBlockEntity.doesAddressStringMatchPlayerName(player, PackageItem.getAddress(this.getItemStack()))).findFirst().orElse(null);
     }
 
     private String activeTargetAddress = "";

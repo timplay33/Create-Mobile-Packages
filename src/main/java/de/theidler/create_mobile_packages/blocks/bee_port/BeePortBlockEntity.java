@@ -258,7 +258,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to a player.
         for (Player player : level.players()) {
-            if (player.getName().getString().equals(address)
+            if (doesAddressStringMatchPlayerName(player, address)
                     && RoboEntity.isWithinRange(player.blockPosition(), this.getBlockPos())) {
                 sendToPlayer(player, itemStack, slot);
                 return;
@@ -272,6 +272,15 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                 sendDrone(itemStack, slot);
             }
         }
+    }
+
+    public static boolean doesAddressStringMatchPlayerName(Player player, String address) {
+        String playerName = player.getName().getString();
+        int atIndex = address.lastIndexOf('@');
+        if (atIndex == -1) {
+            return address.equals(playerName);
+        }
+        return address.substring(atIndex + 1).equals(playerName);
     }
 
     private static void requestRoboEntity(Level level, BlockPos blockPos) {

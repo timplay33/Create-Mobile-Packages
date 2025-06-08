@@ -11,6 +11,7 @@ import com.simibubi.create.foundation.networking.SimplePacketBase;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -93,7 +94,8 @@ public class SendPackage extends SimplePacketBase {
             WiFiEffectPacket.send(player.level(), player.blockPosition());
         }
 
-        PortableStockTicker pst = PortableStockTicker.find(player.getInventory());
+        ItemStack pstStack = PortableStockTicker.find(player.getInventory());
+        PortableStockTicker pst = pstStack != null ? (PortableStockTicker) pstStack.getItem() : null;
         if (pst != null)
             pst.broadcastPackageRequest(
                 LogisticallyLinkedBehaviour.RequestType.PLAYER,

@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.HashMap;
@@ -35,12 +36,13 @@ public class HiddenCategoriesPacket extends SimplePacketBase {
         context.enqueueWork(() -> {
             Player player = context.getSender();
             if (player != null) {
-                int slotIndex = PortableStockTicker.getIndexOfPortableStockTicker(player.getInventory());
-                if (slotIndex != -1 && player.getInventory().getItem(slotIndex).getItem() instanceof PortableStockTicker pst) {
+                ItemStack stack = PortableStockTicker.find(player.getInventory());
+                if (stack == null) return;
+                if (stack.getItem() instanceof PortableStockTicker pst) {
                     Map<UUID, List<Integer>> hiddenCategories = new HashMap<>();
                     hiddenCategories.put(player.getUUID(), indices);
                     pst.hiddenCategoriesByPlayer = hiddenCategories;
-                    pst.saveHiddenCategoriesByPlayerToStack(player.getInventory().getItem(slotIndex), hiddenCategories);
+                    pst.saveHiddenCategoriesByPlayerToStack(stack, hiddenCategories);
                 }
             }
         });
