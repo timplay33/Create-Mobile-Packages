@@ -16,7 +16,7 @@ public class BeePortScreen extends PackagePortScreen {
     @Override
     protected void renderBg(GuiGraphics graphics, float pPartialTick, int pMouseX, int pMouseY) {
         super.renderBg(graphics, pPartialTick, pMouseX, pMouseY);
-        graphics.blit(new ResourceLocation(CreateMobilePackages.MODID,"textures/gui/bee_port.png"), getGuiLeft(), getGuiTop(), 0, 47, 220, 82);
+        graphics.blit(CreateMobilePackages.asResource("textures/gui/bee_port.png"), getGuiLeft(), getGuiTop(), 0, 47, 220, 82);
 
         if (menu instanceof BeePortMenu beePortMenu) {
             int eta = beePortMenu.getETA();

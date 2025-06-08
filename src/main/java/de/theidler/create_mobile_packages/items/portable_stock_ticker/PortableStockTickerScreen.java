@@ -443,7 +443,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         ms.pushPose();
         ms.translate(x - 50, y + windowHeight - 70, -100);
         ms.scale(3.5f, 3.5f, 3.5f);
-        PortableStockTicker pst = PortableStockTicker.find(playerInventory);
+        ItemStack pstStack = PortableStockTicker.find(playerInventory);
+        PortableStockTicker pst = pstStack != null ? (PortableStockTicker) pstStack.getItem() : null;
         if (pst != null) {
             GuiGameElement.of(pst)
                     .render(pGuiGraphics);

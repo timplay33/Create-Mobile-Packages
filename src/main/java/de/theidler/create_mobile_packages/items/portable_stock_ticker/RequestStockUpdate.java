@@ -27,9 +27,8 @@ public class RequestStockUpdate extends SimplePacketBase {
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player != null) {
-                int slotIndex = PortableStockTicker.getIndexOfPortableStockTicker(player.getInventory());
-                if (slotIndex == -1) return;
-                ItemStack stack = player.getInventory().getItem(slotIndex);
+                ItemStack stack = PortableStockTicker.find(player.getInventory());
+                if (stack == null || stack.isEmpty()) return;
                 BigItemStackListPacket responsePacket = new BigItemStackListPacket(getAccurateSummary(stack).getStacks());
                 CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), responsePacket);
             }
