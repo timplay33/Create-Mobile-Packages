@@ -275,8 +275,12 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     public static boolean doesAddressStringMatchPlayerName(Player player, String address) {
-        String name = player.getName().getString();
-        return name.substring(name.lastIndexOf('@') + 1).equals(address);
+        String playerName = player.getName().getString();
+        int atIndex = address.lastIndexOf('@');
+        if (atIndex == -1) {
+            return address.equals(playerName);
+        }
+        return address.substring(atIndex + 1).equals(playerName);
     }
 
     private static void requestRoboEntity(Level level, BlockPos blockPos) {
