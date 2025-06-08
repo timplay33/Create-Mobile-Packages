@@ -9,6 +9,9 @@ Create: Mobile Packages - v0.5.3 - unreleased
 - Fixed rendering of non-standard packages carried by Robo Bees
 - Fixed Support for multiple Portable Stock Tickers in the same inventory By preferring the item in the Main Hand
 
+### Additions
+- Added "@" prefix for player names. If the package address contains an "@" only everything behind it is considered a player name. Eg: `some text goes hier@PlayerName` will send the package to the player with the name `PlayerName`
+
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.2 - 04.06.2025
 ------------------------------------------------------
