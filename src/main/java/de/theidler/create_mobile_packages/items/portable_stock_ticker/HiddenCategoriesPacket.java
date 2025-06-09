@@ -1,11 +1,13 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
+import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
 import net.createmod.catnip.net.base.ServerboundPacketPayload;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,17 +28,18 @@ public class HiddenCategoriesPacket implements ServerboundPacketPayload {
 
     @Override
     public void handle(ServerPlayer player) {
-        int slotIndex = PortableStockTicker.getIndexOfPortableStockTicker(player.getInventory());
-        if (slotIndex != -1 && player.getInventory().getItem(slotIndex).getItem() instanceof PortableStockTicker pst) {
-            Map<UUID, List<Integer>> hiddenCategories = new HashMap<>();
-            hiddenCategories.put(player.getUUID(), indices);
-            pst.hiddenCategoriesByPlayer = hiddenCategories;
-            pst.saveHiddenCategoriesByPlayerToStack(player.getInventory().getItem(slotIndex), hiddenCategories);
-        }
+                ItemStack stack = PortableStockTicker.find(player.getInventory());
+                if (stack == null) return;
+                if (stack.getItem() instanceof PortableStockTicker pst) {
+                    Map<UUID, List<Integer>> hiddenCategories = new HashMap<>();
+                    hiddenCategories.put(player.getUUID(), indices);
+                    pst.hiddenCategoriesByPlayer = hiddenCategories;
+                pst.saveHiddenCategoriesByPlayerToStack(stack, hiddenCategories);
+            }
     }
 
     @Override
     public PacketTypeProvider getTypeProvider() {
-        return de.theidler.create_mobile_packages.index.CMPPackets.HIDDEN_CATEGORIES;
+        return CMPPackets.HIDDEN_CATEGORIES;
     }
 }

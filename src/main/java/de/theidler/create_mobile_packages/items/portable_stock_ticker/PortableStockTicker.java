@@ -37,22 +37,21 @@ public class PortableStockTicker extends StockCheckingItem {
         hiddenCategoriesByPlayer = new HashMap<>();
     }
 
-    public static PortableStockTicker find(Inventory playerInventory) {
+    public static ItemStack find(Inventory playerInventory) {
+        // Check the main hand first
+        ItemStack pst = playerInventory.player.getMainHandItem();
+        if (playerInventory.player.getMainHandItem().getItem() instanceof PortableStockTicker) {
+            return pst;
+        }
+        // take first PST in inventory
         for (int i = 0; i < playerInventory.getContainerSize(); i++) {
-            if (playerInventory.getItem(i).getItem() instanceof PortableStockTicker portableStockTicker) {
+            ItemStack portableStockTicker = playerInventory.getItem(i);
+            if (playerInventory.getItem(i).getItem() instanceof PortableStockTicker) {
                 return portableStockTicker;
             }
         }
+        // no PST found
         return null;
-    }
-
-    public static int getIndexOfPortableStockTicker(Inventory playerInventory) {
-        for (int i = 0; i < playerInventory.getContainerSize(); i++) {
-            if (playerInventory.getItem(i).getItem() instanceof PortableStockTicker) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, IdentifiedInventory ignoredHandler,
@@ -61,8 +60,8 @@ public class PortableStockTicker extends StockCheckingItem {
         previouslyUsedAddress = address;
 
         if (player instanceof ServerPlayer) {
-            ItemStack itemStack = player.getInventory().getItem(getIndexOfPortableStockTicker(player.getInventory()));
-                if (itemStack.getItem() instanceof PortableStockTicker) {
+            ItemStack itemStack = PortableStockTicker.find(player.getInventory());
+                if (itemStack != null && itemStack.getItem() instanceof PortableStockTicker) {
                     saveAddressToStack(itemStack, address);
                 }
         }
@@ -110,7 +109,7 @@ public class PortableStockTicker extends StockCheckingItem {
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
             MenuProvider provider = new SimpleMenuProvider(
-                    (id, inv, p) -> new PortableStockTickerMenu(id, inv, this),
+                    (id, inv, p) -> new PortableStockTickerMenu(id, inv),
                     Component.translatable("item.create_mobile_packages.portable_stock_ticker")
             );
             pPlayer.openMenu(provider);

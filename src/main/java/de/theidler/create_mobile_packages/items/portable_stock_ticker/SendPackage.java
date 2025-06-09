@@ -12,6 +12,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class SendPackage implements ServerboundPacketPayload {
@@ -37,9 +38,9 @@ public class SendPackage implements ServerboundPacketPayload {
             WiFiEffectPacket.send(player.level(), player.blockPosition());
         }
 
-        PortableStockTicker portableStockTicker = PortableStockTicker.find(player.getInventory());
-        if (portableStockTicker != null) {
-            portableStockTicker.broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address, player);
+        ItemStack pstStack = PortableStockTicker.find(player.getInventory());
+        if (pstStack != null && pstStack.getItem() instanceof PortableStockTicker pst) {
+            pst.broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address, player);
         }
     }
 
