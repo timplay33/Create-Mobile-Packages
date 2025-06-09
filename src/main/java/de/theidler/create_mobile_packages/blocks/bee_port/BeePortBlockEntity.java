@@ -3,11 +3,11 @@ package de.theidler.create_mobile_packages.blocks.bee_port;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
-import com.simibubi.create.foundation.item.ItemHandlerWrapper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
+import de.theidler.create_mobile_packages.index.CMPBlockEntities;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
@@ -131,11 +131,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     public BeePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
-        itemHandler = handler;
     }
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        //TODO: do something??
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                CMPBlockEntities.BEE_PORT.get(),
+                (be, context) -> be.handler
+        );
     }
 
     @Override
