@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RoboManager {
 
     public Map<UUID, RoboEntity> robos;
+    public Map<UUID, RoboEntity> clientRobos;
+    public List<RoboEntity> robosToAdd;
 
     private RoboManagerSavedData savedData;
     private Level level;
@@ -31,23 +33,51 @@ public class RoboManager {
         tickRobos(level);
     }
 
-    private synchronized void tickRobos(Level level) {
-        Iterator<Map.Entry<UUID, RoboEntity>> it = robos.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<UUID, RoboEntity> entry = it.next();
-            RoboEntity robo = entry.getValue();
+    private void tickRobos(Level level) {
+        addPendingRobos();
+        tickExistingRobos(level);
+        removeMarkedRobos();
+    }
 
-            level.guardEntityTick(entity -> {}, robo);
-            robo.roboMangerTick();
-
-            if (robo.isRemoved()) {
-                it.remove();
+    private void addPendingRobos() {
+        if (robosToAdd.isEmpty()) return;
+        
+        List<RoboEntity> newRobos = new ArrayList<>(robosToAdd);
+        for (RoboEntity robo : newRobos) {
+            if (robo.level().isClientSide()) {
+                clientRobos.put(robo.getUUID(), robo);
+            } else {
+                robos.put(robo.getUUID(), robo);
             }
         }
+        robosToAdd.removeAll(newRobos);
+    }
+
+    private void tickExistingRobos(Level level) {
+        if (robos.isEmpty() && clientRobos.isEmpty()) return;
+        
+        robos.values().stream()
+            .filter(Objects::nonNull)
+            .forEach(robo -> {
+                level.guardEntityTick(entity -> {}, robo);
+                robo.roboMangerTick();
+            });
+        clientRobos.values().stream()
+            .filter(Objects::nonNull)
+            .forEach(robo -> {
+                level.guardEntityTick(entity -> {}, robo);
+                robo.roboMangerTick();
+            });
+    }
+
+    private void removeMarkedRobos() {
+        if (robos.isEmpty() && clientRobos.isEmpty()) return;
+        robos.entrySet().removeIf(entry -> entry.getValue().isRemoved());
+        clientRobos.entrySet().removeIf(entry -> entry.getValue().isRemoved());
     }
 
     public void addRobo(RoboEntity robo) {
-        robos.put(robo.getUUID(), robo);
+        robosToAdd.add(robo);
     }
 
     public Level getLevel() {
@@ -76,5 +106,7 @@ public class RoboManager {
 
     private void cleanUp() {
         this.robos = new ConcurrentHashMap<>();
+        this.robosToAdd = new ArrayList<>();
+        this.clientRobos = new ConcurrentHashMap<>();
     }
 }

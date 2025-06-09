@@ -1,3 +1,18 @@
+------------------------------------------------------
+Create: Mobile Packages - v0.5.2 1.21.1 - 09.06.2025
+------------------------------------------------------
+
+### Bug Fixes
+- Fixed Portable Stock Ticker hotkey crashing the game
+- Fixed Robo Bee Port Bee slot limit
+- Fixed multiple Robo Bees being able to fly to the same Port at the same time
+- Fixed Robo Bee spawned by summon command flying to the closest Port to 0,0,0
+- Fixed rendering of non-standard packages carried by Robo Bees
+- Fixed Support for multiple Portable Stock Tickers in the same inventory By preferring the item in the Main Hand
+- Fixed Funnels and Chutes not being able to insert and extract from a Bee Port
+
+### Additions
+- Added "@" prefix for player names. If the package address contains an "@" only everything behind it is considered a player name. Eg: `some text goes hier@PlayerName` will send the package to the player with the name `PlayerName`
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.1 1.21.1 - 04.06.2025

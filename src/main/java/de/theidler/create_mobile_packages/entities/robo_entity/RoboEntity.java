@@ -115,8 +115,7 @@ public class RoboEntity extends Mob {
 
     private Player getTargetPlayerFromAddress() {
         return level().players().stream()
-                .filter(player -> player.getName().getString().equals(PackageItem.getAddress(this.getItemStack())))
-                .findFirst().orElse(null);
+                .filter(player -> BeePortBlockEntity.doesAddressStringMatchPlayerName(player, PackageItem.getAddress(this.getItemStack()))).findFirst().orElse(null);
     }
 
     private String activeTargetAddress = "";
@@ -130,7 +129,7 @@ public class RoboEntity extends Mob {
             targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null) {
-                    oldTarget.trySetEntityOnTravel(null);
+                    oldTarget.releaseEntityOnTravel(this);
                 }
                 if (targetBlockEntity != null) {
                     targetBlockEntity.trySetEntityOnTravel(this);
@@ -145,7 +144,7 @@ public class RoboEntity extends Mob {
             BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
             if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
                 if (targetBlockEntity != null) {
-                    targetBlockEntity.trySetEntityOnTravel(null);
+                    targetBlockEntity.releaseEntityOnTravel(this);
                 }
                 targetBlockEntity = newTargetBlockEntity;
                 targetBlockEntity.trySetEntityOnTravel(this);
@@ -304,8 +303,8 @@ public class RoboEntity extends Mob {
     @Override
     public void remove(RemovalReason pReason) {
         handleItemStackOnRemove();
-        if (getTargetBlockEntity() != null) {
-            getTargetBlockEntity().trySetEntityOnTravel(null);
+        if (getTargetBlockEntity() != null && getTargetBlockEntity().getRoboEntity() != null) {
+            getTargetBlockEntity().releaseEntityOnTravel(this);
         }
         super.remove(pReason);
     }
