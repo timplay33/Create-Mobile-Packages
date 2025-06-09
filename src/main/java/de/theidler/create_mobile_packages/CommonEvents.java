@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages;
 
+import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.client.Minecraft;
@@ -23,5 +24,15 @@ public class CommonEvents {
     public static void onLoadWorld(LevelEvent.Load event) {
         LevelAccessor world = event.getLevel();
         CreateMobilePackages.ROBO_MANAGER.levelLoaded(world);
+    }
+
+    @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+    public static class ModBusEvents {
+
+        @net.neoforged.bus.api.SubscribeEvent
+        public static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
+
+            BeePortBlockEntity.registerCapabilities(event);
+        }
     }
 }
