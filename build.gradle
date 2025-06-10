@@ -15,7 +15,7 @@ ext.rawBranchName = System.getenv("BRANCH_NAME")
 ext.branchName = rawBranchName ? rawBranchName.replaceAll("[^a-zA-Z0-9._-]", "_") : null
 base {
     archivesName = "${mod_id}-${minecraft_version}"
-    group = 'de.theidler.'+ mod_id
+    group = 'de.theidler.' + mod_id
     def isMainBranch = rawBranchName == "mc1.20.1/main"
     version = mod_version + (!isMainBranch && buildNumber ? "-${buildNumber}" : '') + (!isMainBranch && branchName ? "-${branchName}" : '')
 }
@@ -24,6 +24,9 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+jarJar.enable()
+
 minecraft {
     // The mappings can be changed at any time and must be in the following format.
     // Channel:   Version:
@@ -147,7 +150,10 @@ repositories {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
     }
-
+    maven {
+        name = "CreateFactoryLogistics"
+        url = "https://dl.zznty.ru/maven"
+    }
 }
 
 dependencies {
@@ -181,7 +187,9 @@ dependencies {
     implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
     implementation(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
-    implementation(fg.deobf("maven.modrinth:create_factory_logistics:${create_factory_logistics_version}"))
+    jarJar(implementation(fg.deobf "ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
+
+    runtimeOnly(fg.deobf "ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -190,12 +198,12 @@ dependencies {
 // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
+            minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version       : forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,
-            mod_logo: mod_logo, mod_display_url: mod_display_url,
+            mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors         : mod_authors, mod_description: mod_description,
+            mod_logo            : mod_logo, mod_display_url: mod_display_url,
     ]
     inputs.properties replaceProperties
 

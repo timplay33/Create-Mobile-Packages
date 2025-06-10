@@ -1,15 +1,12 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
-import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour.RequestType;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
-import de.theidler.create_mobile_packages.compat.FactoryLogisticsCompat;
-import de.theidler.create_mobile_packages.compat.Mods;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -23,6 +20,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsManager;
+import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -43,40 +43,39 @@ public class StockCheckingItem extends Item {
     }
 
     // Retrieve the recent summary of the network
-    public static InventorySummary getRecentSummary(ItemStack stack) {
+    public static GenericInventorySummary getRecentSummary(ItemStack stack) {
         Freq = networkFromStack(stack);
-        return LogisticsManager.getSummaryOfNetwork(Freq, false);
+        return GenericInventorySummary.of(LogisticsManager.getSummaryOfNetwork(Freq, false));
     }
 
     // Retrieve an accurate summary of the network
-    public static InventorySummary getAccurateSummary(ItemStack stack) {
+    public static GenericInventorySummary getAccurateSummary(ItemStack stack) {
         Freq = networkFromStack(stack);
         if (Freq == null) {
-            return new InventorySummary();
+            return GenericInventorySummary.empty();
         }
-        return LogisticsManager.getSummaryOfNetwork(Freq, true);
+        return GenericInventorySummary.of(LogisticsManager.getSummaryOfNetwork(Freq, true));
     }
 
-    public static boolean broadcastPackageRequest(ItemStack stack, RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler, String address) {
+    public static boolean broadcastPackageRequest(ItemStack stack, RequestType type, PackageOrderWithCrafts order,
+                                                  @Nullable IdentifiedInventory ignoredHandler, String address) {
         Freq = networkFromStack(stack);
         return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
     }
 
     // Send a package request
-    public boolean broadcastPackageRequest(RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler,
+    public boolean broadcastPackageRequest(RequestType type, GenericOrder order,
+                                           @Nullable IdentifiedInventory ignoredHandler,
                                            String address) {
-        if (Mods.CREATE_FACTORY_LOGISTICS.isLoaded()) {
-            return FactoryLogisticsCompat.tryBroadcast(Freq, type, order, ignoredHandler, address);
-        } else {
-            return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
-        }
+        return GenericLogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if(!isTuned(stack)) {
-            player.displayClientMessage(Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);
+        if (!isTuned(stack)) {
+            player.displayClientMessage(
+                    Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);
             return super.use(level, player, hand);
         }
         return super.use(level, player, hand);
