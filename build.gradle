@@ -187,7 +187,9 @@ dependencies {
     implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
     implementation(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
-    jarJar(implementation(fg.deobf "ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
+    jarJar(implementation(fg.deobf "ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}")) {
+        jarJar.ranged(it, "[${create_factory_abstractions_version},)")
+    }
 
     runtimeOnly(fg.deobf "ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
 }
