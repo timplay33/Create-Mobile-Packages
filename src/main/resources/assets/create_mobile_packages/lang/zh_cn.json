@@ -6,7 +6,7 @@
     "item.create_mobile_packages.portable_stock_ticker.screen_title": "便携式仓库管理器",
     "item.create_mobile_packages.portable_stock_ticker.not_linked": "未连接到物流网络",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.summary": "一个可以被随身携带的仓库管理员",
-    "item.create_mobile_packages.portable_stock_ticker.tooltip.condition1": "潜行并右键仓储链接站或仓储发报机时",
+    "item.create_mobile_packages.portable_stock_ticker.tooltip.condition1": "潜行并右击仓储链接站或仓储发报机时",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "仓库管理器将会绑定到对应的物流网络",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "使用时",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "仓库管理器将会打开一个仓库管理界面",
@@ -52,8 +52,8 @@
     "tooltip.create_mobile_packages.robo_bee.package_transport": "当副手手持包裹时，其将会被运输蜂送走。",
     "create_mobile_packages.ponder.port_to_port.text_4": "包裹将会从一个停泊港运输到另外一个停泊港。",
     "create_mobile_packages.ponder.push_to_chest.text_2": "确保运输蜂停泊港被红石充能。",
-    "create_mobile_packages.ponder.simple_setup.text_3": "在容器方向放置打包器来创建包裹。",
+    "create_mobile_packages.ponder.simple_setup.text_3": "对着容器放置打包机以制作包裹。",
     "create_mobile_packages.ponder.crafter_setup.text_2": "理包机把包裹拆分成多个小包裹。",
     "create_mobile_packages.ponder.port_to_port.text_3": "把地址设置成与包裹同名，然后把包裹放置在第一个运输蜂停泊港。",
-    "create_mobile_packages.ponder.simple_setup.text_1": "这是一个自动包裹处理的简单实现。"
+    "create_mobile_packages.ponder.simple_setup.text_1": "这是一个自动包裹处理的简单实现方式。"
 }
