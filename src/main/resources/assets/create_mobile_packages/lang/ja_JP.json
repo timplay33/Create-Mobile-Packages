@@ -20,7 +20,7 @@
     "create_mobile_packages.robo_entity.death": "ロボビーは X %1$s Y %2$s Z %3$s で小包 %4$s を持って死亡した",
     "create_mobile_packages.robo_entity.eta": "パッケージは %1$s 秒後に到着します",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Open Portable Stock Ticker",
-    "create_mobile_packages.ponder.robo_bee_port.header": "Robo Bee Port",
+    "create_mobile_packages.ponder.robo_bee_port.header": "ビーポート",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "The Robo Bee Port can send a Package to a Player.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Place a package with an address matching the Player's name in the Robo Bee Port.",
     "create_mobile_packages.ponder.robo_bee_port.text_3": "Place a Robo Bee in the Robo Bee Slot in the Robo Bee Port.",
