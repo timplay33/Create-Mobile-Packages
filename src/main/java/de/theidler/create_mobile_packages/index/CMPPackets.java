@@ -27,7 +27,7 @@ public enum CMPPackets {
     OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker::new, PLAY_TO_SERVER),
 
     // Server to Client
-    BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT);
+    BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT);
 
 
     public static final ResourceLocation CHANNEL_NAME = CreateMobilePackages.asResource("main");
@@ -59,7 +59,8 @@ public enum CMPPackets {
 
     public static void sendToNear(Level world, BlockPos pos, int range, Object message) {
         getChannel().send(
-                PacketDistributor.NEAR.with(PacketDistributor.TargetPoint.p(pos.getX(), pos.getY(), pos.getZ(), range, world.dimension())),
+                PacketDistributor.NEAR.with(
+                        PacketDistributor.TargetPoint.p(pos.getX(), pos.getY(), pos.getZ(), range, world.dimension())),
                 message);
     }
 

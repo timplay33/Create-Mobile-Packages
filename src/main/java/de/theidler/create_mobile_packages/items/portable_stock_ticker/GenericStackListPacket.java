@@ -1,39 +1,41 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
-import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkEvent;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.stack.GenericStackSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BigItemStackListPacket extends SimplePacketBase {
+@SuppressWarnings("UnstableApiUsage")
+public class GenericStackListPacket extends SimplePacketBase {
 
-    private final List<BigItemStack> stacks;
+    private final List<GenericStack> stacks;
 
     // Standard constructor
-    public BigItemStackListPacket(List<BigItemStack> stacks) {
+    public GenericStackListPacket(List<GenericStack> stacks) {
         this.stacks = stacks;
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
         buffer.writeInt(stacks.size());
-        for (BigItemStack stack : stacks) {
-            stack.send(buffer);
+        for (GenericStack stack : stacks) {
+            GenericStackSerializer.write(stack, buffer);
         }
     }
 
-    public static BigItemStackListPacket read(FriendlyByteBuf buffer) {
+    public static GenericStackListPacket read(FriendlyByteBuf buffer) {
         int size = buffer.readInt();
-        List<BigItemStack> list = new ArrayList<>();
+        List<GenericStack> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            list.add(BigItemStack.receive(buffer));
+            list.add(GenericStackSerializer.read(buffer));
         }
-        return new BigItemStackListPacket(list);
+        return new GenericStackListPacket(list);
     }
 
     @Override
