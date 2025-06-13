@@ -1,6 +1,6 @@
 package de.theidler.create_mobile_packages;
 
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
+import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -10,9 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RoboManager {
 
-    public Map<UUID, RoboEntity> robos;
-    public Map<UUID, RoboEntity> clientRobos;
-    public List<RoboEntity> robosToAdd;
+    public Map<UUID, RoboBeeEntity> robos;
+    public Map<UUID, RoboBeeEntity> clientRobos;
+    public List<RoboBeeEntity> robosToAdd;
 
     private RoboManagerSavedData savedData;
     private Level level;
@@ -42,8 +42,8 @@ public class RoboManager {
     private void addPendingRobos() {
         if (robosToAdd.isEmpty()) return;
         
-        List<RoboEntity> newRobos = new ArrayList<>(robosToAdd);
-        for (RoboEntity robo : newRobos) {
+        List<RoboBeeEntity> newRobos = new ArrayList<>(robosToAdd);
+        for (RoboBeeEntity robo : newRobos) {
             if (robo.level().isClientSide()) {
                 clientRobos.put(robo.getUUID(), robo);
             } else {
@@ -76,7 +76,7 @@ public class RoboManager {
         clientRobos.entrySet().removeIf(entry -> entry.getValue().isRemoved());
     }
 
-    public void addRobo(RoboEntity robo) {
+    public void addRobo(RoboBeeEntity robo) {
         robosToAdd.add(robo);
     }
 

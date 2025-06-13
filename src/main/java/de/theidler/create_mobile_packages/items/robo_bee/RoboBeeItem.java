@@ -41,19 +41,13 @@ public class RoboBeeItem extends Item {
             packageItem = offhandItem.copy();
             player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
         }
-        RoboBeeEntity roboBee = new RoboBeeEntity(
-                level,
-                packageItem,
-                null,
-                pos
-        );
+        RoboBeeEntity roboBee = RoboBeeEntity.createBeeEntity(level, packageItem, pos);
 
         if (!roboBee.getItemStack().isEmpty()) {
             roboBee.setPackageHeightScale(1.0F);
         }
 
         level.addFreshEntity(roboBee);
-        roboBee.setRequest(false);
         context.getItemInHand().shrink(1);
 
         return InteractionResult.SUCCESS;

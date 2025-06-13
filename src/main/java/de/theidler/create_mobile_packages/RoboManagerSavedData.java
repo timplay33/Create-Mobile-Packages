@@ -1,6 +1,6 @@
 package de.theidler.create_mobile_packages;
 
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
+import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public class RoboManagerSavedData extends SavedData {
 
-    private Map<UUID, RoboEntity> robos = new HashMap<>();
+    private Map<UUID, RoboBeeEntity> robos = new HashMap<>();
 
     @Override
     public CompoundTag save(CompoundTag nbt) {
@@ -36,13 +36,13 @@ public class RoboManagerSavedData extends SavedData {
         savedData.robos = new HashMap<>();
         Level level = CreateMobilePackages.ROBO_MANAGER.getLevel();
         NBTHelper.iterateCompoundList(nbt.getList("Robos", CompoundTag.TAG_COMPOUND), c -> {
-            if (level.getEntity(c.getInt("Id")) instanceof RoboEntity robo)
+            if (level.getEntity(c.getInt("Id")) instanceof RoboBeeEntity robo)
                 savedData.robos.put(robo.getUUID(), robo);
         });
         return savedData;
     }
 
-    public Map<UUID, RoboEntity> getRobos() {
+    public Map<UUID, RoboBeeEntity> getRobos() {
         return robos;
     }
 }
