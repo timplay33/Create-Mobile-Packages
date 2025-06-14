@@ -1,6 +1,6 @@
 package de.theidler.create_mobile_packages;
 
-import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
+import de.theidler.create_mobile_packages.entities.robo_bee_entity.RoboBeeEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
+import de.theidler.create_mobile_packages.entities.robo_bee_entity.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.models.RoboBeeModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;

@@ -4,13 +4,12 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
+import de.theidler.create_mobile_packages.entities.robo_bee_entity.RoboBeeEntity;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -452,10 +451,12 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @return True if the port can accept the entity, false otherwise.
      */
     public boolean canAcceptEntity(RoboBeeEntity entity, Boolean hasPackage) {
-        if (this.isRemoved()) return false;
-        if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(0);
-        if (entityOnTravel != null && entityOnTravel != entity) return false;
-        return hasPackage ? !isFull() : !hasFullRoboSlot(0);
+        if (this.isRemoved() || (entityOnTravel != null && entityOnTravel != entity)) return false;
+        if (hasPackage && entity != null && PackageItem.matchAddress(PackageItem.getAddress(entity.getItemStack()), addressFilter)) {
+            return !isFull();
+        } else {
+            return !hasFullRoboSlot(0);
+        }
     }
 
     public synchronized boolean trySetEntityOnTravel(RoboBeeEntity entity) {

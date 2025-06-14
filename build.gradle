@@ -182,6 +182,9 @@ dependencies {
 
     implementation(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
     implementation(fg.deobf("maven.modrinth:create_factory_logistics:${create_factory_logistics_version}"))
+
+    // testing mod compatibilities
+    runtimeOnly(fg.deobf("tschipp.carryon:carryon-forge-1.20.1:2.1.2.7"))
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

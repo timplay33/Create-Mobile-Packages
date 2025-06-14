@@ -1,6 +1,6 @@
 package de.theidler.create_mobile_packages;
 
-import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
+import de.theidler.create_mobile_packages.entities.robo_bee_entity.RoboBeeEntity;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;

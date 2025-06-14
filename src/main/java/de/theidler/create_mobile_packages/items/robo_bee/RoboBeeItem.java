@@ -1,7 +1,7 @@
 package de.theidler.create_mobile_packages.items.robo_bee;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
-import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
+import de.theidler.create_mobile_packages.entities.robo_bee_entity.RoboBeeEntity;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
