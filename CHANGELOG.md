@@ -1,4 +1,13 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.5.4 - unreleased
+------------------------------------------------------
+
+### Bug Fixes
+- Fix handling of blank addresses
+- Fix misuse of `getStackInSlot`
+- Add "Not linked" error message when trying to open an unlinked Portable Stock Ticker with the hotkey
+
+------------------------------------------------------
 Create: Mobile Packages - v0.5.3 - 09.06.2025
 ------------------------------------------------------
 
