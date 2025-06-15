@@ -6,6 +6,9 @@ Create: Mobile Packages - v0.5.4 - unreleased
 - Fix handling of blank addresses
 - Fix misuse of `getStackInSlot`
 - Add "Not linked" error message when trying to open an unlinked Portable Stock Ticker with the hotkey
+- Fix Robo Bees are now invincible to everything else than `PLAYER_ATTACK` 
+- Fix Robo Bees can no longer be set on fire
+- Fix Items in the Portable Stock Ticker are now sorted by count
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.3 - 09.06.2025
