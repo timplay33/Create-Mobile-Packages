@@ -45,7 +45,8 @@ public class RoboEntity extends Mob {
     private Player targetPlayer;
     private BeePortBlockEntity targetBlockEntity;
     private BeePortBlockEntity startBeePortBlockEntity;
-    private String targetAddress = "";
+    private String targetAddress;
+    private String activeTargetAddress;
     private int damageCounter;
     private boolean isRequest = true;
 
@@ -100,16 +101,17 @@ public class RoboEntity extends Mob {
 
     /**
      * Sets the target for the RoboEntity based on the provided ItemStack.
-     * If the ItemStack is not a package, the target is set to the closest drone port.
+     * If the ItemStack is empty, the target is set to the closest drone port.
      * If the ItemStack is a package, it attempts to find a player or drone port
      * matching the address specified in the package.
      *
      * @param itemStack The ItemStack used to determine the target.
      */
     private void setTargetFromItemStack(ItemStack itemStack) {
-        if (itemStack == null) return;
-        targetAddress = PackageItem.getAddress(itemStack);
-        updateTarget();
+        if (itemStack == null || itemStack.isEmpty())
+            setTargetAddress(null);
+        else
+            setTargetAddress(PackageItem.getAddress(itemStack));
     }
 
     private Player getTargetPlayerFromAddress() {
@@ -117,7 +119,6 @@ public class RoboEntity extends Mob {
                 .filter(player -> BeePortBlockEntity.doesAddressStringMatchPlayerName(player, PackageItem.getAddress(this.getItemStack()))).findFirst().orElse(null);
     }
 
-    private String activeTargetAddress = "";
     private void updateTarget() {
         if (level().isClientSide) { return; }
         targetPlayer = getTargetPlayerFromAddress();
@@ -125,7 +126,7 @@ public class RoboEntity extends Mob {
         if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this, !getItemStack().isEmpty()) || !Objects.equals(activeTargetAddress,targetAddress)) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
             activeTargetAddress = targetAddress;
-            targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+            targetBlockEntity = getClosestBeePort(level(), targetAddress, this.blockPosition(), this);
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null) {
                     oldTarget.trySetEntityOnTravel(null);
@@ -140,7 +141,7 @@ public class RoboEntity extends Mob {
         }
         if (!isRequest) {
             // Check if there is a new target block entity that is closer than the current one
-            BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+            BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), targetAddress, this.blockPosition(), this);
             if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
                 if (targetBlockEntity != null) {
                     targetBlockEntity.trySetEntityOnTravel(null);
@@ -427,6 +428,13 @@ public class RoboEntity extends Mob {
         }
     }
 
+    /**
+     * Sets the target for the RoboEntity based on the provided address.
+     * If the address is null, the target is set to the closest drone port.
+     * Otherwise, it attempts to find a player or drone port matching the address.
+     * 
+     * @param address the target address
+     */
     public void setTargetAddress(String address) {
         this.targetAddress = address;
         updateTarget();
