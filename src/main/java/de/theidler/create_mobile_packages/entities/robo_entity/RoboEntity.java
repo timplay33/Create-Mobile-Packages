@@ -34,6 +34,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import static net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK;
+
 public class RoboEntity extends Mob {
 
     private static final EntityDataAccessor<Float> ROT_YAW = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
@@ -463,7 +465,7 @@ public class RoboEntity extends Mob {
 
     @Override
     public boolean hurt(DamageSource pSource, float pAmount) {
-        if (this.isInvulnerableTo(pSource)) return false;
+        if (!pSource.is(PLAYER_ATTACK)) return false;
 
         if (!this.level().isClientSide && !this.isRemoved()) {
             this.markHurt();
@@ -480,5 +482,10 @@ public class RoboEntity extends Mob {
 
     public void setRequest(boolean request) {
         this.isRequest = request;
+    }
+
+    @Override
+    public boolean isOnFire() {
+        return false;
     }
 }
