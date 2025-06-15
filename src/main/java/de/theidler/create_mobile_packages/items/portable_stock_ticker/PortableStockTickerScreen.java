@@ -7,6 +7,7 @@ import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
@@ -792,7 +793,9 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     @Override
     public GenericInventorySummary stockSnapshot() {
-        return null;
+        GenericInventorySummary summary = GenericInventorySummary.empty();
+        ClientScreenStorage.stacks.forEach(summary::add);
+        return summary;
     }
 
     private boolean isConfirmHovered(int mouseX, int mouseY) {
