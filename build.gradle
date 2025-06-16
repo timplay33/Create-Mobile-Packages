@@ -147,10 +147,6 @@ repositories {
         url = "https://maven.blamejared.com/"
     }
     maven {
-        name = "Modrinth"
-        url = "https://api.modrinth.com/maven"
-    }
-    maven {
         name = "CreateFactoryLogistics"
         url = "https://dl.zznty.ru/maven"
     }

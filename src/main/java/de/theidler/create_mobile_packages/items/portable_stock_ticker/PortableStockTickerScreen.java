@@ -106,7 +106,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     public boolean refreshSearchNextTick;
     public boolean moveToTopNextTick;
-    private boolean canRequestCraftingPackage;
 
     public PortableStockTickerScreen(PortableStockTickerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -116,7 +115,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         categories = new ArrayList<>();
         itemScroll = LerpedFloat.linear()
                 .startWithValue(0);
-        canRequestCraftingPackage = false;
         menu.screenReference = this;
         forcedEntries = GenericInventorySummary.empty();
         this.playerInventory = playerInventory;
@@ -1120,7 +1118,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         }
         PackageOrderWithCrafts order = PackageOrderWithCrafts.simple(stacks);
 
-        if (canRequestCraftingPackage && !itemsToOrder.isEmpty() && !recipesToOrder.isEmpty()) {
+        if (!itemsToOrder.isEmpty() && !recipesToOrder.isEmpty()) {
             List<PackageOrderWithCrafts.CraftingEntry> craftList = new ArrayList<>();
             for (CraftableGenericStack cbis : recipesToOrder) {
                 if (!(cbis.asStack().recipe instanceof CraftingRecipe cr))
