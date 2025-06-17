@@ -28,6 +28,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.compat.jei.IngredientTransfer;
@@ -115,10 +116,9 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
         CraftableBigItemStack cbis = new CraftableBigItemStack(recipe.getResultItem(registryAccess), recipe);
         CraftableGenericStack ingredientStack = CraftableGenericStack.of(cbis);
 
-        {
+        ingredientStack.setAmount(0);
 
-            ingredientStack.setAmount(0);
-
+        if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE) {
             for (TransferOperation operation : transferOperations.results()) {
                 IIngredientHelper helper = helpers.getIngredientManager().getIngredientHelper(
                         operation.selectedIngredient().getType());
