@@ -7,7 +7,6 @@ import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
-import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
@@ -172,10 +171,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             itemScroll.setValue(itemScroll.getChaseTarget());
     }
 
-    private List<BigGenericStack> sortByCount(List<BigGenericStack> stacks) {
-        stacks.sort(Comparator.comparingInt((BigGenericStack bigStack) -> -bigStack.count)
-                .thenComparing(bigStack -> bigStack.stack.getHoverName()
-                        .getString()));
+    private List<GenericStack> sortByCount(List<GenericStack> stacks) {
+        stacks.sort(Comparator.comparingInt((GenericStack bigStack) -> -bigStack.amount()));
         return stacks;
     }
 
