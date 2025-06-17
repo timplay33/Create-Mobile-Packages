@@ -29,7 +29,8 @@ public class RequestStockUpdate extends SimplePacketBase {
             if (player != null) {
                 ItemStack stack = PortableStockTicker.find(player.getInventory());
                 if (stack == null || stack.isEmpty()) return;
-                BigItemStackListPacket responsePacket = new BigItemStackListPacket(getAccurateSummary(stack).getStacks());
+                GenericStackListPacket responsePacket = new GenericStackListPacket(
+                        getAccurateSummary(stack).get());
                 CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), responsePacket);
             }
         });
