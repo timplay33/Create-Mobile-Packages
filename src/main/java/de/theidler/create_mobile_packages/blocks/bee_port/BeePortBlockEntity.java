@@ -286,6 +286,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private static void requestRoboEntity(Level level, BlockPos blockPos) {
         level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            allBEs.removeIf(be -> be.isRemoved());
             allBEs.removeIf(be -> be.getBlockPos().equals(blockPos));
             allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
             BeePortBlockEntity target = allBEs.stream()
@@ -441,19 +442,50 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     }
 
     /**
-     * Called when the block entity is removed. Unregisters the entity from the tracker.
+     * Unregisters the entity from the tracker and halts any incoming bees.
      */
+    private void invalidateTarget() {
+        level
+            .getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP)
+            .ifPresent(tracker -> tracker.remove(this));
+
+        if (entityOnTravel != null) {
+            entityOnTravel.setTargetVelocity(Vec3.ZERO);
+            entityOnTravel.setState(new AdjustRotationToTarget());
+        }
+    }
+
+    /**
+     * Meant to be called when the bee port is broken. Drops any bees from the
+     * inventory. Does not update the inventory.
+     */
+    private void dropBees() {
+        ItemStack bees = roboBeeInventory.getStackInSlot(0);
+
+        if (bees.getCount() > 0) {
+            level.addFreshEntity(new ItemEntity(
+                level,
+                worldPosition.getX(),
+                worldPosition.getY(),
+                worldPosition.getZ(),
+                bees
+            ));
+        }
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        if (!level.isClientSide) {
+            this.invalidateTarget();
+        }
+        super.onChunkUnloaded();
+    }
+
     @Override
     public void remove() {
         if (!level.isClientSide) {
-            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
-            if (entityOnTravel != null) {
-                entityOnTravel.setTargetVelocity(Vec3.ZERO);
-                entityOnTravel.setState(new AdjustRotationToTarget());
-            }
-            if (roboBeeInventory.getStackInSlot(0).getCount() > 0) {
-                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
-            }
+            this.invalidateTarget();
+            this.dropBees();
         }
         super.remove();
     }
