@@ -152,7 +152,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        List<List<BigItemStack>> clientStockSnapshot = convertToCategoryList(removeEmptyStacks(ClientScreenStorage.stacks));
+        List<List<BigItemStack>> clientStockSnapshot = convertToCategoryList(sortByCount(removeEmptyStacks(ClientScreenStorage.stacks)));
         if (clientStockSnapshot != currentItemSource) {
             currentItemSource = clientStockSnapshot;
             refreshSearchResults(false);
@@ -168,6 +168,13 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
             itemScroll.setValue(itemScroll.getChaseTarget());
+    }
+
+    private List<BigItemStack> sortByCount(List<BigItemStack> stacks) {
+        stacks.sort(Comparator.comparingInt((BigItemStack bigStack) -> -bigStack.count)
+                .thenComparing(bigStack -> bigStack.stack.getHoverName()
+                        .getString()));
+        return stacks;
     }
 
     private List<BigItemStack> removeEmptyStacks(List<BigItemStack> stacks) {
