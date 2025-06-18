@@ -9,6 +9,7 @@ Create: Mobile Packages - v0.5.3 - unreleased
 - Fix Robo Bees are now invincible to everything else than `PLAYER_ATTACK` 
 - Fix Robo Bees can no longer be set on fire
 - Fix Items in the Portable Stock Ticker are now sorted by count
+- Fix Log spamming of "Releasing entity on travel: ..."
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.2 1.21.1 - 09.06.2025

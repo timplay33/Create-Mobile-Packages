@@ -563,7 +563,6 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
 
     public synchronized void releaseEntityOnTravel(RoboEntity entity) {
         if (entityOnTravel == entity) {
-            CreateMobilePackages.LOGGER.info("Releasing entity on travel: {}", entity);
             entityOnTravel = null;
         }
     }
