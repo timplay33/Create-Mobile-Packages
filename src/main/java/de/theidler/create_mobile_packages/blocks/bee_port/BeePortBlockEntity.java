@@ -31,6 +31,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
@@ -166,21 +167,32 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public void lazyTick() {
         super.lazyTick();
-        tryPullingFromAdjacentInventories();
-        if (level != null && level.hasNeighborSignal(worldPosition)) {
+        if (level == null || level.isClientSide()) return;
+        if (level.hasNeighborSignal(worldPosition)) {
             tryPushingToAdjacentInventories();
         }
+        tryPullingFromAdjacentInventories();
+
     }
 
     private void tryPushingToAdjacentInventories() {
+        boolean stackToPush = false;
         for (int i = 0; i < inventory.getSlots(); i++) {
-            ItemStack itemStack = inventory.getStackInSlot(i);
-            if (!PackageItem.isPackage(itemStack) || !PackageItem.matchAddress(itemStack, addressFilter)) {
-                continue;
+            if (!inventory.getStackInSlot(i).isEmpty()) {
+                stackToPush = true;
             }
-            for (IItemHandler adjacentInventory : getAdjacentInventories()) {
-                if (tryPushingToInventory(adjacentInventory, itemStack, i)) {
-                    return;
+        }
+        if (!stackToPush) return;
+
+        for (IItemHandler adjacentInventory : getAdjacentInventories()) {
+            for (int i = 0; i < inventory.getSlots(); i++) {
+                ItemStack stackInSlot = inventory.extractItem(i, 1, true);
+                if (stackInSlot.isEmpty())
+                    continue;
+                ItemStack remainder = ItemHandlerHelper.insertItemStacked(adjacentInventory, stackInSlot, false);
+                if (remainder.isEmpty()) {
+                    inventory.extractItem(i, 1, false);
+                    level.blockEntityChanged(worldPosition);
                 }
             }
         }
