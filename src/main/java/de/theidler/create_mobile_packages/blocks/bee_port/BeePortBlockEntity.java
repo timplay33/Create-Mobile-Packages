@@ -198,16 +198,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
     }
 
-    private boolean tryPushingToInventory(IItemHandler inventory, ItemStack itemStack, int extractSlot) {
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            if (inventory.getStackInSlot(i).isEmpty()) {
-                inventory.insertItem(i, this.inventory.extractItem(extractSlot, 1, false), false);
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void tryPullingFromAdjacentInventories() {
         if (hasFullInventory(entityOnTravel != null ? 1 : 0)) return;
 
@@ -497,9 +487,14 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     public void remove() {
         if (!level.isClientSide) {
             this.invalidateTarget();
-            this.dropBees();
         }
         super.remove();
+    }
+
+    @Override
+    public void destroy() {
+        this.dropBees();
+        super.destroy();
     }
 
     /**
