@@ -153,7 +153,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        List<List<BigGenericStack>> clientStockSnapshot = convertToCategoryList(sortByCount(ClientScreenStorage.stacks));
+        List<List<BigGenericStack>> clientStockSnapshot = convertToCategoryList(
+                sortByCount(ClientScreenStorage.stacks));
         if (clientStockSnapshot != currentItemSource) {
             currentItemSource = clientStockSnapshot;
             refreshSearchResults(false);
@@ -900,7 +901,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                                                         .get(hoveredSlot.getSecond());
 
         int transfer = hasShiftDown() ? GenericContentExtender.registrationOf(entry.get().key())
-                .clientProvider().guiHandler().maxStackSize(entry.get().key())
+                .clientProvider().guiHandler().stackSize(entry.get().key())
                                       : hasControlDown() ? 10 : 1;
 
         if (recipeClicked && entry instanceof CraftableGenericStack cbis) {
