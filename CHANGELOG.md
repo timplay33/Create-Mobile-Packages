@@ -1,5 +1,5 @@
 ------------------------------------------------------
-Create: Mobile Packages - v0.5.4 - unreleased
+Create: Mobile Packages - v0.5.4 - 22.06.2025
 ------------------------------------------------------
 
 ### Additions
@@ -16,6 +16,8 @@ Create: Mobile Packages - v0.5.4 - unreleased
 - Fix Packages inside Robo Bee Port get voided when redstone is applied
 - Fix Robo Bees drops of Bee Ports (Contraptions & CarryOn)
 - Fix CarryOn support for Robo Bees
+- Changed Robo Bee Port now outputs all Items in adjacent inventories when redstone powered
+- Changed Robo Bee Port now no longer pulls Items from adjacent inventories when redstone powered
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.3 - 09.06.2025

@@ -171,8 +171,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (level == null || level.isClientSide()) return;
         if (level.hasNeighborSignal(worldPosition)) {
             tryPushingToAdjacentInventories();
+        } else {
+            tryPullingFromAdjacentInventories();
         }
-        tryPullingFromAdjacentInventories();
 
     }
 
