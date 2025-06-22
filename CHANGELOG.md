@@ -9,6 +9,7 @@ Create: Mobile Packages - v0.5.4 - unreleased
 - Fix Robo Bees are now invincible to everything else than `PLAYER_ATTACK` 
 - Fix Robo Bees can no longer be set on fire
 - Fix Items in the Portable Stock Ticker are now sorted by count
+- Fix Create Factory Logistics support with Factory Abstractions
 - Fix Packages inside Robo Bee Port get voided when redstone is applied
 - Fix Robo Bees drops of Bee Ports (Contraptions & CarryOn)
 
