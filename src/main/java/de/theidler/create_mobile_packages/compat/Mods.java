@@ -13,8 +13,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public enum Mods {
-    JEI,
-    CREATE_FACTORY_LOGISTICS;
+    JEI;
 
     // from com/simibubi/create/compat/Mods.java
 
