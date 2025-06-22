@@ -107,6 +107,9 @@ dependencies {
     modImplementation(jarJar("ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
     modRuntimeOnly("ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
     compileOnly("org.jetbrains:annotations:24.0.1")
+
+    // testing mod compatibilities
+    modRuntimeOnly("tschipp.carryon:carryon-forge-1.20.1:2.1.2.7")
 }
 
 tasks.named('processResources', ProcessResources).configure {

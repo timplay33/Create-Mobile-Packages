@@ -31,6 +31,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
@@ -166,34 +167,35 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public void lazyTick() {
         super.lazyTick();
-        tryPullingFromAdjacentInventories();
-        if (level != null && level.hasNeighborSignal(worldPosition)) {
+        if (level == null || level.isClientSide()) return;
+        if (level.hasNeighborSignal(worldPosition)) {
             tryPushingToAdjacentInventories();
         }
+        tryPullingFromAdjacentInventories();
+
     }
 
     private void tryPushingToAdjacentInventories() {
+        boolean stackToPush = false;
         for (int i = 0; i < inventory.getSlots(); i++) {
-            ItemStack itemStack = inventory.getStackInSlot(i);
-            if (!PackageItem.isPackage(itemStack) || !PackageItem.matchAddress(itemStack, addressFilter)) {
-                continue;
+            if (!inventory.getStackInSlot(i).isEmpty()) {
+                stackToPush = true;
             }
-            for (IItemHandler adjacentInventory : getAdjacentInventories()) {
-                if (tryPushingToInventory(adjacentInventory, itemStack, i)) {
-                    return;
+        }
+        if (!stackToPush) return;
+
+        for (IItemHandler adjacentInventory : getAdjacentInventories()) {
+            for (int i = 0; i < inventory.getSlots(); i++) {
+                ItemStack stackInSlot = inventory.extractItem(i, 1, true);
+                if (stackInSlot.isEmpty())
+                    continue;
+                ItemStack remainder = ItemHandlerHelper.insertItemStacked(adjacentInventory, stackInSlot, false);
+                if (remainder.isEmpty()) {
+                    inventory.extractItem(i, 1, false);
+                    level.blockEntityChanged(worldPosition);
                 }
             }
         }
-    }
-
-    private boolean tryPushingToInventory(IItemHandler inventory, ItemStack itemStack, int extractSlot) {
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            if (inventory.getStackInSlot(i).isEmpty()) {
-                inventory.insertItem(i, this.inventory.extractItem(extractSlot, 1, false), false);
-                return true;
-            }
-        }
-        return false;
     }
 
     private void tryPullingFromAdjacentInventories() {
@@ -286,6 +288,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private static void requestRoboEntity(Level level, BlockPos blockPos) {
         level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            allBEs.removeIf(be -> be.isRemoved());
             allBEs.removeIf(be -> be.getBlockPos().equals(blockPos));
             allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
             BeePortBlockEntity target = allBEs.stream()
@@ -441,21 +444,57 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     }
 
     /**
-     * Called when the block entity is removed. Unregisters the entity from the tracker.
+     * Unregisters the entity from the tracker and halts any incoming bees.
      */
+    private void invalidateTarget() {
+        level
+            .getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP)
+            .ifPresent(tracker -> tracker.remove(this));
+
+        if (entityOnTravel != null) {
+            entityOnTravel.setTargetVelocity(Vec3.ZERO);
+            entityOnTravel.setState(new AdjustRotationToTarget());
+        }
+    }
+
+    /**
+     * Meant to be called when the bee port is broken. Drops any bees from the
+     * inventory. Does not update the inventory.
+     */
+    private void dropBees() {
+        ItemStack bees = roboBeeInventory.getStackInSlot(0);
+
+        if (bees.getCount() > 0) {
+            level.addFreshEntity(new ItemEntity(
+                level,
+                worldPosition.getX(),
+                worldPosition.getY(),
+                worldPosition.getZ(),
+                bees
+            ));
+        }
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        if (!level.isClientSide) {
+            this.invalidateTarget();
+        }
+        super.onChunkUnloaded();
+    }
+
     @Override
     public void remove() {
         if (!level.isClientSide) {
-            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
-            if (entityOnTravel != null) {
-                entityOnTravel.setTargetVelocity(Vec3.ZERO);
-                entityOnTravel.setState(new AdjustRotationToTarget());
-            }
-            if (roboBeeInventory.getStackInSlot(0).getCount() > 0) {
-                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), roboBeeInventory.getStackInSlot(0)));
-            }
+            this.invalidateTarget();
         }
         super.remove();
+    }
+
+    @Override
+    public void destroy() {
+        this.dropBees();
+        super.destroy();
     }
 
     /**
