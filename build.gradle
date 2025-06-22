@@ -174,6 +174,7 @@ publisher {
     apiKeys {
         modrinth System.getenv("MODRINTH_API_TOKEN")
         curseforge System.getenv("CURSEFORGE_API_TOKEN")
+        github System.getenv("GITHUB_TOKEN")
     }
 
     setDebug(false)
@@ -197,5 +198,11 @@ publisher {
     curseDepends {
         required "create"
         optional "create-factory-logistics"
+    }
+
+    github {
+        repo = "timplay33/Create-Mobile-Packages"
+        tag = "1.20.1-${project.mod_version}"
+        target = "mc1.20.1/main"
     }
 }
