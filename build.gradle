@@ -25,6 +25,7 @@ repositories {
 ext.buildNumber = System.getenv('BUILD_NUMBER')
 ext.rawBranchName = System.getenv("BRANCH_NAME")
 ext.branchName = rawBranchName ? rawBranchName.replaceAll("[^a-zA-Z0-9._-]", "_") : null
+
 base {
     archivesName = "${mod_id}-${minecraft_version}"
     group = 'de.theidler.'+ mod_id
@@ -34,6 +35,15 @@ base {
 
 // Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
 
 neoForge {
     // Specify the version of NeoForge to use.
@@ -123,11 +133,12 @@ repositories {
     maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
     maven { url = "https://mvn.devos.one/snapshots" } // Registrate
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
-
-    maven {
-        // location of the maven that hosts JEI files since January 2023
-        name = "Jared's maven"
-        url = "https://maven.blamejared.com/"
+    maven { url = "https://maven.blamejared.com/" } // JEI
+    maven { url = "https://dl.zznty.ru/maven" } // Create Factory Abstractions, Create Factory Logistics
+    mavenCentral()
+    mavenLocal()
+    flatDir {
+        dirs "libs"
     }
 }
 
@@ -152,14 +163,20 @@ dependencies {
 
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html    
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
     implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
     implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
-    
-    implementation("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+
+    implementation("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    implementation(jarJar("ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
+    runtimeOnly("ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
+    compileOnly("org.jetbrains:annotations:24.0.1")
+
+    // testing mod compatibilities
+    runtimeOnly("tschipp.carryon:carryon-forge-1.21.1:2.1.2.7")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -180,6 +197,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_logo               : mod_logo,
             mod_display_url        : mod_display_url,
     ]
+
     inputs.properties replaceProperties
     expand replaceProperties
     from "src/main/templates"
@@ -222,6 +240,7 @@ publisher {
     apiKeys {
         modrinth System.getenv("MODRINTH_API_TOKEN")
         curseforge System.getenv("CURSEFORGE_API_TOKEN")
+        github System.getenv("GITHUB_TOKEN")
     }
 
     setDebug(false)
@@ -243,6 +262,12 @@ publisher {
 
     curseDepends {
         required "create"
+    }
+
+    github {
+        repo = "timplay33/Create-Mobile-Packages"
+        tag = "1.21.1-${project.mod_version}"
+        target = "mc1.21.1/main"
     }
 }
 

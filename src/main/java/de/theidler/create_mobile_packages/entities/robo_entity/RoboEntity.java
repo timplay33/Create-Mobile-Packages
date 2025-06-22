@@ -311,9 +311,11 @@ public class RoboEntity extends Mob {
 
     @Override
     public void remove(RemovalReason pReason) {
-        handleItemStackOnRemove();
-        if (getTargetBlockEntity() != null && getTargetBlockEntity().getRoboEntity() != null) {
-            getTargetBlockEntity().releaseEntityOnTravel(this);
+        if (pReason == RemovalReason.KILLED) {
+            handleItemStackOnRemove();
+        }
+        if (getTargetBlockEntity() != null) {
+            getTargetBlockEntity().trySetEntityOnTravel(null);
         }
         super.remove(pReason);
     }
@@ -426,6 +428,7 @@ public class RoboEntity extends Mob {
             setItemStack(ItemStack.EMPTY);
         }
         setTargetFromItemStack(getItemStack());
+        setState(new AdjustRotationToTarget());
     }
 
     @Override

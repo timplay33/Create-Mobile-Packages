@@ -19,6 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -120,7 +121,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     };
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
-    private RoboEntity entityOnTravel = null;
+    private int entityOnTravelID = -1;
 
     /**
      * Constructor for the BeePortBlockEntity.
@@ -169,49 +170,52 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (!level.isClientSide()) {
             if (this.getRoboEntity() != null)
                 this.data.set(0, calcETA(this.getBlockPos().getCenter(), this.getRoboEntity().position()));
-            this.data.set(1, this.entityOnTravel != null ? 1 : 0);
+            this.data.set(1, this.getRoboEntity() != null ? 1 : 0);
         }
     }
 
     @Override
     public void lazyTick() {
         super.lazyTick();
-        tryPullingFromAdjacentInventories();
-        if (level != null && level.hasNeighborSignal(worldPosition)) {
+        if (level == null || level.isClientSide()) return;
+        if (level.hasNeighborSignal(worldPosition)) {
             tryPushingToAdjacentInventories();
+        } else {
+            tryPullingFromAdjacentInventories();
         }
+
     }
 
     private void tryPushingToAdjacentInventories() {
+        boolean stackToPush = false;
         for (int i = 0; i < inventory.getSlots(); i++) {
-            ItemStack itemStack = inventory.getStackInSlot(i);
-            if (!PackageItem.isPackage(itemStack) || !PackageItem.matchAddress(itemStack, addressFilter)) {
-                continue;
+            if (!inventory.getStackInSlot(i).isEmpty()) {
+                stackToPush = true;
             }
-            for (IItemHandler adjacentInventory : getAdjacentInventories()) {
-                if (tryPushingToInventory(adjacentInventory, itemStack, i)) {
-                    return;
+        }
+        if (!stackToPush) return;
+
+        for (IItemHandler adjacentInventory : getAdjacentInventories()) {
+            for (int i = 0; i < inventory.getSlots(); i++) {
+                ItemStack stackInSlot = inventory.extractItem(i, 1, true);
+                if (stackInSlot.isEmpty())
+                    continue;
+                ItemStack remainder = ItemHandlerHelper.insertItemStacked(adjacentInventory, stackInSlot, false);
+                if (remainder.isEmpty()) {
+                    inventory.extractItem(i, 1, false);
+                    level.blockEntityChanged(worldPosition);
                 }
             }
         }
     }
 
-    private boolean tryPushingToInventory(IItemHandler inventory, ItemStack itemStack, int extractSlot) {
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            if (inventory.getStackInSlot(i).isEmpty()) {
-                inventory.insertItem(i, this.inventory.extractItem(extractSlot, 1, false), false);
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void tryPullingFromAdjacentInventories() {
-        if (hasFullInventory(entityOnTravel != null ? 1 : 0)) return;
+        RoboEntity currentEntity = this.getRoboEntity();
+        if (hasFullInventory(currentEntity != null ? 1 : 0)) return;
 
         getAdjacentInventories().forEach(( inventory) -> {
             if (inventory == null) return;
-            if (hasFullInventory(entityOnTravel != null  ? 1 : 0)) return;
+            if (hasFullInventory(currentEntity != null  ? 1 : 0)) return;
             for (int i = 0; i < inventory.getSlots(); i++) {
                 ItemStack itemStack = inventory.getStackInSlot(i);
                 if (!itemStack.isEmpty() && PackageItem.isPackage(itemStack)) {
@@ -317,7 +321,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     private void sendToPlayer(Player player, ItemStack itemStack, int slot) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
-            if (this.entityOnTravel == null) {
+            if (this.getRoboEntity() == null) {
                 requestRoboEntity(level, this.getBlockPos());
                 return;
             }
@@ -336,7 +340,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     private void sendDrone(ItemStack itemStack, int slot) {
         if (!tryConsumeDrone()) {
-            if (this.entityOnTravel == null) {
+            if (this.getRoboEntity() == null) {
                 requestRoboEntity(level, this.getBlockPos());
                 return;
             }
@@ -461,9 +465,10 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
             tracker.remove(this);
         }
 
-        if (entityOnTravel != null) {
-            entityOnTravel.setTargetVelocity(Vec3.ZERO);
-            entityOnTravel.setState(new AdjustRotationToTarget());
+        RoboEntity currentEntity = getRoboEntity();
+        if (currentEntity != null) {
+            currentEntity.setTargetVelocity(Vec3.ZERO);
+            currentEntity.setState(new AdjustRotationToTarget());
         }
     }
 
@@ -497,9 +502,14 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     public void remove() {
         if (!level.isClientSide) {
             this.invalidateTarget();
-            this.dropBees();
         }
         super.remove();
+    }
+
+    @Override
+    public void destroy() {
+        this.dropBees();
+        super.destroy();
     }
 
     /**
@@ -549,13 +559,15 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     public boolean canAcceptEntity(RoboEntity entity, Boolean hasPackage) {
         if (this.isRemoved()) return false;
         if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(0);
-        if (entityOnTravel != null && entityOnTravel != entity) return false;
+        RoboEntity currentEntity = getRoboEntity();
+        if (currentEntity != null && currentEntity != entity) return false;
         return hasPackage ? !isFull() : !hasFullRoboSlot(0);
     }
 
     public synchronized boolean trySetEntityOnTravel(RoboEntity entity) {
-        if (entityOnTravel == null) {
-            entityOnTravel = entity;
+        RoboEntity currentEntity = getRoboEntity();
+        if (currentEntity == null || entity == null) {
+            setRoboEntityOnTravel(entity);
             return true;
         }
         return false;
@@ -581,7 +593,20 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     }
 
     public RoboEntity getRoboEntity(){
-        return entityOnTravel;
+        if (level == null || entityOnTravelID == -1) return null;
+        Entity entity = level.getEntity(entityOnTravelID);
+        if (entity instanceof RoboEntity roboEntity) {
+            return roboEntity;
+        }
+        return null;
+    }
+
+    public void setRoboEntityOnTravel(RoboEntity entity) {
+        if (entity == null) {
+            this.entityOnTravelID = -1;
+        } else {
+            this.entityOnTravelID = entity.getId();
+        }
     }
 
     public ContainerData getData() {

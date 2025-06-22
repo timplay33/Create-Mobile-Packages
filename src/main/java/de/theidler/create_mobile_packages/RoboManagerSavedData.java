@@ -11,10 +11,11 @@ import net.minecraft.world.level.saveddata.SavedData;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RoboManagerSavedData extends SavedData {
 
-    private Map<UUID, RoboEntity> robos = new HashMap<>();
+    private Map<UUID, RoboEntity> robos = new ConcurrentHashMap<>();
 
     public static RoboManagerSavedData load(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(factory(), "robo_manager");

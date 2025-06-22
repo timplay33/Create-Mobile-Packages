@@ -2,6 +2,9 @@
 Create: Mobile Packages - v0.5.3 - unreleased
 ------------------------------------------------------
 
+### Additions
+- Added always suggesting the player's name as the target address.
+
 ### Bug Fixes
 - Fix handling of blank addresses
 - Fix misuse of `getStackInSlot`
@@ -10,6 +13,12 @@ Create: Mobile Packages - v0.5.3 - unreleased
 - Fix Robo Bees can no longer be set on fire
 - Fix Items in the Portable Stock Ticker are now sorted by count
 - Fix Log spamming of "Releasing entity on travel: ..."
+- Fix Create Factory Logistics support with Factory Abstractions
+- Fix Packages inside Robo Bee Port get voided when redstone is applied
+- Fix Robo Bees drops of Bee Ports (Contraptions & CarryOn)
+- Fix CarryOn support for Robo Bees
+- Changed Robo Bee Port now outputs all Items in adjacent inventories when redstone powered
+- Changed Robo Bee Port now no longer pulls Items from adjacent inventories when redstone powered
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.2 1.21.1 - 09.06.2025
