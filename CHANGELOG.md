@@ -12,6 +12,7 @@ Create: Mobile Packages - v0.5.4 - unreleased
 - Fix Create Factory Logistics support with Factory Abstractions
 - Fix Packages inside Robo Bee Port get voided when redstone is applied
 - Fix Robo Bees drops of Bee Ports (Contraptions & CarryOn)
+- Fix CarryOn support for Robo Bees
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.3 - 09.06.2025
