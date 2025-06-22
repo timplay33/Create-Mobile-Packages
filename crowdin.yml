@@ -1,3 +1,13 @@
 files:
   - source: /src/main/resources/assets/create_mobile_packages/lang/en_us.json
     translation: /src/main/resources/assets/create_mobile_packages/lang/%locale_with_underscore%.json
+    languages_mapping:
+      locale_with_underscore:
+        de-DE: de_de
+        fr-FR: fr_fr
+        ja-JP: ja_jp
+        pl-PL: pl_pl
+        pt-BR: pt_br
+        ru-RU: ru_ru
+        sv-SE: sv_se
+        zh-CN: zh_cn
