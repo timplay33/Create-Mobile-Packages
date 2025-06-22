@@ -6,6 +6,7 @@ pipeline {
     environment {
         CURSEFORGE_API_TOKEN = credentials('curseforge-api-token')
         MODRINTH_API_TOKEN = credentials('modrinth-api-token')
+        GITHUB_TOKEN = credentials('github-api-token')
     }
 
     stages {
