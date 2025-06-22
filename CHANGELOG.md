@@ -2,6 +2,9 @@
 Create: Mobile Packages - v0.5.4 - unreleased
 ------------------------------------------------------
 
+### Additions
+- Added always suggesting the player's name as the target address.
+
 ### Bug Fixes
 - Fix handling of blank addresses
 - Fix misuse of `getStackInSlot`

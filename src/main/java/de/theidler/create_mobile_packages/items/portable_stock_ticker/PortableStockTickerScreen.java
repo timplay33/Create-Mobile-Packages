@@ -233,7 +233,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         boolean initial = addressBox == null;
         String previouslyUsedAddress = initial ? menu.portableStockTicker.previouslyUsedAddress : addressBox.getValue();
         addressBox =
-                new AddressEditBox(this, new NoShadowFontWrapper(font), x + 27, y + windowHeight - 36, 92, 10, true);
+                new AddressEditBox(this, new NoShadowFontWrapper(font), x + 27, y + windowHeight - 36, 92, 10, true, this.playerInventory.player.getName().getString());
         addressBox.setTextColor(0x714A40);
         addressBox.setValue(previouslyUsedAddress);
         addRenderableWidget(addressBox);
