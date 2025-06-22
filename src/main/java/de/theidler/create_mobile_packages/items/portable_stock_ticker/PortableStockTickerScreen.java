@@ -38,10 +38,13 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.lwjgl.glfw.GLFW;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.OrderProvider;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.RecipeRequestHelper;
+import ru.zznty.create_factory_abstractions.api.generic.search.CategoriesProvider;
+import ru.zznty.create_factory_abstractions.api.generic.search.GenericSearch;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
@@ -52,22 +55,7 @@ import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 import javax.annotation.Nullable;
 import java.util.*;
 
-@SuppressWarnings("UnstableApiUsage")
-public class PortableStockTickerScreen extends AbstractSimiContainerScreen<PortableStockTickerMenu> implements ScreenWithStencils, OrderProvider {
-
-    public static class CategoryEntry {
-        boolean hidden;
-        String name;
-        int y;
-        int targetBECategory;
-
-        public CategoryEntry(int targetBECategory, String name, int y) {
-            this.targetBECategory = targetBECategory;
-            this.name = name;
-            hidden = false;
-            this.y = y;
-        }
-    }
+public class PortableStockTickerScreen extends AbstractSimiContainerScreen<PortableStockTickerMenu> implements ScreenWithStencils, OrderProvider, CategoriesProvider {
 
     private static final AllGuiTextures NUMBERS = AllGuiTextures.NUMBERS;
     private static final AllGuiTextures HEADER = AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER;
@@ -96,7 +84,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     Inventory playerInventory;
     public List<List<BigGenericStack>> currentItemSource;
     public List<List<BigGenericStack>> displayedItems;
-    public List<CategoryEntry> categories;
+    public List<GenericSearch.CategoryEntry> categories;
     public List<BigGenericStack> itemsToOrder;
     public List<CraftableGenericStack> recipesToOrder;
     private boolean scrollHandleActive;
@@ -153,7 +141,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        List<List<BigGenericStack>> clientStockSnapshot = convertToCategoryList(sortByCount(ClientScreenStorage.stacks));
+        List<List<BigGenericStack>> clientStockSnapshot = convertToCategoryList(
+                sortByCount(ClientScreenStorage.stacks));
         if (clientStockSnapshot != currentItemSource) {
             currentItemSource = clientStockSnapshot;
             refreshSearchResults(false);
@@ -205,116 +194,10 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (scrollBackUp)
             itemScroll.startWithValue(0);
 
-        categories = new ArrayList<>();
-        for (int i = 0; i < menu.portableStockTicker.categories.size(); i++) {
-            ItemStack stack = menu.portableStockTicker.categories.get(i);
-            CategoryEntry entry = new CategoryEntry(i, stack.isEmpty() ? ""
-                                                                       : stack.getHoverName()
-                                                               .getString(),
-                                                    0);
-            entry.hidden = hiddenCategories.contains(i);
-            categories.add(entry);
-        }
+        GenericSearch.SearchResult result = GenericSearch.search(this, searchBox.getValue(), rowHeight, cols);
 
-        CategoryEntry unsorted = new CategoryEntry(-1, CreateLang.translate("gui.stock_keeper.unsorted_category")
-                .string(), 0);
-        unsorted.hidden = hiddenCategories.contains(-1);
-        categories.add(unsorted);
-
-        String valueWithPrefix = searchBox.getValue();
-        boolean anyItemsInCategory = false;
-
-        // Nothing is being filtered out
-        if (valueWithPrefix.isBlank() && currentItemSource != null) {
-            displayedItems = new ArrayList<>(currentItemSource);
-
-            int categoryY = 0;
-            for (int categoryIndex = 0; categoryIndex < currentItemSource.size(); categoryIndex++) {
-                categories.get(categoryIndex).y = categoryY;
-                List<BigGenericStack> displayedItemsInCategory = displayedItems.get(categoryIndex);
-                if (displayedItemsInCategory.isEmpty())
-                    continue;
-                if (categoryIndex < currentItemSource.size() - 1)
-                    anyItemsInCategory = true;
-
-                categoryY += rowHeight;
-                if (!categories.get(categoryIndex).hidden)
-                    categoryY += Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight;
-            }
-
-            if (!anyItemsInCategory)
-                categories.clear();
-
-            updateCraftableAmounts();
-            return;
-        }
-
-        // Filter by search string
-        boolean modSearch = false;
-        boolean tagSearch = false;
-        if ((modSearch = valueWithPrefix.startsWith("@")) || (tagSearch = valueWithPrefix.startsWith("#")))
-            valueWithPrefix = valueWithPrefix.substring(1);
-        final String value = valueWithPrefix.toLowerCase(Locale.ROOT);
-
-        if (currentItemSource == null) {
-            return;
-        }
-        displayedItems = new ArrayList<>();
-        currentItemSource.forEach($ -> displayedItems.add(new ArrayList<>()));
-
-        int categoryY = 0;
-        for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
-            List<BigGenericStack> category = currentItemSource.get(categoryIndex);
-            categories.get(categoryIndex).y = categoryY;
-
-            if (displayedItems.size() <= categoryIndex)
-                break;
-
-            List<BigGenericStack> displayedItemsInCategory = displayedItems.get(categoryIndex);
-            for (BigGenericStack entry : category) {
-                ItemStack stack = entry.asStack().stack;
-
-                if (modSearch) {
-                    if (ForgeRegistries.ITEMS.getKey(stack.getItem())
-                            .getNamespace()
-                            .contains(value)) {
-                        displayedItemsInCategory.add(entry);
-                    }
-                    continue;
-                }
-
-                if (tagSearch) {
-                    if (stack.getTags()
-                            .anyMatch(key -> key.location()
-                                    .toString()
-                                    .contains(value)))
-                        displayedItemsInCategory.add(entry);
-                    continue;
-                }
-
-                if (stack.getHoverName()
-                        .getString()
-                        .toLowerCase(Locale.ROOT)
-                        .contains(value)
-                        || ForgeRegistries.ITEMS.getKey(stack.getItem())
-                        .getPath()
-                        .contains(value)) {
-                    displayedItemsInCategory.add(entry);
-                    continue;
-                }
-            }
-            if (displayedItemsInCategory.isEmpty())
-                continue;
-            if (categoryIndex < currentItemSource.size() - 1)
-                anyItemsInCategory = true;
-
-            categoryY += rowHeight;
-
-            if (!categories.get(categoryIndex).hidden)
-                categoryY += Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight;
-        }
-        if (!anyItemsInCategory)
-            categories.clear();
+        categories = result.categories();
+        displayedItems = result.displayedItems();
 
         updateCraftableAmounts();
     }
@@ -392,12 +275,16 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         int localY = y - itemsY;
 
         for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
-            CategoryEntry entry = categories.isEmpty() ? new CategoryEntry(0, "", 0) : categories.get(categoryIndex);
-            if (entry.hidden)
+            GenericSearch.CategoryEntry entry = categories.isEmpty() ?
+                                                new GenericSearch.CategoryEntry(0, "", new MutableInt(),
+                                                                                new MutableBoolean()) :
+                                                categories.get(categoryIndex);
+            if (entry.hidden().isTrue())
                 continue;
 
-            int row = Mth.floor((localY - (categories.isEmpty() ? 4 : rowHeight) - entry.y) / (float) rowHeight
-                                        + itemScroll.getChaseTarget());
+            int row = Mth.floor(
+                    (localY - (categories.isEmpty() ? 4 : rowHeight) - entry.y().intValue()) / (float) rowHeight
+                            + itemScroll.getChaseTarget());
 
             int col = (x - itemsX) / colWidth;
             int slot = row * cols + col;
@@ -582,18 +469,21 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         // Items
         for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
             List<BigGenericStack> category = displayedItems.get(categoryIndex);
-            CategoryEntry categoryEntry = categories.isEmpty() ? null : categories.get(categoryIndex);
-            int categoryY = categories.isEmpty() ? 0 : categoryEntry.y;
+            GenericSearch.CategoryEntry categoryEntry = categories.isEmpty() ? null : categories.get(categoryIndex);
+            int categoryY = categories.isEmpty() ? 0 : categoryEntry.y().intValue();
             if (category.isEmpty())
                 continue;
 
             if (!categories.isEmpty()) {
-                (categoryEntry.hidden ? AllGuiTextures.STOCK_KEEPER_CATEGORY_HIDDEN
-                                      : AllGuiTextures.STOCK_KEEPER_CATEGORY_SHOWN).render(pGuiGraphics, itemsX,
-                                                                                           itemsY + categoryY + 6);
-                pGuiGraphics.drawString(font, categoryEntry.name, itemsX + 10, itemsY + categoryY + 8, 0x4A2D31, false);
-                pGuiGraphics.drawString(font, categoryEntry.name, itemsX + 9, itemsY + categoryY + 7, 0xF8F8EC, false);
-                if (categoryEntry.hidden)
+                (categoryEntry.hidden().isTrue() ? AllGuiTextures.STOCK_KEEPER_CATEGORY_HIDDEN
+                                                 : AllGuiTextures.STOCK_KEEPER_CATEGORY_SHOWN).render(pGuiGraphics,
+                                                                                                      itemsX,
+                                                                                                      itemsY + categoryY + 6);
+                pGuiGraphics.drawString(font, categoryEntry.name(), itemsX + 10, itemsY + categoryY + 8, 0x4A2D31,
+                                        false);
+                pGuiGraphics.drawString(font, categoryEntry.name(), itemsX + 9, itemsY + categoryY + 7, 0xF8F8EC,
+                                        false);
+                if (categoryEntry.hidden().isTrue())
                     continue;
             }
 
@@ -676,7 +566,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             if (list.isEmpty())
                 continue;
             totalRows++;
-            if (categories.size() > i && categories.get(i).hidden)
+            if (categories.size() > i && categories.get(i).hidden().isTrue())
                 continue;
             totalRows += Math.ceil(list.size() / (float) cols);
         }
@@ -863,17 +753,17 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 && pMouseX < itemsX + cols * colWidth && pMouseY >= getGuiTop() + 16
                 && pMouseY <= getGuiTop() + windowHeight - 80) {
             for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
-                CategoryEntry entry = categories.get(categoryIndex);
-                if (Mth.floor((localY - entry.y) / (float) rowHeight + itemScroll.getChaseTarget()) != 0)
+                GenericSearch.CategoryEntry entry = categories.get(categoryIndex);
+                if (Mth.floor((localY - entry.y().intValue()) / (float) rowHeight + itemScroll.getChaseTarget()) != 0)
                     continue;
                 if (displayedItems.get(categoryIndex)
                         .isEmpty())
                     continue;
-                int indexOf = entry.targetBECategory;
+                int indexOf = entry.targetCategory();
                 if (indexOf >= menu.portableStockTicker.categories.size())
                     continue;
 
-                if (!entry.hidden) {
+                if (entry.hidden().isFalse()) {
                     hiddenCategories.add(indexOf);
                     playUiSound(SoundEvents.ITEM_FRAME_ROTATE_ITEM, 1f, 1.5f);
                 } else {
@@ -900,7 +790,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                                                         .get(hoveredSlot.getSecond());
 
         int transfer = hasShiftDown() ? GenericContentExtender.registrationOf(entry.get().key())
-                .clientProvider().guiHandler().maxStackSize(entry.get().key())
+                .clientProvider().guiHandler().stackSize(entry.get().key())
                                       : hasControlDown() ? 10 : 1;
 
         if (recipeClicked && entry instanceof CraftableGenericStack cbis) {
@@ -1173,5 +1063,20 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         CMPPackets.getChannel().sendToServer(
                 new SendPackage(GenericOrder.empty(), addressBox.getValue(), true));
         super.removed();
+    }
+
+    @Override
+    public List<ItemStack> categories() {
+        return menu.portableStockTicker.categories;
+    }
+
+    @Override
+    public Set<Integer> hiddenCategories() {
+        return hiddenCategories;
+    }
+
+    @Override
+    public List<List<BigGenericStack>> currentItemSource() {
+        return currentItemSource;
     }
 }
