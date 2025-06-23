@@ -1,5 +1,5 @@
 ------------------------------------------------------
-Create: Mobile Packages - v0.5.4 - 22.06.2025
+Create: Mobile Packages - v0.5.4 - 23.06.2025
 ------------------------------------------------------
 
 ### Additions
@@ -18,6 +18,7 @@ Create: Mobile Packages - v0.5.4 - 22.06.2025
 - Fix CarryOn support for Robo Bees
 - Changed Robo Bee Port now outputs all Items in adjacent inventories when redstone powered
 - Changed Robo Bee Port now no longer pulls Items from adjacent inventories when redstone powered
+- Fix Creative Mode Tab launch error
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.3 - 09.06.2025

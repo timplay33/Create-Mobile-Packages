@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
@@ -18,19 +19,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CMPCreativeModeTabs {
-    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, CreateMobilePackages.MODID);
+    private static final DeferredRegister<CreativeModeTab> REGISTER = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, CreateMobilePackages.MODID);
 
-    public static final RegistryObject<CreativeModeTab> CREATE_MOBILE_PACKAGES_TAB = CREATIVE_MODE_TABS.register("create_mobile_packages_tab",
+    public static final RegistryObject<CreativeModeTab> CREATE_MOBILE_PACKAGES_TAB = REGISTER.register("create_mobile_packages_tab",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.create_mobile_packages"))
                     .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
-                    .icon(CMPBlocks.BEE_PORT::asStack)
+                    .icon(CMPItems.ROBO_BEE::asStack)
                     .displayItems(new RegistrateDisplayItemsGenerator())
                     .build());
 
     public static void register(IEventBus modEventBus) {
-        CREATIVE_MODE_TABS.register(modEventBus);
+        REGISTER.register(modEventBus);
     }
 
     public static class RegistrateDisplayItemsGenerator implements CreativeModeTab.DisplayItemsGenerator {
