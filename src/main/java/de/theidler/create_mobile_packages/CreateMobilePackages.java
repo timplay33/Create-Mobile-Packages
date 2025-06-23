@@ -16,7 +16,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
@@ -28,7 +27,11 @@ public class CreateMobilePackages
     public static final String NAME = "Create: Mobile Packages";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(CreateMobilePackages.MODID)
-            .defaultCreativeTab((ResourceKey<CreativeModeTab>) null)
+            .defaultCreativeTab("create_mobile_packages_tab",
+                    t -> {
+                        t.icon(() -> CMPItems.ROBO_BEE.get().getDefaultInstance());
+                        t.title(Component.translatable("itemGroup.create_mobile_packages"));
+                    }).build()
             .setTooltipModifierFactory(item ->
                     new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                             .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
@@ -44,7 +47,6 @@ public class CreateMobilePackages
         IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
         REGISTRATE.registerEventListeners(modEventBus);
 
-        CMPCreativeModeTabs.register(modEventBus);
         CMPBlocks.register();
         CMPItems.register();
         CMPBlockEntities.register();
