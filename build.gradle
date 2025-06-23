@@ -181,7 +181,7 @@ publisher {
     setCurseID("1232978")
     setModrinthID("1vXRfEHZ")
     setVersionType("release")
-    setChangelog("CHANGELOG.md")
+    setChangelog("https://github.com/timplay33/Create-Mobile-Packages/blob/mc1.20.1/main/CHANGELOG.md")
     setVersion("1.20.1-${project.mod_version}")
     setDisplayName("Create: Mobile Packages 1.20.1-${project.mod_version}")
     setGameVersions("1.20.1")
