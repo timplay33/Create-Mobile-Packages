@@ -1,7 +1,6 @@
 package de.theidler.create_mobile_packages.compat.jei;
 
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
-import com.simibubi.create.foundation.blockEntity.LegacyRecipeWrapper;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerMenu;
@@ -14,6 +13,7 @@ import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IUniversalRecipeTransferHandler;
+import mezz.jei.common.transfer.TransferOperation;
 import mezz.jei.library.transfer.RecipeTransferErrorMissingSlots;
 import mezz.jei.library.transfer.RecipeTransferErrorTooltip;
 import net.minecraft.core.RegistryAccess;
@@ -23,17 +23,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
-import ru.zznty.create_factory_abstractions.compat.jei.IngredientTransfer;
-import ru.zznty.create_factory_abstractions.compat.jei.TransferOperation;
-import ru.zznty.create_factory_abstractions.compat.jei.TransferOperationsResult;
 import ru.zznty.create_factory_abstractions.generic.support.CraftableGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 
@@ -64,13 +61,13 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
                                                          IRecipeSlotsView recipeSlots, Player player,
                                                          boolean maxTransfer, boolean doTransfer) {
         Level level = player.level();
-        if (!(object instanceof RecipeHolder<?> recipe))
+        if (!(object instanceof Recipe<?> recipe))
             return null;
         MutableObject<IRecipeTransferError> result = new MutableObject<>();
         if (level.isClientSide())
             //noinspection unchecked
             CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> result
-                    .setValue(transferRecipeOnClient(container, (RecipeHolder<Recipe<?>>) recipe, recipeSlots, player, maxTransfer, doTransfer)));
+                    .setValue(transferRecipeOnClient(container, recipe, recipeSlots, player, maxTransfer, doTransfer)));
         return result.getValue();
     }
 
