@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.compat.jei;
 
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
+import com.simibubi.create.foundation.blockEntity.LegacyRecipeWrapper;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerMenu;
@@ -89,7 +90,7 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
         GenericInventorySummary summary = screen.stockSnapshot();
 
         List<GenericStack> availableStacks = summary.get();
-        Container outputDummy = new RecipeWrapper(new ItemStackHandler(9));
+        Container outputDummy = new LegacyRecipeWrapper(new ItemStackHandler(9));
         List<Slot> craftingSlots = new ArrayList<>();
         for (int i = 0; i < outputDummy.getContainerSize(); i++)
             craftingSlots.add(new Slot(outputDummy, i, 0, 0));

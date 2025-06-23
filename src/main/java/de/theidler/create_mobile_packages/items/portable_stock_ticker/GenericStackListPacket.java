@@ -1,13 +1,9 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import net.minecraft.network.FriendlyByteBuf;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
-import ru.zznty.create_factory_abstractions.generic.stack.GenericStackSerializer;
-import com.simibubi.create.content.logistics.BigItemStack;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
-import net.createmod.catnip.net.base.ClientboundPacketPayload;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,8 +12,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.List;
 
-@SuppressWarnings("UnstableApiUsage")
-public class GenericStackListPacket extends SimplePacketBase {
+public class GenericStackListPacket implements ClientboundPacketPayload {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, GenericStackListPacket> STREAM_CODEC = StreamCodec.composite(
             CatnipStreamCodecBuilders.list(GenericStack.STREAM_CODEC), packet -> packet.stacks,

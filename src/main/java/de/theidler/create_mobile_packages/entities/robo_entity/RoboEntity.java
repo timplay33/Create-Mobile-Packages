@@ -137,7 +137,7 @@ public class RoboEntity extends Mob {
             targetBlockEntity = getClosestBeePort(level(), targetAddress, this.blockPosition(), this);
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null) {
-                    oldTarget.releaseEntityOnTravel(this);
+                    oldTarget.trySetEntityOnTravel(null);
                 }
                 if (targetBlockEntity != null) {
                     targetBlockEntity.trySetEntityOnTravel(this);
@@ -152,7 +152,7 @@ public class RoboEntity extends Mob {
             BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), targetAddress, this.blockPosition(), this);
             if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
                 if (targetBlockEntity != null) {
-                    targetBlockEntity.releaseEntityOnTravel(this);
+                    targetBlockEntity.trySetEntityOnTravel(null);
                 }
                 targetBlockEntity = newTargetBlockEntity;
                 targetBlockEntity.trySetEntityOnTravel(this);

@@ -35,6 +35,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
@@ -571,12 +572,6 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
             return true;
         }
         return false;
-    }
-
-    public synchronized void releaseEntityOnTravel(RoboEntity entity) {
-        if (entityOnTravel == entity) {
-            entityOnTravel = null;
-        }
     }
 
     public ItemStackHandler getRoboBeeInventory() {

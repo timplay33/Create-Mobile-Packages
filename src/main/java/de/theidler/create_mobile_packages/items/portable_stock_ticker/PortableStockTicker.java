@@ -17,8 +17,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkHooks;
-import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
 import java.util.*;
@@ -52,11 +50,6 @@ public class PortableStockTicker extends StockCheckingItem {
         }
         // no PST found
         return null;
-    }
-
-    @Override
-    public Rarity getRarity(ItemStack pStack) {
-        return Rarity.UNCOMMON;
     }
 
     public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,

@@ -3,7 +3,6 @@ package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.WiFiEffectPacket;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 import de.theidler.create_mobile_packages.index.CMPPackets;
@@ -14,13 +13,12 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
-public class SendPackage extends ServerboundPacketPayload {
+public class SendPackage implements ServerboundPacketPayload {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, SendPackage> STREAM_CODEC = StreamCodec.composite(
-            PackageOrderWithCrafts.STREAM_CODEC, packet -> packet.order,
+            GenericOrder.STREAM_CODEC, packet -> packet.order,
             ByteBufCodecs.STRING_UTF8, packet -> packet.address,
             SendPackage::new
     );
