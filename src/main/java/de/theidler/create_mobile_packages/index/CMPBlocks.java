@@ -40,6 +40,8 @@ public class CMPBlocks {
             .initialProperties(SharedProperties::wooden)
             .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
             .item(DronePortItem::new)
+            .removeTab(CreativeModeTabs.SEARCH)
+            .removeTab(ResourceKey.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, CreateMobilePackages.asResource("create_mobile_packages_tab")))
             .transform(customItemModel())
             .register();
 
