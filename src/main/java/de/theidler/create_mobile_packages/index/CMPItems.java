@@ -21,8 +21,6 @@ public class CMPItems {
 
     public static final ItemEntry<DroneController> DRONE_CONTROLLER =
             CreateMobilePackages.REGISTRATE.item("drone_controller", DroneController::new)
-                    .removeTab(CreativeModeTabs.SEARCH)
-                    .removeTab(ResourceKey.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, CreateMobilePackages.asResource("create_mobile_packages_tab")))
                     .register();
 
     public static final ItemEntry<RoboBeeItem> ROBO_BEE =
