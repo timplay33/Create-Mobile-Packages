@@ -9,9 +9,7 @@ import de.theidler.create_mobile_packages.index.*;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -56,9 +54,7 @@ public class CreateMobilePackages
         CMPEntities.register();
         CMPDisplaySources.register();
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            CreateMobilePackagesClient.onCtorClient(modEventBus, forgeEventBus);
-        });
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> CreateMobilePackagesClient.onCtorClient(modEventBus, forgeEventBus));
 
     }
 

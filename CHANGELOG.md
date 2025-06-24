@@ -1,4 +1,12 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.5.4-4 - 24.06.2025
+------------------------------------------------------
+
+### Bug Fixes
+- Fix published version was not obfuscated
+- revert removing all Tab related code, as it was not the cause of the Creative Tab error
+
+------------------------------------------------------
 Create: Mobile Packages - v0.5.4-3 - 24.06.2025
 ------------------------------------------------------
 
