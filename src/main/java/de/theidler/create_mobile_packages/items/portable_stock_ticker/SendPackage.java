@@ -5,6 +5,7 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBeha
 import com.simibubi.create.content.logistics.packagerLink.WiFiEffectPacket;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.utility.AdventureUtil;
+import de.theidler.create_mobile_packages.compat.FactoryAbstractions;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.net.base.ServerboundPacketPayload;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -18,7 +19,7 @@ import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 public class SendPackage implements ServerboundPacketPayload {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, SendPackage> STREAM_CODEC = StreamCodec.composite(
-            GenericOrder.STREAM_CODEC, packet -> packet.order,
+            FactoryAbstractions.GENERIC_ORDER_STREAM_CODEC, packet -> packet.order,
             ByteBufCodecs.STRING_UTF8, packet -> packet.address,
             SendPackage::new
     );
@@ -26,7 +27,7 @@ public class SendPackage implements ServerboundPacketPayload {
     private final GenericOrder order;
     private final String address;
 
-    public SendPackage(GenericOrder order, String address, boolean encodeRequester) {
+    public SendPackage(GenericOrder order, String address) {
         this.order = order;
         this.address = address;
     }

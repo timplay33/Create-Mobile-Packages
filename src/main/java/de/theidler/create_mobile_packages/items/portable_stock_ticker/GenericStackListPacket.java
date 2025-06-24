@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
+import de.theidler.create_mobile_packages.compat.FactoryAbstractions;
 import net.createmod.catnip.net.base.ClientboundPacketPayload;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import de.theidler.create_mobile_packages.index.CMPPackets;
@@ -15,7 +16,7 @@ import java.util.List;
 public class GenericStackListPacket implements ClientboundPacketPayload {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, GenericStackListPacket> STREAM_CODEC = StreamCodec.composite(
-            CatnipStreamCodecBuilders.list(GenericStack.STREAM_CODEC), packet -> packet.stacks,
+            CatnipStreamCodecBuilders.list(FactoryAbstractions.GENERIC_STACK_STREAM_CODEC), packet -> packet.stacks,
             GenericStackListPacket::new
     );
 

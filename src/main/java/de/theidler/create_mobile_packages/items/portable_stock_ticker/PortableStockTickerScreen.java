@@ -1031,7 +1031,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         CatnipServices.NETWORK.sendToServer(
                 new SendPackage(GenericOrder.of(order),
-                        addressBox.getValue(), false));
+                        addressBox.getValue()));
         menu.portableStockTicker.previouslyUsedAddress = addressBox.getValue();
 
         itemsToOrder = new ArrayList<>();
@@ -1064,7 +1064,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     @Override
     public void removed() {
         CatnipServices.NETWORK.sendToServer(new HiddenCategoriesPacket(new ArrayList<>(hiddenCategories)));
-        CatnipServices.NETWORK.sendToServer(new SendPackage(GenericOrder.empty(), addressBox.getValue(), true));
+        CatnipServices.NETWORK.sendToServer(new SendPackage(GenericOrder.empty(), addressBox.getValue()));
         super.removed();
     }
 
