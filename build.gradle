@@ -170,13 +170,13 @@ dependencies {
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
 
-    implementation("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    implementation("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
     implementation(jarJar("ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
     runtimeOnly("ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
     compileOnly("org.jetbrains:annotations:24.0.1")
 
     // testing mod compatibilities
-    runtimeOnly("tschipp.carryon:carryon-forge-1.21.1:2.2.3.3")
+    runtimeOnly("tschipp.carryon:carryon-neoforge-1.21.1:2.2.3.3")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

@@ -14,7 +14,6 @@ import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IUniversalRecipeTransferHandler;
-import mezz.jei.common.transfer.TransferOperation;
 import mezz.jei.library.transfer.RecipeTransferErrorMissingSlots;
 import mezz.jei.library.transfer.RecipeTransferErrorTooltip;
 import net.minecraft.core.RegistryAccess;
@@ -32,6 +31,9 @@ import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.compat.jei.IngredientTransfer;
+import ru.zznty.create_factory_abstractions.compat.jei.TransferOperation;
+import ru.zznty.create_factory_abstractions.compat.jei.TransferOperationsResult;
 import ru.zznty.create_factory_abstractions.generic.support.CraftableGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 
