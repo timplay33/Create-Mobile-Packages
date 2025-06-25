@@ -9,7 +9,6 @@ public class DeliveryDecisionState implements RoboEntityState {
         if (re.getItemStack().isEmpty()) {
             re.setTargetAddress(null);
             re.setState(new AdjustRotationToTarget());
-            return;
         }
         //TODO: implement option to deliver package from player
     }

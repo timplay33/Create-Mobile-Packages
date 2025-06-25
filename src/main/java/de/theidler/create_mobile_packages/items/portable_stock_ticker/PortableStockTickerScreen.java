@@ -19,7 +19,6 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
-import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.gui.UIRenderHelper;
@@ -30,17 +29,14 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -533,7 +529,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         }
 
         // Render JEI imported
-        if (recipesToOrder.size() > 0) {
+        if (!recipesToOrder.isEmpty()) {
             int jeiX = x + (windowWidth - colWidth * recipesToOrder.size()) / 2 + 1;
             int jeiY = orderY - 31;
             ms.pushPose();
@@ -572,10 +568,9 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             totalRows++;
             if (categories.size() > i && categories.get(i).hidden().isTrue())
                 continue;
-            totalRows += Math.ceil(list.size() / (float) cols);
+            totalRows += (int) Math.ceil(list.size() / (float) cols);
         }
-        int maxScroll = (int) Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
-        return maxScroll;
+        return (int) Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
     }
 
     private void renderItemEntry(GuiGraphics graphics, float scale, BigGenericStack entry, boolean isStackHovered,
@@ -643,8 +638,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                     new ArrayList<>(GenericContentExtender.registrationOf(entry.get().key())
                                             .clientProvider().guiHandler()
                                             .tooltipBuilder(entry.get().key(), entry.get().amount()));
-            if (recipeHovered && lines.size() > 0)
-                lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.get(0)
+            if (recipeHovered && !lines.isEmpty())
+                lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.getFirst()
                         .copy()));
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
         }

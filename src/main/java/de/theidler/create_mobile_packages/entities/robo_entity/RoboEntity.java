@@ -25,9 +25,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -193,14 +193,13 @@ public class RoboEntity extends Mob {
      * Finally, the closest port to this RoboEntity's position is determined.
      *
      * @param address The address to filter by, or {@code null} for no filtering.
-     * @param entity
      * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
     public static BeePortBlockEntity getClosestBeePort(Level level, String address, BlockPos origin, RoboEntity entity) {
         if (level instanceof ServerLevel serverLevel) {
             DronePortTracker tracker = DronePortTracker.get(serverLevel);
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
-            allBEs.removeIf(be -> be.isRemoved());
+            allBEs.removeIf(BlockEntity::isRemoved);
             allBEs.removeIf(dpbe -> !isWithinRange(dpbe.getBlockPos(), origin));
             if (address != null) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));

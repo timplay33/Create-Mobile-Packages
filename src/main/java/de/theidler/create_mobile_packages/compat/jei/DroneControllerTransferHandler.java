@@ -25,7 +25,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
@@ -68,7 +67,6 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
             return null;
         MutableObject<IRecipeTransferError> result = new MutableObject<>();
         if (level.isClientSide())
-            //noinspection unchecked
             CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> result
                     .setValue(transferRecipeOnClient(container, recipe, recipeSlots, player, maxTransfer, doTransfer)));
         return result.getValue();
@@ -138,7 +136,7 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
             }
 
             if (cbis.stack.isEmpty() && !ingredientStack.results(registryAccess).isEmpty()) {
-                ingredientStack.set(ingredientStack.results(registryAccess).get(0).withAmount(0));
+                ingredientStack.set(ingredientStack.results(registryAccess).getFirst().withAmount(0));
             }
         }
 

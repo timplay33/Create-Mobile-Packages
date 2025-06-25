@@ -301,15 +301,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (level instanceof ServerLevel serverLevel) {
             DronePortTracker tracker = DronePortTracker.get(serverLevel);
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
-            allBEs.removeIf(be -> be.isRemoved());
+            allBEs.removeIf(BlockEntity::isRemoved);
             allBEs.removeIf(be -> be.getBlockPos().equals(blockPos));
             allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
-            BeePortBlockEntity target = allBEs.stream()
-                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(blockPos)))
-                    .orElse(null);
-            if (target != null) {
-                target.sendDrone(blockPos, true);
-            }
+            allBEs.stream()
+                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(blockPos))).ifPresent(target -> target.sendDrone(blockPos, true));
         }
     }
 
