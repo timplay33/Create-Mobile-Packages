@@ -23,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -63,20 +64,23 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
                                                          IRecipeSlotsView recipeSlots, Player player,
                                                          boolean maxTransfer, boolean doTransfer) {
         Level level = player.level();
-        if (!(object instanceof Recipe<?> recipe))
+        if (!(object instanceof RecipeHolder<?> recipe))
             return null;
         MutableObject<IRecipeTransferError> result = new MutableObject<>();
         if (level.isClientSide())
+            //noinspection unchecked
             CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> result
-                    .setValue(transferRecipeOnClient(container, recipe, recipeSlots, player, maxTransfer, doTransfer)));
+                    .setValue(transferRecipeOnClient(container, (RecipeHolder<Recipe<?>>) recipe, recipeSlots, player, maxTransfer, doTransfer)));
         return result.getValue();
     }
 
-    private IRecipeTransferError transferRecipeOnClient(PortableStockTickerMenu container, Recipe<?> recipe,
+    private IRecipeTransferError transferRecipeOnClient(PortableStockTickerMenu container, RecipeHolder<Recipe<?>> recipeHolder,
                                                         IRecipeSlotsView recipeSlots, Player player,
                                                         boolean maxTransfer, boolean doTransfer) {
         if (!(container.screenReference instanceof PortableStockTickerScreen screen))
             return null;
+
+        Recipe<?> recipe = recipeHolder.value();
 
         for (CraftableGenericStack cbis : screen.recipesToOrder)
             if (cbis.asStack().recipe == recipe)
