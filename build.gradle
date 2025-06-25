@@ -258,10 +258,12 @@ publisher {
 
     modrinthDepends {
         required "create"
+        optional "create_factory_logistics"
     }
 
     curseDepends {
         required "create"
+        optional "create-factory-logistics"
     }
 
     github {
