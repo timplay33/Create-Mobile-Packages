@@ -11,6 +11,7 @@
   "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "When used",
   "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "Portable Stock Ticker will open a mobile Stock Keeper menu",
   "item.create_mobile_packages.robo_bee": "Robo Bee",
+  "item.create_mobile_packages.mobile_packager": "Mobile Packager",
   "entity.create_mobile_packages.robo_bee": "Robo Bee",
   "create_mobile_packages.bee_port.send_items": "Sent Items to Player",
   "create_mobile_packages.bee_port.screen.arrival_time": "Robo Bee will arrive in: %1$ss",
