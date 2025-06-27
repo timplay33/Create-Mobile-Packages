@@ -6,6 +6,7 @@ import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import net.minecraft.world.phys.Vec3;
 
 public class LaunchAscendState implements RoboEntityState {
+    private float initialDistanceToTarget = 0;
     @Override
     public void tick(RoboEntity re) {
         BeePortBlockEntity bpbe = re.getStartBeePortBlockEntity();
@@ -19,10 +20,15 @@ public class LaunchAscendState implements RoboEntityState {
         re.setTargetVelocity(direction.scale(1 / 20.0)); // fixed speed of 1 block per second
 
         double distanceToTarget = re.position().distanceToSqr(target);
+        if (initialDistanceToTarget == 0) {
+            initialDistanceToTarget = (float) distanceToTarget;
+        }
         if (distanceToTarget < 0.2) {
+            re.setPackageHeightScale(1.0f);
             re.setState(new LaunchFinishState());
-        } else if (distanceToTarget < 1.8) {
-            re.doPackageEntity = true;
+        } else {
+            float scale =1.0f - (float) (distanceToTarget / initialDistanceToTarget);
+            re.setPackageHeightScale(scale);
         }
     }
 }

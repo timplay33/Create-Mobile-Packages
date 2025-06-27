@@ -15,10 +15,12 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -29,25 +31,30 @@ import java.util.List;
 
 public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWrenchable {
     public static final BooleanProperty IS_OPEN_TEXTURE = BooleanProperty.create("open");
+    public static final DirectionProperty FACING = DirectionalBlock.FACING;
 
     public BeePortBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(IS_OPEN_TEXTURE, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
-        pBuilder.add(IS_OPEN_TEXTURE);
+        pBuilder.add(IS_OPEN_TEXTURE, FACING);
     }
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext pContext) {
-        return this.defaultBlockState().setValue(IS_OPEN_TEXTURE, false);
+        return this.defaultBlockState().setValue(IS_OPEN_TEXTURE, false).setValue(FACING, pContext.getHorizontalDirection().getOpposite());
     }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        return CMPShapes.DRONE_PORT_SHAPE.get(Direction.UP);
+        Direction facing = state.getValue(FACING);
+        return CMPShapes.DRONE_PORT_SHAPE.get(facing);
     }
 
     @Override

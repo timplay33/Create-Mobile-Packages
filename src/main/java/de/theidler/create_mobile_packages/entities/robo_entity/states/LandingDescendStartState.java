@@ -9,10 +9,12 @@ public class LandingDescendStartState implements RoboEntityState {
 
     @Override
     public void tick(RoboEntity re) {
-        if (re.getTargetBlockEntity() != null && re.getTargetBlockEntity().isFull()) {
+        if (re.getTargetBlockEntity() != null && !re.getTargetBlockEntity().canAcceptEntity(re, !re.getItemStack().isEmpty())) {
+            re.setTargetVelocity(Vec3.ZERO);
             return;
         }
         if (re.getTargetBlockEntity() == null) {
+            re.setTargetVelocity(Vec3.ZERO);
             return;
         }
         Vec3 target = re.getTargetBlockEntity().getBlockPos().getCenter().subtract(0, 0.5, 0);
@@ -22,6 +24,7 @@ public class LandingDescendStartState implements RoboEntityState {
         double distanceToTarget = re.position().distanceToSqr(target);
 
         if (distanceToTarget < 0.2) {
+            re.setPackageHeightScale(0.0f);
             if (wait++ < 10) {
                 return;
             }
@@ -29,7 +32,7 @@ public class LandingDescendStartState implements RoboEntityState {
         }
 
         if (distanceToTarget < 1.0) {
-            re.doPackageEntity = false;
+            re.setPackageHeightScale((float) distanceToTarget);
         }
     }
 }

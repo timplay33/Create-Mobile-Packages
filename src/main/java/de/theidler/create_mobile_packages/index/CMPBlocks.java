@@ -7,9 +7,12 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -17,19 +20,18 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
+import static com.simibubi.create.api.behaviour.display.DisplaySource.displaySource;
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
 
 public class CMPBlocks {
 
-    static {
-        CreateMobilePackages.REGISTRATE.setCreativeTab(CMPCreativeModeTabs.CREATE_MOBILE_PACKAGES_TAB);
-    }
-
     public static final BlockEntry<BeePortBlock> BEE_PORT = CreateMobilePackages.REGISTRATE.block("bee_port", BeePortBlock::new)
                     .initialProperties(SharedProperties::wooden)
                     .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
+                    .transform(displaySource(CMPDisplaySources.BEE_COUNT))
+                    .transform(displaySource(CMPDisplaySources.BEE_ETA))
                     .item()
                     .transform(customItemModel())
                     .register();
@@ -38,6 +40,8 @@ public class CMPBlocks {
             .initialProperties(SharedProperties::wooden)
             .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
             .item(DronePortItem::new)
+            .removeTab(CreativeModeTabs.SEARCH)
+            .removeTab(ResourceKey.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, CreateMobilePackages.asResource("create_mobile_packages_tab")))
             .transform(customItemModel())
             .register();
 

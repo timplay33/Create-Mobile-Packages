@@ -3,7 +3,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"1": "create_mobile_packages:block/bee_port_open",
-		"particle": "create_mobile_packages:block/bee_port_open"
+		"particle": "create:block/andesite_casing"
 	},
 	"elements": [
 		{

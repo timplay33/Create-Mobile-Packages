@@ -3,21 +3,22 @@ package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.WiFiEffectPacket;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import com.simibubi.create.foundation.utility.AdventureUtil;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
+import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
 public class SendPackage extends SimplePacketBase {
-    private final PackageOrderWithCrafts order;
+    private final GenericOrder order;
     private final String address;
     private final boolean encodeRequester;
 
-    public SendPackage(PackageOrderWithCrafts order, String address, boolean encodeRequester) {
+    public SendPackage(GenericOrder order, String address, boolean encodeRequester) {
         this.order = order;
         this.address = address;
         this.encodeRequester = encodeRequester;
@@ -25,7 +26,7 @@ public class SendPackage extends SimplePacketBase {
 
     public SendPackage(FriendlyByteBuf buffer) {
         address = buffer.readUtf();
-        order = PackageOrderWithCrafts.read(buffer);
+        order = GenericOrder.read(buffer);
         encodeRequester = buffer.readBoolean();
     }
 
@@ -59,8 +60,15 @@ public class SendPackage extends SimplePacketBase {
             WiFiEffectPacket.send(player.level(), player.blockPosition());
         }
 
-        if (player.getMainHandItem().getItem() instanceof PortableStockTicker) {
-            ((PortableStockTicker) player.getMainHandItem().getItem()).broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address);
-        }
+        ItemStack pstStack = PortableStockTicker.find(player.getInventory());
+        PortableStockTicker pst = pstStack != null ? (PortableStockTicker) pstStack.getItem() : null;
+        if (pst != null)
+            pst.broadcastPackageRequest(
+                    LogisticallyLinkedBehaviour.RequestType.PLAYER,
+                    order,
+                    null,
+                    address,
+                    player
+            );
     }
 }

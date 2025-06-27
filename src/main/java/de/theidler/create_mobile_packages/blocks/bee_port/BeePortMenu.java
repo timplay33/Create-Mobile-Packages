@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -16,12 +17,20 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class BeePortMenu extends PackagePortMenu {
 
+    private ContainerData data;
+
     public BeePortMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
+        if (contentHolder instanceof BeePortBlockEntity beePortBlockEntity) {
+            this.data = beePortBlockEntity.getData();
+            this.addDataSlots(this.data);
+        }
     }
 
     public BeePortMenu(MenuType<?> type, int id, Inventory inv, BeePortBlockEntity beePortBlockEntity) {
         super(type, id, inv, beePortBlockEntity);
+        this.data = beePortBlockEntity.getData();
+        this.addDataSlots(this.data);
     }
 
     @Override
@@ -103,5 +112,18 @@ public class BeePortMenu extends PackagePortMenu {
         }
 
         return super.quickMoveStack(player, index);
+    }
+
+    public int getETA() {
+        if (data != null) {
+            return data.get(0);
+        }
+        return Integer.MAX_VALUE;
+    }
+    public boolean isBeeOnTravel() {
+        if (data != null) {
+            return data.get(1) == 1;
+        }
+        return false;
     }
 }

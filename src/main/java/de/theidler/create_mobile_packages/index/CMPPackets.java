@@ -2,10 +2,10 @@ package de.theidler.create_mobile_packages.index;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.BigItemStackListPacket;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
 import de.theidler.create_mobile_packages.items.mobile_packager.ConfirmAddressPacket;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -26,9 +26,12 @@ public enum CMPPackets {
     // Client to Server
     LOGISTICS_PACKAGE_REQUEST(SendPackage.class, SendPackage::new, PLAY_TO_SERVER),
     REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate::new, PLAY_TO_SERVER),
+    HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket::new, PLAY_TO_SERVER),
+    OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker::new, PLAY_TO_SERVER),
     CONFIRM_ADDRESS_PACKET(ConfirmAddressPacket.class, ConfirmAddressPacket::new, PLAY_TO_SERVER),
+
     // Server to Client
-    BIG_ITEM_STACK_LIST(BigItemStackListPacket.class, BigItemStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT);
+    BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT);
 
     public static final ResourceLocation CHANNEL_NAME = CreateMobilePackages.asResource("main");
     public static final int NETWORK_VERSION = 3;
@@ -59,7 +62,8 @@ public enum CMPPackets {
 
     public static void sendToNear(Level world, BlockPos pos, int range, Object message) {
         getChannel().send(
-                PacketDistributor.NEAR.with(PacketDistributor.TargetPoint.p(pos.getX(), pos.getY(), pos.getZ(), range, world.dimension())),
+                PacketDistributor.NEAR.with(
+                        PacketDistributor.TargetPoint.p(pos.getX(), pos.getY(), pos.getZ(), range, world.dimension())),
                 message);
     }
 
