@@ -4,21 +4,25 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.Location;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlockEntity;
+import de.theidler.create_mobile_packages.index.CMPBlockEntities;
+import de.theidler.create_mobile_packages.index.CMPBlocks;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
+import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
 public class BeePortStorage extends SavedData {
     private final ServerLevel level;
@@ -36,27 +40,40 @@ public class BeePortStorage extends SavedData {
         return storage;
     }
 
-    public static BeePortStorage load(CompoundTag compoundTag, ServerLevel level) {
-        return create(level);
-    }
+    public static BeePortStorage load(CompoundTag nbt, ServerLevel level) {
+        BeePortStorage storage = CreateMobilePackages.PORT_STORAGE.computeIfAbsent(level, BeePortStorage::create);
+        NBTHelper.iterateCompoundList(nbt.getList("Ports", CompoundTag.TAG_COMPOUND), c -> {
+            Tag dimTag = nbt.get("Dim");
+            Tag posTag = nbt.get("Pos");
+            MinecraftServer server = Minecraft.getInstance().getSingleplayerServer();
+            if (server != null && dimTag != null && posTag != null) {
+                if (level.dimension().location().getPath().equals(dimTag.getAsString())) {
+                    int[] xyz = Arrays.stream(posTag.getAsString().split(",")).mapToInt(Integer::parseInt).toArray();
+                    BlockPos blockPos = new BlockPos(xyz[0], xyz[1], xyz[2]);
+                    storage.ports.add(new BeePortBlockEntity(CMPBlockEntities.BEE_PORT.get(), blockPos, CMPBlocks.BEE_PORT.getDefaultState()));
+                }
+            }
+        });
+        NBTHelper.iterateCompoundList(nbt.getList("Connections", CompoundTag.TAG_COMPOUND), c -> {
+            Tag dimATag = nbt.get("DimA");
+            Tag dimBTag = nbt.get("DimB");
+            Tag posATag = nbt.get("PosA");
+            Tag posBTag = nbt.get("PosB");
+            MinecraftServer server = Minecraft.getInstance().getSingleplayerServer();
+            if (server != null && dimATag != null && dimBTag != null && posATag != null && posBTag != null) {
+                if (level.dimension().location().getPath().equals(dimATag.getAsString()) || level.dimension().location().getPath().equals(dimBTag.getAsString())) {
+                    int[] xyzA = Arrays.stream(posATag.getAsString().split(",")).mapToInt(Integer::parseInt).toArray();
+                    int[] xyzB = Arrays.stream(posATag.getAsString().split(",")).mapToInt(Integer::parseInt).toArray();
+                    BlockPos blockPosA = new BlockPos(xyzA[0], xyzA[1], xyzA[2]);
+                    BlockPos blockPosB = new BlockPos(xyzB[0], xyzB[1], xyzB[2]);
+                    BeePortalBlockEntity portalA = new BeePortalBlockEntity(CMPBlockEntities.BEE_PORTAL.get(), blockPosA, CMPBlocks.BEE_PORTAL.getDefaultState());
+                    BeePortalBlockEntity portalB = new BeePortalBlockEntity(CMPBlockEntities.BEE_PORTAL.get(), blockPosB, CMPBlocks.BEE_PORTAL.getDefaultState());
+                    storage.portalConnections.add(new BeePortalConnection(portalA, portalB));
+                }
+            }
+        });
 
-    public static BeePortStorage get(@NotNull ServerLevel level) {
-        if (CreateMobilePackages.PORT_STORAGE.get(level) != null)
-            return CreateMobilePackages.PORT_STORAGE.get(level);
-        return level.getDataStorage().computeIfAbsent(c -> BeePortStorage.load(c, level), () -> BeePortStorage.create(level), "bee_port_storage");
-    }
-
-    public static int newPortId(ServerLevel level) {
-        BeePortStorage storage = BeePortStorage.get(level);
-        int lastId = storage.ports.stream().map(BeePortBlockEntity::getId).filter(Objects::nonNull).mapToInt(v -> v).max().orElse(-1);
-        return lastId + 1;
-    }
-
-    public static int newConnectionId() {
-        int lastId = CreateMobilePackages.PORT_STORAGE.values().stream().map(s -> s.portalConnections.stream()
-                .map(BeePortalConnection::getId).filter(Objects::nonNull).mapToInt(v -> v).max()
-                .orElse(-1)).mapToInt(v -> v).max().orElse(-1);
-        return lastId + 1;
+        return storage;
     }
 
     @Override
@@ -64,18 +81,36 @@ public class BeePortStorage extends SavedData {
         BeePortStorage storage = CreateMobilePackages.PORT_STORAGE.get(level);
         CreateMobilePackages.LOGGER.info("Saving RoboManager...");
         nbt.put("Ports", NBTHelper.writeCompoundList(storage.ports, port -> {
-            CompoundTag roboTag = new CompoundTag();
-            if (port.getId() != null)
-                roboTag.putInt("Id", port.getId());
-            return roboTag;
+            CompoundTag portTag = new CompoundTag();
+            if (port.getLevel() != null) {
+                BlockPos pos = port.getBlockPos();
+                portTag.putString("Dim", port.getLevel().dimension().location().getPath());
+                portTag.putString("Pos", pos.getX() + "," + pos.getY() + "," + pos.getZ());
+            }
+
+            return portTag;
         }));
         nbt.put("Connections", NBTHelper.writeCompoundList(storage.portalConnections, portalConnection -> {
-            CompoundTag roboTag = new CompoundTag();
-            if (portalConnection.getId() != null)
-                roboTag.putInt("Id", portalConnection.getId());
-            return roboTag;
+            CompoundTag connectionTag = new CompoundTag();
+            BlockPos posA = portalConnection.getPortalA().getBlockPos();
+            BlockPos posB = portalConnection.getPortalB().getBlockPos();
+            if (portalConnection.getPortalA().getLevel() != null && portalConnection.getPortalB().getLevel() != null) {
+                connectionTag.putString("DimA", portalConnection.getPortalA().getLevel().dimension().location().getPath());
+                connectionTag.putString("DimB", portalConnection.getPortalB().getLevel().dimension().location().getPath());
+                connectionTag.putString("PosA", posA.getX() + "," + posA.getY() + "," + posA.getZ());
+                connectionTag.putString("PosB", posB.getX() + "," + posB.getY() + "," + posB.getZ());
+            }
+
+            return connectionTag;
         }));
+
         return nbt;
+    }
+
+    public static BeePortStorage get(@NotNull ServerLevel level) {
+        if (CreateMobilePackages.PORT_STORAGE.get(level) != null)
+            return CreateMobilePackages.PORT_STORAGE.get(level);
+        return level.getDataStorage().computeIfAbsent(c -> BeePortStorage.load(c, level), () -> BeePortStorage.create(level), "bee_port_storage");
     }
 
     public List<@NotNull BeePortBlockEntity> getPorts() {
@@ -111,8 +146,14 @@ public class BeePortStorage extends SavedData {
         return result;
     }
 
+    public List<BeePortalConnection> getPortalConnections(BeePortalBlockEntity portal) {
+        if (portal.getLevel() instanceof ServerLevel serverLevel)
+            return getPortalConnections().stream().filter(c -> c.getCurrent(serverLevel) == portal).toList();
+        return new ArrayList<>();
+    }
+
     public List<BeePortalConnection> getPortalConnections() {
-        return new ArrayList<>(portalConnections.stream().filter(Objects::nonNull).toList());
+        return new ArrayList<>(portalConnections.stream().toList());
     }
 
     public BeePortalConnection getPortalConnection(BlockPos originPos, Location targetLocation) {
@@ -123,8 +164,7 @@ public class BeePortStorage extends SavedData {
     }
 
     public void add(@NotNull BeePortBlockEntity beePort) {
-        Level level = beePort.getLevel();
-        if (level instanceof ServerLevel && !ports.contains(beePort))
+        if (beePort.getLevel() instanceof ServerLevel && !ports.contains(beePort))
             ports.add(beePort);
     }
 
@@ -164,11 +204,29 @@ public class BeePortStorage extends SavedData {
         return null;
     }
 
-    public void createConnection(@NotNull BeePortalBlockEntity portal) {
-        final BeePortalBlockEntity portalToConnect = getCurrentPortalToConnect();
-        if (portalToConnect == null || portalToConnect.getLevel() == portal.getLevel()) return;
-        if (portalConnections.stream().noneMatch(c -> c.connectionExists(portalToConnect, portal)))
-            add(new BeePortalConnection(portalToConnect, portal));
+    public void createConnection(@NotNull BeePortalBlockEntity portal, @NotNull BeePortalBlockEntity portalToConnect) {
+        if (portalToConnect.getLevel() == portal.getLevel()) return;
+        if (!(portalToConnect.getLevel() instanceof ServerLevel serverLevelB)
+                || !(portal.getLevel() instanceof ServerLevel serverLevelA))
+            return;
+        if (portalConnections.stream().noneMatch(c -> c.connectionExists(portalToConnect, portal))) {
+            BeePortStorage storage = get(serverLevelB);
+            if (getPortalConnections(portal).isEmpty()) {
+                serverLevelA.setBlockAndUpdate(portal.getBlockPos(), portal.getBlockState().setValue(IS_OPEN_TEXTURE, true));
+                serverLevelA.playSound(null, portal.getBlockPos(), SoundEvents.PORTAL_TRIGGER,
+                        SoundSource.BLOCKS);
+            }
+
+            if (storage.getPortalConnections(portalToConnect).isEmpty()) {
+                serverLevelB.setBlockAndUpdate(portalToConnect.getBlockPos(), portalToConnect.getBlockState().setValue(IS_OPEN_TEXTURE, true));
+                serverLevelB.playSound(null, portalToConnect.getBlockPos(), SoundEvents.PORTAL_TRIGGER,
+                        SoundSource.BLOCKS);
+            }
+
+            BeePortalConnection connection = new BeePortalConnection(portalToConnect, portal);
+            add(connection);
+            storage.add(connection);
+        }
     }
 
     public void remove(@NotNull BeePortBlockEntity beePort) {
@@ -177,13 +235,34 @@ public class BeePortStorage extends SavedData {
             ports.remove(beePort);
     }
 
-    public void remove(@NotNull BeePortalBlockEntity beePortal) {
-        Level level = beePortal.getLevel();
-        if (level instanceof ServerLevel) {
-            portalConnections.removeIf(c -> c.getPortalA() == beePortal || c.getPortalB() == beePortal);
+    public void forceRemove(@NotNull BeePortalConnection connection) {
+        getPortalConnections().remove(connection);
+    }
+
+    public void remove(@NotNull BeePortalBlockEntity portal) {
+        Level level = portal.getLevel();
+        if (level instanceof ServerLevel serverLevel) {
+            getPortalConnections().removeIf(c -> {
+                if (c.getCurrent(serverLevel) == portal) {
+                    BeePortalBlockEntity portalB = c.getExit(serverLevel);
+                    if (portalB.getLevel() instanceof ServerLevel serverLevelB) {
+                        BeePortStorage storage = BeePortStorage.get(serverLevelB);
+                        storage.forceRemove(c);
+                        if (storage.getPortalConnections(portalB).isEmpty()) {
+                            serverLevelB.setBlockAndUpdate(portalB.getBlockPos(), portalB.getBlockState().setValue(IS_OPEN_TEXTURE, false));
+                            serverLevelB.playSound(null, portalB.getBlockPos(), SoundEvents.PORTAL_TRIGGER,
+                                    SoundSource.BLOCKS);
+                        }
+                    }
+
+                    return true;
+                }
+
+                return false;
+            });
         }
 
-        if (portalToConnect == beePortal)
+        if (portalToConnect == portal)
             portalToConnect = null;
     }
 }

@@ -9,14 +9,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class BeePortalConnection {
-    private final @Nullable Integer Id;
     private final BeePortalBlockEntity portalA;
     private final BeePortalBlockEntity portalB;
 
     public BeePortalConnection(BeePortalBlockEntity portalA, BeePortalBlockEntity portalB) {
         this.portalA = portalA;
         this.portalB = portalB;
-        this.Id = BeePortStorage.newConnectionId();
     }
 
     public static double distanceToTarget(BeePortalConnection connection, Location location, Vec3 targetPos) {
@@ -43,12 +41,9 @@ public class BeePortalConnection {
     }
 
     public void tryRemoveFromQueue(@NotNull RoboEntity re) {
-        if (re.getTargetPortalEntity() == portalA) {
-            portalA.tryRemoveFromLandingQueue(re);
-            portalB.tryRemoveFromLaunchingQueue(re);
-        } else {
-            portalA.tryRemoveFromLaunchingQueue(re);
-            portalB.tryRemoveFromLandingQueue(re);
+        if (re.getPortalConnection() != null && re.level() instanceof ServerLevel serverLevel) {
+            re.getPortalConnection().getCurrent(serverLevel).tryRemoveFromLandingQueue(re);
+            re.getPortalConnection().getExit(serverLevel).tryRemoveFromLaunchingQueue(re);
         }
     }
 
@@ -68,9 +63,5 @@ public class BeePortalConnection {
 
     public BeePortalBlockEntity getPortalB() {
         return portalB;
-    }
-
-    public @Nullable Integer getId() {
-        return Id;
     }
 }

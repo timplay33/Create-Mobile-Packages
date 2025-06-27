@@ -7,7 +7,6 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock;
 import de.theidler.create_mobile_packages.blocks.bee_portal.BeePortalBlock;
 import de.theidler.create_mobile_packages.items.bee_portal.BeePortalItem;
-import net.minecraft.world.item.Item;
 
 import static com.simibubi.create.api.behaviour.display.DisplaySource.displaySource;
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;

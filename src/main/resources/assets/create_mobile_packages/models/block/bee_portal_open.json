@@ -5,9 +5,9 @@
     64
   ],
   "textures": {
-    "0": "create_mobile_packages:block/bee_portal",
+    "0": "create_mobile_packages:block/bee_portal_open",
     "1": "create_mobile_packages:block/bee_portal_top_nether",
-    "particle": "create_mobile_packages:block/bee_portal"
+    "particle": "create_mobile_packages:block/bee_portal_open"
   },
   "elements": [
     {

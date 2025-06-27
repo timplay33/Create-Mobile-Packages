@@ -1,18 +1,45 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,open=false": {
       "model": "create_mobile_packages:block/bee_portal"
     },
-    "facing=south": {
+    "facing=north,open=true": {
+      "model": "create_mobile_packages:block/bee_portal_open"
+    },
+    "facing=up,open=false": {
+      "model": "create_mobile_packages:block/bee_portal"
+    },
+    "facing=up,open=true": {
+      "model": "create_mobile_packages:block/bee_portal_open"
+    },
+    "facing=down,open=false": {
+      "model": "create_mobile_packages:block/bee_portal"
+    },
+    "facing=down,open=true": {
+      "model": "create_mobile_packages:block/bee_portal_open"
+    },
+    "facing=south,open=false": {
       "model": "create_mobile_packages:block/bee_portal",
       "y": 180
     },
-    "facing=west": {
+    "facing=south,open=true": {
+      "model": "create_mobile_packages:block/bee_portal_open",
+      "y": 180
+    },
+    "facing=west,open=false": {
       "model": "create_mobile_packages:block/bee_portal",
       "y": 270
     },
-    "facing=east": {
+    "facing=west,open=true": {
+      "model": "create_mobile_packages:block/bee_portal_open",
+      "y": 270
+    },
+    "facing=east,open=false": {
       "model": "create_mobile_packages:block/bee_portal",
+      "y": 90
+    },
+    "facing=east,open=true": {
+      "model": "create_mobile_packages:block/bee_portal_open",
       "y": 90
     }
   }

@@ -63,7 +63,13 @@ public class BeePortalBlockEntity extends BlockEntity {
 
         if (level instanceof ServerLevel serverLevel) {
             BeePortStorage storage = BeePortStorage.get(serverLevel);
-            storage.createConnection(this);
+            if (storage.getCurrentPortalToConnect() != null)
+                storage.createConnection(this, storage.getCurrentPortalToConnect());
+
+            if (storage.getPortalConnections(this).isEmpty())
+                serverLevel.getBlockState(getBlockPos()).setValue(BeePortalBlock.IS_OPEN_TEXTURE, false);
+            else
+                serverLevel.getBlockState(getBlockPos()).setValue(BeePortalBlock.IS_OPEN_TEXTURE, true);
         }
     }
 

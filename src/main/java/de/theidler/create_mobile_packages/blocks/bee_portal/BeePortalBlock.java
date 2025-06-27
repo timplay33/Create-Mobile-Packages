@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -27,15 +28,20 @@ import java.util.List;
 
 public class BeePortalBlock extends Block implements IBE<BeePortalBlockEntity>, IWrenchable {
     public static final DirectionProperty FACING = DirectionalBlock.FACING;
+    public static final BooleanProperty IS_OPEN_TEXTURE = BooleanProperty.create("open");
+
 
     public BeePortalBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(IS_OPEN_TEXTURE, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.@NotNull Builder<Block, BlockState> pBuilder) {
         super.createBlockStateDefinition(pBuilder);
-        pBuilder.add(FACING);
+        pBuilder.add(IS_OPEN_TEXTURE, FACING);
     }
 
     @Override
