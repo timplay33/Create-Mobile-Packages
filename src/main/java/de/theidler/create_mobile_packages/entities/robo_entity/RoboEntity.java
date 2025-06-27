@@ -262,6 +262,10 @@ public class RoboEntity extends Mob {
         this.state = state;
     }
 
+    public RoboEntityState getState() {
+        return this.state;
+    }
+
     public ItemStack getItemStack() {
         return this.entityData.get(DATA_ITEM_STACK);
     }

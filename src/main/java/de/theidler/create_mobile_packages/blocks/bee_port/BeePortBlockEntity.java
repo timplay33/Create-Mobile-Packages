@@ -160,7 +160,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         //Update Client Data
         if (!level.isClientSide()) {
             if (this.getRoboEntity() != null)
-                this.data.set(0, calcETA(this.getBlockPos().getCenter(), this.getRoboEntity().position()));
+                this.data.set(0, calcETA(this.getBlockPos().getCenter(), this.getRoboEntity().position(), this.getRoboEntity().getState()));
             this.data.set(1, this.getRoboEntity() != null ? 1 : 0);
         }
     }
