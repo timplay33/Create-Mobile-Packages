@@ -35,6 +35,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import static net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK;
+
 public class RoboEntity extends Mob {
 
     private static final EntityDataAccessor<Float> ROT_YAW = SynchedEntityData.defineId(RoboEntity.class, EntityDataSerializers.FLOAT);
@@ -46,9 +48,11 @@ public class RoboEntity extends Mob {
     private Player targetPlayer;
     private BeePortBlockEntity targetBlockEntity;
     private BeePortBlockEntity startBeePortBlockEntity;
-    private String targetAddress = "";
     private boolean pathing = true;
+    private String targetAddress;
+    private String activeTargetAddress;
     private int damageCounter;
+    private boolean isRequest = true;
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
@@ -103,37 +107,39 @@ public class RoboEntity extends Mob {
 
     /**
      * Sets the target for the RoboEntity based on the provided ItemStack.
-     * If the ItemStack is not a package, the target is set to the closest drone port.
+     * If the ItemStack is empty, the target is set to the closest drone port.
      * If the ItemStack is a package, it attempts to find a player or drone port
      * matching the address specified in the package.
      *
      * @param itemStack The ItemStack used to determine the target.
      */
     private void setTargetFromItemStack(ItemStack itemStack) {
-        if (itemStack == null) return;
-        targetAddress = PackageItem.getAddress(itemStack);
-        updateTarget();
+        if (itemStack == null || itemStack.isEmpty())
+            setTargetAddress(null);
+        else
+            setTargetAddress(PackageItem.getAddress(itemStack));
     }
 
     private Player getTargetPlayerFromAddress() {
         return level().players().stream()
-                .filter(player -> player.getName().getString().equals(PackageItem.getAddress(this.getItemStack())))
-                .findFirst().orElse(null);
+                .filter(player -> BeePortBlockEntity.doesAddressStringMatchPlayerName(player, PackageItem.getAddress(this.getItemStack()))).findFirst().orElse(null);
     }
 
-    private String activeTargetAddress = "";
     private void updateTarget() {
         if (level().isClientSide) {
             return;
         }
         targetPlayer = getTargetPlayerFromAddress();
-        if (targetPlayer != null) {
-            return;
-        }
-        if (targetBlockEntity == null || !targetBlockEntity.canAcceptEntity(this, !getItemStack().isEmpty()) || !Objects.equals(activeTargetAddress,targetAddress)) {
+        if (targetPlayer != null) { return; }
+        if (
+            targetBlockEntity == null ||
+            targetBlockEntity.isRemoved() ||
+            !targetBlockEntity.canAcceptEntity(this, !getItemStack().isEmpty()) ||
+            !Objects.equals(activeTargetAddress,targetAddress)
+        ) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
             activeTargetAddress = targetAddress;
-            targetBlockEntity = getClosestBeePort(level(), Objects.equals(targetAddress, "") ? null : targetAddress, this.blockPosition(), this);
+            targetBlockEntity = getClosestBeePort(level(), targetAddress, this.blockPosition(), this);
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null) {
                     oldTarget.trySetEntityOnTravel(null);
@@ -141,6 +147,20 @@ public class RoboEntity extends Mob {
                 if (targetBlockEntity != null) {
                     targetBlockEntity.trySetEntityOnTravel(this);
                 }
+            }
+            if (targetBlockEntity == null && targetPlayer == null) {
+                setTargetVelocity(Vec3.ZERO);
+            }
+        }
+        if (!isRequest) {
+            // Check if there is a new target block entity that is closer than the current one
+            BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), targetAddress, this.blockPosition(), this);
+            if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
+                if (targetBlockEntity != null) {
+                    targetBlockEntity.trySetEntityOnTravel(null);
+                }
+                targetBlockEntity = newTargetBlockEntity;
+                targetBlockEntity.trySetEntityOnTravel(this);
             }
         }
     }
@@ -184,6 +204,7 @@ public class RoboEntity extends Mob {
         final BeePortBlockEntity[] closest = {null};
         level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            allBEs.removeIf(be -> be.isRemoved());
             allBEs.removeIf(dpbe -> !isWithinRange(dpbe.getBlockPos(), origin));
             if (address != null) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
@@ -292,7 +313,9 @@ public class RoboEntity extends Mob {
 
     @Override
     public void remove(RemovalReason pReason) {
-        handleItemStackOnRemove();
+        if (pReason == RemovalReason.KILLED) {
+            handleItemStackOnRemove();
+        }
         if (getTargetBlockEntity() != null) {
             getTargetBlockEntity().trySetEntityOnTravel(null);
         }
@@ -419,6 +442,7 @@ public class RoboEntity extends Mob {
             setItemStack(ItemStack.EMPTY);
         }
         setTargetFromItemStack(getItemStack());
+        setState(new AdjustRotationToTarget());
     }
 
     @Override
@@ -433,6 +457,13 @@ public class RoboEntity extends Mob {
         }
     }
 
+    /**
+     * Sets the target for the RoboEntity based on the provided address.
+     * If the address is null, the target is set to the closest drone port.
+     * Otherwise, it attempts to find a player or drone port matching the address.
+     *
+     * @param address the target address
+     */
     public void setTargetAddress(String address) {
         this.targetAddress = address;
         updateTarget();
@@ -461,7 +492,7 @@ public class RoboEntity extends Mob {
 
     @Override
     public boolean hurt(DamageSource pSource, float pAmount) {
-        if (this.isInvulnerableTo(pSource)) return false;
+        if (!pSource.is(PLAYER_ATTACK)) return false;
 
         if (!this.level().isClientSide && !this.isRemoved()) {
             this.markHurt();
@@ -478,5 +509,14 @@ public class RoboEntity extends Mob {
 
     public boolean getPathing() {
         return pathing;
+    }
+
+    public void setRequest(boolean request) {
+        this.isRequest = request;
+    }
+
+    @Override
+    public boolean isOnFire() {
+        return false;
     }
 }

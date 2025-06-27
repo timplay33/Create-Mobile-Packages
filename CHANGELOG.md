@@ -1,6 +1,97 @@
+------------------------------------------------------
+Create: Mobile Packages - v0.5.4-4 - 24.06.2025
+------------------------------------------------------
+
+### Bug Fixes
+- Fix published version was not obfuscated
+- revert removing all Tab related code, as it was not the cause of the Creative Tab error
 
 ------------------------------------------------------
-Create: Mobile Packages - v0.5.0 - 25.02.2025
+Create: Mobile Packages - v0.5.4-3 - 24.06.2025
+------------------------------------------------------
+
+### Bug Fixes
+- Fix Creative Tab error by removing any Tab related Code → Deprecated Items are now visible
+
+------------------------------------------------------
+Create: Mobile Packages - v0.5.4-2 - 23.06.2025
+------------------------------------------------------
+
+### Bug Fixes
+- Fix Creative Tab error 
+
+------------------------------------------------------
+Create: Mobile Packages - v0.5.4 - 23.06.2025
+------------------------------------------------------
+
+### Additions
+- Added always suggesting the player's name as the target address.
+
+### Bug Fixes
+- Fix handling of blank addresses
+- Fix misuse of `getStackInSlot`
+- Add "Not linked" error message when trying to open an unlinked Portable Stock Ticker with the hotkey
+- Fix Robo Bees are now invincible to everything else than `PLAYER_ATTACK` 
+- Fix Robo Bees can no longer be set on fire
+- Fix Items in the Portable Stock Ticker are now sorted by count
+- Fix Create Factory Logistics support with Factory Abstractions
+- Fix Packages inside Robo Bee Port get voided when redstone is applied
+- Fix Robo Bees drops of Bee Ports (Contraptions & CarryOn)
+- Fix CarryOn support for Robo Bees
+- Changed Robo Bee Port now outputs all Items in adjacent inventories when redstone powered
+- Changed Robo Bee Port now no longer pulls Items from adjacent inventories when redstone powered
+- Fix Creative Mode Tab launch error
+
+------------------------------------------------------
+Create: Mobile Packages - v0.5.3 - 09.06.2025
+------------------------------------------------------
+
+### Bug Fixes
+- Fixed ConcurrentModificationException in RoboManager
+- Fixed Build.gradle publishing settings
+- Fixed Robo Bee spawned by summon command flying to the closest Port to 0,0,0
+- Fixed rendering of non-standard packages carried by Robo Bees
+- Fixed Support for multiple Portable Stock Tickers in the same inventory By preferring the item in the Main Hand
+
+### Additions
+- Added "@" prefix for player names. If the package address contains an "@" only everything behind it is considered a player name. Eg: `some text goes hier@PlayerName` will send the package to the player with the name `PlayerName`
+
+------------------------------------------------------
+Create: Mobile Packages - v0.5.2 - 04.06.2025
+------------------------------------------------------
+
+### Additions
+- Automated Publishing to Modrinth & CurseForge
+
+### Bug Fixes
+- Fixed Port not beeing able to request a bee
+
+------------------------------------------------------
+Create: Mobile Packages - v0.5.1 - 02.06.2025
+------------------------------------------------------
+
+### Bug Fixes
+- Fixed Portable Stock Ticker not saving the address when the player closes the GUI
+- Fixed Robo Bee Port is considered full at 63 Robo Bees instead of 64
+- Added Robo Bee in a Robo Bee Port can now be refilled with a hopper or a chute
+- Fixed java.util.ConcurrentModificationException: null in RoboManager
+- Fixed Robo Bees not Stopping when the target becomes null (Example: when Port becomes full while a Robo Bee is landing)
+- Added missing Robo Bee Port rotation Textures
+- Fixed a manually placed Robo Bee flies to the closest Port to 0,0,0 instead of the closest Port to the Robo Bee
+
+### Translations
+
+- Updated Russian translation
+- Updated French translation
+- Updated English translation
+- Updated Portuguese (Brazilian) translation
+- Added Polish translation
+- Added Swedish translation
+- Updated Chinese (Simplified Han script) translation
+- Updated German translation
+
+------------------------------------------------------
+Create: Mobile Packages - v0.5.0 - 25.05.2025
 ------------------------------------------------------
 
 ### Changes
