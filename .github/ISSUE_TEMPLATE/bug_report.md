@@ -30,7 +30,7 @@ If applicable, add screenshots to help explain your problem.
  - Create: Mobile Packages version: [e.g. 0.2.1]
 
 **Crash log**
-Add the Crash log if possible
+Add the Crash log if possible. Use a site like https://mclo.gs/
 
 **Additional context**
 Add any other context about the problem here.
