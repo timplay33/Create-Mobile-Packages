@@ -34,7 +34,7 @@ public class FlyToTargetState implements RoboEntityState {
             }
 
             double speed = CMPConfigs.server().beeSpeed.get() / 20.0;
-            if (re.getPathing()) {
+            if (pathing) {
                 Function<BlockPos, Boolean> isWalkable = pos ->
                         re.level().getBlockState(new BlockPos(pos)).isAir();
                 path = pathfinder.findPath(re.blockPosition(), targetPos, isWalkable);
@@ -43,13 +43,11 @@ public class FlyToTargetState implements RoboEntityState {
                     if (re.position().distanceTo(nextNode.pos.getCenter()) < 0.5 && path.size() > 1)
                         nextNode = path.get(1);
 
-                    Vec3 direction = nextNode.pos.getCenter().subtract(re.position()).normalize();
+                    Vec3 direction = path.size() > 2 ? path.get(2).pos.getCenter().subtract(re.position()).normalize() : nextNode.pos.getCenter().subtract(re.position()).normalize();
                     re.setTargetVelocity(direction.scale(speed));
-                    re.lookAt(nextNode.pos);
+                    re.lookAt(path.size() > 2 ? path.get(2).pos : nextNode.pos);
                 }
-            }
-
-            if (!pathing) {
+            } else {
                 Vec3 direction = targetPos.getCenter().subtract(re.position()).normalize();
                 re.setTargetVelocity(direction.scale(speed));
                 if (re.position().distanceTo(targetPos.getCenter()) > 2.5) // entity rotation starts drifting
@@ -130,7 +128,10 @@ public class FlyToTargetState implements RoboEntityState {
             List<BlockPos> neighbors = new ArrayList<>(6);
             Vec3i[] directions = {
                     new Vec3i(1, 0, 0), new Vec3i(0, 1, 0), new Vec3i(0, 0, 1),
-                    new Vec3i(-1, 0, 0), new Vec3i(0, -1, 0), new Vec3i(0, 0, -1)
+                    new Vec3i(1, 1, 0), new Vec3i(0, 1, 1), new Vec3i(1, 0, 1),
+
+                    new Vec3i(-1, 0, 0), new Vec3i(0, -1, 0), new Vec3i(0, 0, -1),
+                    new Vec3i(-1, -1, 0), new Vec3i(0, -1, -1), new Vec3i(-1, 0, -1),
             };
             for (Vec3i offset : directions)
                 neighbors.add(node.pos.offset(offset));
