@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.index;
 
 import com.tterrag.registrate.util.entry.ItemEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.items.package_cannon.PackageCannon;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTicker;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
 import net.minecraft.resources.ResourceKey;
@@ -27,6 +28,9 @@ public class CMPItems {
 
     public static final ItemEntry<RoboBeeItem> ROBO_BEE =
             CreateMobilePackages.REGISTRATE.item("robo_bee",RoboBeeItem::new)
+                    .register();
+    public static final ItemEntry<PackageCannon> PACKAGE_CANNON =
+            CreateMobilePackages.REGISTRATE.item("package_cannon", PackageCannon::new)
                     .register();
 
     public static void register() {
