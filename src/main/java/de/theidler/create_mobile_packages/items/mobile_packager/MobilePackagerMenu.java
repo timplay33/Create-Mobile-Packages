@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     private ItemStackHandler packageSlotInventory;
+    public boolean confirmed = false;
 
     public MobilePackagerMenu(int id, Inventory inv, MobilePackager contentHolder) {
         super(CMPMenuTypes.MOBILE_PACKAGER_MENU.get(), id, inv, contentHolder);
@@ -57,7 +58,9 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     @Override
     public void removed(Player playerIn) {
-        //playerIn.getInventory().placeItemBackInInventory(packageSlotInventory.getStackInSlot(0)); // TODO: only drop if confirm is not called
+        if (!playerIn.level().isClientSide && !confirmed) {
+            playerIn.getInventory().placeItemBackInInventory(packageSlotInventory.getStackInSlot(0));
+        }
         super.removed(playerIn);
     }
 
@@ -65,7 +68,6 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
         if (player.level().isClientSide) {
             ItemStack stack = packageSlotInventory.getStackInSlot(0);
             if (!stack.isEmpty()) {
-                player.closeContainer();
                 CMPPackets.getChannel().sendToServer(new OpenEditMenuPacket(packageSlotInventory.getStackInSlot(0)));
             }
         }

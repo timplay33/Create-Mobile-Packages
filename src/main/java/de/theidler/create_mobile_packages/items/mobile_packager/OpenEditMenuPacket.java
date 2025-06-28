@@ -33,6 +33,9 @@ public class OpenEditMenuPacket extends SimplePacketBase {
             ServerPlayer player = context.getSender();
             if (player == null || !player.isAlive()) return;
 
+            if (player.containerMenu instanceof MobilePackagerMenu menu) {
+                menu.confirmed = true;
+            }
             if (player.containerMenu != null) {
                 player.closeContainer();
             }
