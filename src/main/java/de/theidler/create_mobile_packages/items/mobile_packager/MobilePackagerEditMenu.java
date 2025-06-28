@@ -60,11 +60,33 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
             return ItemStack.EMPTY;
 
         ItemStack stack = clickedSlot.getItem();
+        ItemStack originalStack = stack.copy();
 
-        boolean success = !moveItemStackTo(stack, 0, slots.size(), false);
+        // Packager slots (0-8) -> Player inventory
+        if (index < 9) {
+            if (!moveItemStackTo(stack, 9, slots.size(), true)) {
+                return ItemStack.EMPTY;
+            }
+        }
+        // Player inventory -> Packager slots (0-8)
+        else {
+            if (!moveItemStackTo(stack, 0, 9, false)) {
+                return ItemStack.EMPTY;
+            }
+        }
 
-        return success ? ItemStack.EMPTY : stack;
+        if (stack.isEmpty()) {
+            clickedSlot.set(ItemStack.EMPTY);
+        } else {
+            clickedSlot.setChanged();
+        }
 
+        if (stack.getCount() == originalStack.getCount()) {
+            return ItemStack.EMPTY;
+        }
+
+        clickedSlot.onTake(player, stack);
+        return originalStack;
     }
 
     @Override

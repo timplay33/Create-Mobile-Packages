@@ -1,17 +1,12 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
-import com.simibubi.create.content.logistics.AddressEditBox;
-import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import com.simibubi.create.foundation.utility.CreateLang;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import net.createmod.catnip.gui.element.GuiGameElement;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -47,8 +42,7 @@ public class MobilePackagerScreen extends AbstractSimiContainerScreen<MobilePack
         renderPlayerInventory(pGuiGraphics, x + 5, y + 94);
 
         ItemStack stack = CMPItems.MOBILE_PACKAGER.asStack();
-        Component title = CreateLang.translate("gui.factory_panel.place_item_to_monitor")
-                .component();
+        Component title = Component.translatable("item.create_mobile_packages.mobile_packager");
         pGuiGraphics.drawString(font, title, x + imageWidth / 2 - font.width(title) / 2 - 5, y + 4, 0x3D3C48, false);
 
         GuiGameElement.of(stack)
