@@ -8,6 +8,7 @@ import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.theidler.create_mobile_packages.index.CMPItems;
+import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -43,7 +44,9 @@ public class MobilePackagerEditScreen extends AbstractSimiContainerScreen<Mobile
         addRenderableWidget(addressBox);
 
         confirmButton = new IconButton(x + bgWidth - 30, y + bgHeight - 25, AllIcons.I_CONFIRM);
-        confirmButton.withCallback(menu::confirm);
+        confirmButton.withCallback(() -> {
+            CMPPackets.getChannel().sendToServer(new ConfirmEditMenuPacket(menu.handler, addressBox.getValue()));
+        });
         addRenderableWidget(confirmButton);
     }
 

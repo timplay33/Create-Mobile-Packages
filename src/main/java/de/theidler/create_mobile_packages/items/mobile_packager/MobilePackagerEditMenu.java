@@ -1,7 +1,6 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
 import com.simibubi.create.foundation.gui.menu.MenuBase;
-import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -9,11 +8,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
 
     public ItemStack originalPackage;
+    public ItemStackHandler handler;
 
     public MobilePackagerEditMenu(MenuType<MobilePackagerEditMenu> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         this(id, inv, new MobilePackagerEdit(), extraData.readItem());
@@ -23,7 +24,8 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
         super(CMPMenuTypes.MOBILE_PACKAGER_EDIT_MENU.get(), id, inv, contentHolder);
         this.originalPackage = originalPackage;
         contentHolder.loadFromStack(originalPackage);
-        CreateMobilePackages.LOGGER.info("Creating MobilePackagerEditMenu with original package: {}", originalPackage);
+        this.handler = contentHolder.contents;
+
     }
 
     @Override
@@ -37,10 +39,13 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
 
     @Override
     protected void addSlots() {
+        if (handler == null) {
+            handler = contentHolder.contents;
+        }
         int slotX = 27;
         int slotY = 28;
         for (int i = 0; i < 9; i++)
-            addSlot(new SlotItemHandler(contentHolder.contents, i, slotX + 20 * i, slotY));
+            addSlot(new SlotItemHandler(handler, i, slotX + 20 * i, slotY));
         addPlayerSlots(33, 142);
     }
 
@@ -62,9 +67,17 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
 
     }
 
-    public void confirm() {
-        ItemStack box = contentHolder.writeToStack();
-        player.getInventory().placeItemBackInInventory(box);
+    @Override
+    public void removed(Player playerIn) {
+        if (!playerIn.level().isClientSide) {
+            playerIn.getInventory().placeItemBackInInventory(contentHolder.writeToStack());
+        }
+        super.removed(playerIn);
+    }
+
+    public void serverConfirm(ItemStackHandler contents, String address) {
+        contentHolder.address = address;
+        contentHolder.contents = contents;
         player.closeContainer();
     }
 }

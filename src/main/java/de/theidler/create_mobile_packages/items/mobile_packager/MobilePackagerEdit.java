@@ -5,12 +5,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
 
 public class MobilePackagerEdit {
-    public ItemStackHandler contents = new ItemStackHandler(9); // or however many items
+    public ItemStackHandler contents = new ItemStackHandler(9);
     public String address = "";
 
     public void loadFromStack(ItemStack originalPackage) {
         if (PackageItem.isPackage(originalPackage)) {
-            contents = PackageItem.getContents(originalPackage);
+            ItemStackHandler packageContents = PackageItem.getContents(originalPackage);
+            // Kopiere den Inhalt in den bestehenden handler statt die Referenz zu ersetzen
+            for (int i = 0; i < Math.min(contents.getSlots(), packageContents.getSlots()); i++) {
+                contents.setStackInSlot(i, packageContents.getStackInSlot(i).copy());
+            }
             address = PackageItem.getAddress(originalPackage);
         }
     }

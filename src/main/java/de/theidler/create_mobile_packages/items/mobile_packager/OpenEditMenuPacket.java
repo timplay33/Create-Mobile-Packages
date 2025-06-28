@@ -42,7 +42,6 @@ public class OpenEditMenuPacket extends SimplePacketBase {
                         (id, inv, p) -> new MobilePackagerEditMenu(id, inv, new MobilePackagerEdit(), originalPackage),
                         Component.translatable("item.create_mobile_packages.mobile_packager")
                 ), buf -> buf.writeItem(originalPackage));
-                CreateMobilePackages.LOGGER.info("Versuche EditMenu zu öffnen mit Paket: {}", originalPackage);
             }));
         });
         return true;
