@@ -57,6 +57,7 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     @Override
     public void removed(Player playerIn) {
+        //playerIn.getInventory().placeItemBackInInventory(packageSlotInventory.getStackInSlot(0)); // TODO: only drop if confirm is not called
         super.removed(playerIn);
     }
 
@@ -64,6 +65,7 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
         if (player.level().isClientSide) {
             ItemStack stack = packageSlotInventory.getStackInSlot(0);
             if (!stack.isEmpty()) {
+                player.closeContainer();
                 CMPPackets.getChannel().sendToServer(new OpenEditMenuPacket(packageSlotInventory.getStackInSlot(0)));
             }
         }

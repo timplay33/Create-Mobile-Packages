@@ -36,7 +36,7 @@ public class CMPMenuTypes {
     public static final MenuEntry<MobilePackagerEditMenu> MOBILE_PACKAGER_EDIT_MENU =
             CreateMobilePackages.REGISTRATE.menu(
                     "mobile_packager_edit_menu",
-                    (mobilePackagerMenuType, containerId, playerInventory) -> new MobilePackagerEditMenu(containerId, playerInventory, new MobilePackagerEdit(), ItemStack.EMPTY),
+                    MobilePackagerEditMenu::new,
                     () -> MobilePackagerEditScreen::new
             ).register();
 

@@ -6,6 +6,7 @@ import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.SlotItemHandler;
@@ -14,10 +15,15 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
 
     public ItemStack originalPackage;
 
+    public MobilePackagerEditMenu(MenuType<MobilePackagerEditMenu> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+        this(id, inv, new MobilePackagerEdit(), extraData.readItem());
+    }
+
     public MobilePackagerEditMenu(int id, Inventory inv, MobilePackagerEdit contentHolder, ItemStack originalPackage) {
         super(CMPMenuTypes.MOBILE_PACKAGER_EDIT_MENU.get(), id, inv, contentHolder);
         this.originalPackage = originalPackage;
-        CreateMobilePackages.LOGGER.debug("Creating MobilePackagerEditMenu with original package: {}", originalPackage);
+        contentHolder.loadFromStack(originalPackage);
+        CreateMobilePackages.LOGGER.info("Creating MobilePackagerEditMenu with original package: {}", originalPackage);
     }
 
     @Override
@@ -27,9 +33,6 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
 
     @Override
     protected void initAndReadInventory(MobilePackagerEdit contentHolder) {
-        if (originalPackage != null) {
-            contentHolder.loadFromStack(originalPackage);
-        }
     }
 
     @Override
@@ -62,5 +65,6 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
     public void confirm() {
         ItemStack box = contentHolder.writeToStack();
         player.getInventory().placeItemBackInInventory(box);
+        player.closeContainer();
     }
 }

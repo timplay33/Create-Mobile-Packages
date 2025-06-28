@@ -37,7 +37,7 @@ public class MobilePackagerEditScreen extends AbstractSimiContainerScreen<Mobile
 
         if (addressBox == null) {
             addressBox = new AddressEditBox(this, new NoShadowFontWrapper(font), x + 55, y + 68, 110, 10, false);
-            addressBox.setValue("");//menu.getAddress());
+            addressBox.setValue(menu.contentHolder.address);
             addressBox.setTextColor(0x555555);
         }
         addRenderableWidget(addressBox);
