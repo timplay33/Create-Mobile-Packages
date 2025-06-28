@@ -73,13 +73,6 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
         }
     }
 
-    @Override
-    public boolean stillValid(Player player) {
-        if (player.getMainHandItem().getItem() instanceof MobilePackager)
-            return super.stillValid(player);
-        return false;
-    }
-
     static class MobilePackagerStackHandler extends SlotItemHandler {
 
         public MobilePackagerStackHandler(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
