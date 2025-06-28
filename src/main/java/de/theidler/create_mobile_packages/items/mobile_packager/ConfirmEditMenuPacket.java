@@ -8,27 +8,18 @@ import net.minecraftforge.network.NetworkEvent;
 
 public class ConfirmEditMenuPacket extends SimplePacketBase {
 
-    private ItemStackHandler contents;
     private String address;
 
-    public ConfirmEditMenuPacket(ItemStackHandler contents, String address) {
-        this.contents = contents;
+    public ConfirmEditMenuPacket(String address) {
         this.address = address;
     }
 
     public ConfirmEditMenuPacket(FriendlyByteBuf buffer) {
-        this.contents = new ItemStackHandler(9);
-        for (int i = 0; i < 9; i++) {
-            this.contents.setStackInSlot(i, buffer.readItem());
-        }
         this.address = buffer.readUtf(32767); // max length of a string in Minecraft
     }
 
     @Override
     public void write(FriendlyByteBuf buffer) {
-        for (int i = 0; i < 9; i++) {
-            buffer.writeItem(contents.getStackInSlot(i));
-        }
         buffer.writeUtf(address, 32767); // max length of a string in Minecraft
     }
 
@@ -39,7 +30,7 @@ public class ConfirmEditMenuPacket extends SimplePacketBase {
             if (player == null || !player.isAlive()) return;
 
             if (player.containerMenu instanceof MobilePackagerEditMenu menu) {
-                menu.serverConfirm(contents, address);
+                menu.serverConfirm(address);
             }
         });
         return true;

@@ -45,7 +45,7 @@ public class MobilePackagerEditScreen extends AbstractSimiContainerScreen<Mobile
 
         confirmButton = new IconButton(x + bgWidth - 30, y + bgHeight - 25, AllIcons.I_CONFIRM);
         confirmButton.withCallback(() -> {
-            CMPPackets.getChannel().sendToServer(new ConfirmEditMenuPacket(menu.handler, addressBox.getValue()));
+            CMPPackets.getChannel().sendToServer(new ConfirmEditMenuPacket(addressBox.getValue()));
         });
         addRenderableWidget(confirmButton);
     }
