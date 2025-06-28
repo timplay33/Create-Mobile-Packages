@@ -75,9 +75,14 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
         super.removed(playerIn);
     }
 
-    public void serverConfirm(ItemStackHandler contents, String address) {
-        contentHolder.address = address;
-        contentHolder.contents = contents;
+    @Override
+    public boolean stillValid(Player player) {
+        if (player.getMainHandItem().getItem() instanceof MobilePackager)
+            return super.stillValid(player);
+        return false;
+    }
+
+    public void confirm() {
         player.closeContainer();
     }
 }

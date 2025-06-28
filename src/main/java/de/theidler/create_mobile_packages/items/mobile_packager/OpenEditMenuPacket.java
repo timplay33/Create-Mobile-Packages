@@ -1,7 +1,6 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
-import de.theidler.create_mobile_packages.CreateMobilePackages;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

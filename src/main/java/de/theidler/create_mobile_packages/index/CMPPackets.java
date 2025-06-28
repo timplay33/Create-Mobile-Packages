@@ -2,7 +2,6 @@ package de.theidler.create_mobile_packages.index;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.items.mobile_packager.ConfirmEditMenuPacket;
 import de.theidler.create_mobile_packages.items.mobile_packager.OpenEditMenuPacket;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
@@ -30,7 +29,6 @@ public enum CMPPackets {
     HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket::new, PLAY_TO_SERVER),
     OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker::new, PLAY_TO_SERVER),
     OPEN_EDIT_MENU(OpenEditMenuPacket.class, OpenEditMenuPacket::new, PLAY_TO_SERVER),
-    CONFIRM_EDIT_MENU(ConfirmEditMenuPacket.class, ConfirmEditMenuPacket::new, PLAY_TO_SERVER),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT);
