@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleMenuProvider;
@@ -30,8 +31,18 @@ public class OpenEditMenuPacket extends SimplePacketBase {
         context.enqueueWork(() -> {
             Player player = context.getSender();
             if (player == null || !player.isAlive()) return;
-            player.openMenu(new SimpleMenuProvider((id, inv, p) -> new MobilePackagerEditMenu(id, inv, new MobilePackagerEdit(), originalPackage), Component.translatable("item.create_mobile_packages.mobile_packager")));
 
+            if (player.containerMenu != null) {
+                player.closeContainer();
+            }
+
+            player.getServer().tell(new net.minecraft.server.TickTask(1, () -> {
+                player.openMenu(new SimpleMenuProvider(
+                        (id, inv, p) -> new MobilePackagerEditMenu(id, inv, new MobilePackagerEdit(), originalPackage),
+                        Component.translatable("item.create_mobile_packages.mobile_packager")
+                ));
+                CreateMobilePackages.LOGGER.debug("Versuche EditMenu zu öffnen mit Paket: {}", originalPackage);
+            }));
         });
         return true;
     }

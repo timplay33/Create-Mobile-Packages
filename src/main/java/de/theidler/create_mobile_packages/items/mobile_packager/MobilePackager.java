@@ -11,8 +11,6 @@ import net.minecraftforge.items.ItemStackHandler;
 
 public class MobilePackager extends Item {
 
-    public ItemStackHandler packageSlotInventory;
-
     public MobilePackager(Properties pProperties) {
         super(pProperties.stacksTo(1));
     }

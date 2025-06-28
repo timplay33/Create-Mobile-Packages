@@ -4,9 +4,7 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.index.CMPPackets;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
@@ -18,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
-    private ItemStack stackInSlot = ItemStack.EMPTY;
+    private ItemStackHandler packageSlotInventory;
 
     public MobilePackagerMenu(int id, Inventory inv, MobilePackager contentHolder) {
         super(CMPMenuTypes.MOBILE_PACKAGER_MENU.get(), id, inv, contentHolder);
@@ -31,12 +29,12 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     @Override
     public void initAndReadInventory(MobilePackager contentHolder) {
-        contentHolder.packageSlotInventory = new ItemStackHandler(1);
+        packageSlotInventory = new ItemStackHandler(1);
     }
 
     @Override
     public void addSlots() {
-        addSlot(new MobilePackagerStackHandler(contentHolder.packageSlotInventory, 0, 74, 28));
+        addSlot(new MobilePackagerStackHandler(packageSlotInventory, 0, 74, 28));
         addPlayerSlots(13, 112);
     }
 
@@ -64,7 +62,10 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     public void confirm() {
         if (player.level().isClientSide) {
-            CMPPackets.getChannel().sendToServer(new OpenEditMenuPacket(stackInSlot));
+            ItemStack stack = packageSlotInventory.getStackInSlot(0);
+            if (!stack.isEmpty()) {
+                CMPPackets.getChannel().sendToServer(new OpenEditMenuPacket(packageSlotInventory.getStackInSlot(0)));
+            }
         }
     }
 

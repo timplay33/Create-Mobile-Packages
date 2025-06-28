@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
 import com.simibubi.create.foundation.gui.menu.MenuBase;
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,6 +17,7 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
     public MobilePackagerEditMenu(int id, Inventory inv, MobilePackagerEdit contentHolder, ItemStack originalPackage) {
         super(CMPMenuTypes.MOBILE_PACKAGER_EDIT_MENU.get(), id, inv, contentHolder);
         this.originalPackage = originalPackage;
+        CreateMobilePackages.LOGGER.debug("Creating MobilePackagerEditMenu with original package: {}", originalPackage);
     }
 
     @Override
@@ -25,7 +27,9 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
 
     @Override
     protected void initAndReadInventory(MobilePackagerEdit contentHolder) {
-        contentHolder.loadFromStack(originalPackage);
+        if (originalPackage != null) {
+            contentHolder.loadFromStack(originalPackage);
+        }
     }
 
     @Override
