@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.index;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.items.package_cannon.PackageCannonPacket;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -27,7 +28,8 @@ public enum CMPPackets {
     OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker::new, PLAY_TO_SERVER),
 
     // Server to Client
-    BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT);
+    BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT),
+    PACKAGE_CANNON(PackageCannonPacket.class, PackageCannonPacket::new, NetworkDirection.PLAY_TO_CLIENT);
 
 
     public static final ResourceLocation CHANNEL_NAME = CreateMobilePackages.asResource("main");

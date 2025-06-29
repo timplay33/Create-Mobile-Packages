@@ -31,6 +31,8 @@ public class CMPItems {
                     .register();
     public static final ItemEntry<PackageCannon> PACKAGE_CANNON =
             CreateMobilePackages.REGISTRATE.item("package_cannon", PackageCannon::new)
+                    .properties(properties -> properties.stacksTo(1))
+                    .model((context, provider) -> {})
                     .register();
 
     public static void register() {

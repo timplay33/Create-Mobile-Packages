@@ -1,5 +1,7 @@
 package de.theidler.create_mobile_packages.index.config;
 
+import com.google.gson.JsonArray;
+import com.simibubi.create.infrastructure.config.CEquipment;
 import net.createmod.catnip.config.ConfigBase;
 
 public class CMPServer extends ConfigBase {
@@ -16,6 +18,7 @@ public class CMPServer extends ConfigBase {
             Comments.displayNametag);
     public final ConfigBool allowRoboBeeSpawnPackageTransport = b(true, "allowRoboBeeSpawnPackageTransport",
             CMPServer.Comments.allowRoboBeeSpawnPackageTransport);
+    public final ConfigInt maxPackageCannonShots = i(200, 0, "maxPackageCannonShots", CMPServer.Comments.maxPackageCannonShots);
 
     @Override
     public String getName() {
@@ -29,5 +32,6 @@ public class CMPServer extends ConfigBase {
         static String beeMaxDistance = "The maximum distance a Robo Bee can travel. Default: -1 (unlimited)";
         static String displayNametag = "If true, the Robo Bee will display a nametag with the address of the package it is carrying. Default: true";
         static String allowRoboBeeSpawnPackageTransport = "If true, when Spawning a Robo Bee with the Item it will take any Package from the offhand and deliver it. Default: true";
+        static String maxPackageCannonShots = "Amount of free Package Cannon shots provided by one filled Copper Backtank. Set to 0 makes Package Cannons unbreakable";
     }
 }

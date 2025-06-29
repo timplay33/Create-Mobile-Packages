@@ -4,12 +4,15 @@ import de.theidler.create_mobile_packages.entities.models.RoboBeeModel;
 import de.theidler.create_mobile_packages.entities.render.DroneEntityRenderer;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import de.theidler.create_mobile_packages.index.ponder.CMPPonderPlugin;
+import de.theidler.create_mobile_packages.items.package_cannon.PackageCannonRenderHandler;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 public class CreateMobilePackagesClient {
+
+    public static final PackageCannonRenderHandler PACKAGE_CANNON_RENDER_HANDLER = new PackageCannonRenderHandler();
 
     public CreateMobilePackagesClient() {
     }
