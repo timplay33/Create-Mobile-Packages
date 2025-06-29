@@ -8,9 +8,13 @@ import com.simibubi.create.foundation.item.CustomArmPoseItem;
 import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -32,6 +36,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.network.PacketDistributor;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -43,12 +48,12 @@ public class PackageCannon extends ProjectileWeaponItem implements CustomArmPose
     public static final int MAX_DAMAGE = 100;
 
     public PackageCannon(Properties properties) {
-        super(properties.defaultDurability(MAX_DAMAGE));
+        super(properties.stacksTo(1).defaultDurability(MAX_DAMAGE));
     }
 
     public static Ammo getAmmo(Player player, ItemStack heldStack) {
         ItemStack ammoStack = player.getProjectile(heldStack);
-        if (ammoStack.isEmpty()) {
+        if (ammoStack.isEmpty() || !PackageItem.isPackage(ammoStack)) {
             return null;
         }
 
@@ -85,7 +90,7 @@ public class PackageCannon extends ProjectileWeaponItem implements CustomArmPose
         Vec3 lookVec = player.getLookAngle();
         Vec3 motion = lookVec.add(correction)
                 .normalize()
-                .scale(2);
+                .scale(3);
 
         float soundPitch = (level.getRandom().nextFloat() - .5f) / 4f;
 
@@ -113,8 +118,25 @@ public class PackageCannon extends ProjectileWeaponItem implements CustomArmPose
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        super.appendHoverText(stack, level, tooltipComponents, isAdvanced); //TODO: add custom tooltip
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) {
+            super.appendHoverText(stack, level, tooltip, flag);
+            return;
+        }
+
+        Ammo ammo = getAmmo(player, stack);
+        if (ammo == null) {
+            super.appendHoverText(stack, level, tooltip, flag);
+            return;
+        }
+        ItemStack ammoStack = ammo.stack();
+
+        tooltip.add(CommonComponents.EMPTY);
+        tooltip.add(Component.translatable(ammoStack.getDescriptionId())
+                .withStyle(ChatFormatting.GRAY));
+
+        super.appendHoverText(stack, level, tooltip, flag);
     }
 
     @Override
@@ -128,7 +150,7 @@ public class PackageCannon extends ProjectileWeaponItem implements CustomArmPose
     }
 
     @Override
-    public Predicate<ItemStack> getAllSupportedProjectiles() {
+    public @NotNull Predicate<ItemStack> getAllSupportedProjectiles() {
         return PackageItem::isPackage;
     }
 
@@ -178,7 +200,7 @@ public class PackageCannon extends ProjectileWeaponItem implements CustomArmPose
     @Override
     public HumanoidModel.@Nullable ArmPose getArmPose(ItemStack stack, AbstractClientPlayer player, InteractionHand hand) {
         if (!player.swinging){
-            return HumanoidModel.ArmPose.CROSSBOW_HOLD;
+            return HumanoidModel.ArmPose.ITEM;
         }
         return null;
     }
