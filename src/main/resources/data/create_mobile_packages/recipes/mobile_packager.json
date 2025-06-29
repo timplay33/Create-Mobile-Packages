@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BPC",
+    "BS ",
+    " S "
+  ],
+  "key": {
+    "B": {
+      "item": "create:brass_sheet"
+    },
+    "P": {
+      "item": "create:packager"
+    },
+    "C": {
+      "item": "create:cardboard"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "create_mobile_packages:mobile_packager",
+    "count": 1
+  }
+}
