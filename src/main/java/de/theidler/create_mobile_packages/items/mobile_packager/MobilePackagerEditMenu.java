@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
+import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import net.minecraft.network.FriendlyByteBuf;
@@ -8,8 +9,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
 
@@ -17,7 +20,7 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
     public ItemStackHandler handler;
 
     public MobilePackagerEditMenu(MenuType<MobilePackagerEditMenu> type, int id, Inventory inv, FriendlyByteBuf extraData) {
-        this(id, inv, new MobilePackagerEdit(), extraData.readItem());
+        this(id, inv, new MobilePackagerEdit(), extraData != null ? extraData.readItem() : ItemStack.EMPTY);
     }
 
     public MobilePackagerEditMenu(int id, Inventory inv, MobilePackagerEdit contentHolder, ItemStack originalPackage) {
@@ -45,7 +48,7 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
         int slotX = 27;
         int slotY = 28;
         for (int i = 0; i < 9; i++)
-            addSlot(new SlotItemHandler(handler, i, slotX + 20 * i, slotY));
+            addSlot(new MobilePackagerEditStackHandler(handler, i, slotX + 20 * i, slotY));
         addPlayerSlots(33, 142);
     }
 
@@ -92,9 +95,21 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
     @Override
     public void removed(Player playerIn) {
         if (!playerIn.level().isClientSide) {
-            playerIn.getInventory().placeItemBackInInventory(contentHolder.writeToStack());
+            ItemStack box = contentHolder.writeToStack();
+            if (!PackageItem.getAddress(box).isEmpty() || hasContents(PackageItem.getContents(box))) {
+                playerIn.getInventory().placeItemBackInInventory(box);
+            }
         }
         super.removed(playerIn);
+    }
+
+    private boolean hasContents(ItemStackHandler contents) {
+        for (int i = 0; i < contents.getSlots(); i++) {
+            if (!contents.getStackInSlot(i).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void serverConfirm(String address) {
@@ -107,5 +122,17 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
         if (player.getMainHandItem().getItem() instanceof MobilePackager)
             return super.stillValid(player);
         return false;
+    }
+
+    static class MobilePackagerEditStackHandler extends SlotItemHandler {
+
+        public MobilePackagerEditStackHandler(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
+            super(itemHandler, index, xPosition, yPosition);
+        }
+
+        @Override
+        public boolean mayPlace(@NotNull ItemStack stack) {
+            return !(stack.getItem() instanceof PackageItem) && !(stack.getItem() instanceof MobilePackager);
+        }
     }
 }
