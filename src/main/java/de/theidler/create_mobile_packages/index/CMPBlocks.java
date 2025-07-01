@@ -7,6 +7,7 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -25,10 +26,6 @@ import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS
 
 public class CMPBlocks {
 
-    static {
-        CreateMobilePackages.REGISTRATE.setCreativeTab(CMPCreativeModeTabs.CREATE_MOBILE_PACKAGES_TAB);
-    }
-
     public static final BlockEntry<BeePortBlock> BEE_PORT = CreateMobilePackages.REGISTRATE.block("bee_port", BeePortBlock::new)
                     .initialProperties(SharedProperties::wooden)
                     .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
@@ -43,6 +40,7 @@ public class CMPBlocks {
             .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
             .item(DronePortItem::new)
             .removeTab(CreativeModeTabs.SEARCH)
+            .removeTab(ResourceKey.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, CreateMobilePackages.asResource("create_mobile_packages_tab")))
             .transform(customItemModel())
             .register();
 

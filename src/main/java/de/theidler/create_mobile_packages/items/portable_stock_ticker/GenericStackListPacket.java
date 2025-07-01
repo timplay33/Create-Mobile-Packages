@@ -1,9 +1,10 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
-import com.simibubi.create.content.logistics.BigItemStack;
+import de.theidler.create_mobile_packages.compat.FactoryAbstractions;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
-import net.createmod.catnip.net.base.ClientboundPacketPayload;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -12,16 +13,17 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.List;
 
-public class BigItemStackListPacket implements ClientboundPacketPayload {
-    public static final StreamCodec<RegistryFriendlyByteBuf, BigItemStackListPacket> STREAM_CODEC = StreamCodec.composite(
-            CatnipStreamCodecBuilders.list(BigItemStack.STREAM_CODEC), packet -> packet.stacks,
-    BigItemStackListPacket::new
+public class GenericStackListPacket implements ClientboundPacketPayload {
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, GenericStackListPacket> STREAM_CODEC = StreamCodec.composite(
+            CatnipStreamCodecBuilders.list(FactoryAbstractions.GENERIC_STACK_STREAM_CODEC), packet -> packet.stacks,
+            GenericStackListPacket::new
     );
 
-    private final List<BigItemStack> stacks;
+    private final List<GenericStack> stacks;
 
     // Standard constructor
-    public BigItemStackListPacket(List<BigItemStack> stacks) {
+    public GenericStackListPacket(List<GenericStack> stacks) {
         this.stacks = stacks;
     }
 
