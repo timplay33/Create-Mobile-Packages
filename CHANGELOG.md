@@ -1,6 +1,9 @@
 ------------------------------------------------------
-Create: Mobile Packages - v0.5.3 - unreleased
+Create: Mobile Packages - v0.5.3 - 1.21.1 - 01.07.2025
 ------------------------------------------------------
+
+### Known not yet fixed issues
+- Crafting with the Portable Stock Ticker doesn't work properly without Create: Factory Logistics
 
 ### Additions
 - Added always suggesting the player's name as the target address.
