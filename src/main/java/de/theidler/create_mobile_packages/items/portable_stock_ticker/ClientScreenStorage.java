@@ -1,6 +1,6 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 
-import com.simibubi.create.content.logistics.BigItemStack;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import net.createmod.catnip.platform.CatnipServices;
 
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class ClientScreenStorage {
-    public static List<BigItemStack> stacks = new ArrayList<>();
+    public static List<GenericStack> stacks = new ArrayList<>();
 
     private static int ticks = 0;
 

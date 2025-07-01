@@ -5,7 +5,6 @@ import com.simibubi.create.content.logistics.packagePort.PackagePortScreen;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class BeePortScreen extends PackagePortScreen {

@@ -6,6 +6,7 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.models.RoboBeeModel;
+import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -47,21 +48,25 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
         poseStack.translate(-0.5D, 0 - (riggingOffset - 5 / 16f) * heightScale, -0.5D);
         poseStack.scale(1F, heightScale * 1F, 1F);
 
-        BakedModel rig = AllPartialModels.PACKAGE_RIGGING.get(modelKey).get();
+        PartialModel partialModel = AllPartialModels.PACKAGE_RIGGING.get(modelKey);
+        if (partialModel != null) {
+            BakedModel rig = partialModel.get();
 
-        Minecraft.getInstance().getItemRenderer().renderModelLists(
-                rig,
-                ItemStack.EMPTY,
-                packedLight,
-                net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
-                poseStack,
-                buffer.getBuffer(ItemBlockRenderTypes.getRenderType(ItemStack.EMPTY, true))
-        );
-        poseStack.popPose();
+
+            Minecraft.getInstance().getItemRenderer().renderModelLists(
+                    rig,
+                    ItemStack.EMPTY,
+                    packedLight,
+                    net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+                    poseStack,
+                    buffer.getBuffer(ItemBlockRenderTypes.getRenderType(ItemStack.EMPTY, true))
+            );
+            poseStack.popPose();
+        }
 
         if (!stack.isEmpty()) {
             poseStack.pushPose();
-            poseStack.translate(0.0D, 0-(riggingOffset - 1 + 3/16f) * heightScale, 0.0D);
+            poseStack.translate(0.0D, 0 - (riggingOffset - 1 + 3 / 16f) * heightScale, 0.0D);
             poseStack.scale(2F, heightScale * 2F, 2F);
             Minecraft.getInstance().getItemRenderer().renderStatic(
                     stack,
