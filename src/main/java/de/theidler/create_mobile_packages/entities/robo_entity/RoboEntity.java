@@ -51,6 +51,8 @@ public class RoboEntity extends Mob {
     private String activeTargetAddress;
     private int damageCounter;
     private boolean isRequest = true;
+    private Target target;
+    private Path path;
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
