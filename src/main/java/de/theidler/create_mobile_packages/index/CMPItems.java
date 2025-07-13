@@ -11,6 +11,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import de.theidler.create_mobile_packages.items.mobile_packager.MobilePackager;
 
 
 public class CMPItems {
@@ -27,6 +28,10 @@ public class CMPItems {
 
     public static final ItemEntry<RoboBeeItem> ROBO_BEE =
             CreateMobilePackages.REGISTRATE.item("robo_bee",RoboBeeItem::new)
+                    .register();
+
+    public static final ItemEntry<MobilePackager> MOBILE_PACKAGER =
+            CreateMobilePackages.REGISTRATE.item("mobile_packager", MobilePackager::new)
                     .register();
 
     public static void register() {
