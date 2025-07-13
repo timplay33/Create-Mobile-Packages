@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.items.robo_bee;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
+import de.theidler.create_mobile_packages.entities.robo_entity.Target;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -18,6 +19,8 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+
+import static de.theidler.create_mobile_packages.entities.robo_entity.RoboHelper.createTargetFromItemStack;
 
 public class RoboBeeItem extends Item {
 
@@ -44,7 +47,7 @@ public class RoboBeeItem extends Item {
         RoboBeeEntity roboBee = new RoboBeeEntity(
                 level,
                 packageItem,
-                null,
+                createTargetFromItemStack(level, packageItem),
                 pos
         );
 
@@ -53,7 +56,6 @@ public class RoboBeeItem extends Item {
         }
 
         level.addFreshEntity(roboBee);
-        roboBee.setRequest(false);
         context.getItemInHand().shrink(1);
 
         return InteractionResult.SUCCESS;

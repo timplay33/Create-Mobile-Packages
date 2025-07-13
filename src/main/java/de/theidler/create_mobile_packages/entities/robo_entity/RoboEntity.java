@@ -1,10 +1,8 @@
 package de.theidler.create_mobile_packages.entities.robo_entity;
 
 import com.simibubi.create.content.logistics.box.PackageEntity;
-import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
-import de.theidler.create_mobile_packages.blocks.bee_port.ModCapabilities;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDescendFinishState;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
@@ -27,12 +25,10 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import javax.annotation.Nullable;
 
 import static net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK;
 
@@ -44,15 +40,10 @@ public class RoboEntity extends Mob {
 
     private RoboEntityState state;
     private Vec3 targetVelocity = Vec3.ZERO;
-    private Player targetPlayer;
-    private BeePortBlockEntity targetBlockEntity;
     private BeePortBlockEntity startBeePortBlockEntity;
-    private String targetAddress;
-    private String activeTargetAddress;
     private int damageCounter;
-    private boolean isRequest = true;
-    private Target target;
-    private Path path;
+    public Target target;
+    public Path path;
 
     /**
      * Constructor for RoboEntity. Used for spawning the entity.
@@ -60,31 +51,29 @@ public class RoboEntity extends Mob {
      * @param type      The entity type.
      * @param level     The level in which the entity exists.
      * @param itemStack The ItemStack (package) used to determine the target.
+     * @param target
      * @param spawnPos  The spawn position of the entity.
      */
-    public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
+    public RoboEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, Target target, BlockPos spawnPos) {
         super(type, level);
         this.damageCounter = 0;
         CreateMobilePackages.ROBO_MANAGER.addRobo(this);
-        if (targetPos != null) {
-            this.targetBlockEntity = level.getBlockEntity(targetPos) instanceof BeePortBlockEntity dpbe ? dpbe : null;
-            if (this.targetBlockEntity != null) {
-                setState(new LaunchPrepareState());
-            }
-        }
+        this.target = target;
+        setState(new LaunchPrepareState());
         setItemStack(itemStack);
-        //createPackageEntity(itemStack);
-        setTargetFromItemStack(itemStack);
         this.setPos(spawnPos.getCenter().subtract(0, 0.5, 0));
-        if (targetBlockEntity != null) {targetBlockEntity.trySetEntityOnTravel(this);}
+        // set EntityOnTravel for the target block entity
+        if (target.getTargetBlockEntity(level) instanceof BeePortBlockEntity bpbe) {
+            bpbe.trySetEntityOnTravel(this);
+        }
         if (level().getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
             startBeePortBlockEntity = dpbe;
         }
         if (!level().isClientSide()) {
             this.entityData.set(ROT_YAW, (float) getSnapAngle(getAngleToTarget()));
         }
-        // don't fly out of the port if target is origin
-        if (targetBlockEntity != null && targetBlockEntity.equals(startBeePortBlockEntity)) {
+        // don't fly out of the port if the target is origin
+        if (target.getTargetBlockEntity(level) instanceof BeePortBlockEntity bpbe && bpbe.equals(startBeePortBlockEntity)) {
             setState(new LandingDescendFinishState());
             return;
         }
@@ -103,122 +92,13 @@ public class RoboEntity extends Mob {
         this.entityData.define(PACKAGE_HEIGHT_SCALE, 0.0f);
     }
 
-    /**
-     * Sets the target for the RoboEntity based on the provided ItemStack.
-     * If the ItemStack is empty, the target is set to the closest drone port.
-     * If the ItemStack is a package, it attempts to find a player or drone port
-     * matching the address specified in the package.
-     *
-     * @param itemStack The ItemStack used to determine the target.
-     */
-    private void setTargetFromItemStack(ItemStack itemStack) {
-        if (itemStack == null || itemStack.isEmpty())
-            setTargetAddress(null);
-        else
-            setTargetAddress(PackageItem.getAddress(itemStack));
-    }
-
-    private Player getTargetPlayerFromAddress() {
-        return level().players().stream()
-                .filter(player -> BeePortBlockEntity.doesAddressStringMatchPlayerName(player, PackageItem.getAddress(this.getItemStack()))).findFirst().orElse(null);
-    }
-
-    private void updateTarget() {
-        if (level().isClientSide) { return; }
-        targetPlayer = getTargetPlayerFromAddress();
-        if (targetPlayer != null) { return; }
-        if (
-            targetBlockEntity == null ||
-            targetBlockEntity.isRemoved() ||
-            !targetBlockEntity.canAcceptEntity(this, !getItemStack().isEmpty()) ||
-            !Objects.equals(activeTargetAddress,targetAddress)
-        ) {
-            BeePortBlockEntity oldTarget = targetBlockEntity;
-            activeTargetAddress = targetAddress;
-            targetBlockEntity = getClosestBeePort(level(), targetAddress, this.blockPosition(), this);
-            if (oldTarget != targetBlockEntity) {
-                if (oldTarget != null) {
-                    oldTarget.trySetEntityOnTravel(null);
-                }
-                if (targetBlockEntity != null) {
-                    targetBlockEntity.trySetEntityOnTravel(this);
-                }
-            }
-            if (targetBlockEntity == null && targetPlayer == null) {
-                setTargetVelocity(Vec3.ZERO);
-            }
-        }
-        if (!isRequest) {
-            // Check if there is a new target block entity that is closer than the current one
-            BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(level(), targetAddress, this.blockPosition(), this);
-            if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
-                if (targetBlockEntity != null) {
-                    targetBlockEntity.trySetEntityOnTravel(null);
-                }
-                targetBlockEntity = newTargetBlockEntity;
-                targetBlockEntity.trySetEntityOnTravel(this);
-            }
-        }
-    }
-
-    /**
-     * Gets the position of the current target.
-     * If no target is set, it defaults to the closest drone port.
-     *
-     * @return The block position of the target.
-     */
-    public BlockPos getTargetPosition() {
-        updateTarget();
-        if (targetPlayer != null) {
-            return isWithinRange(targetPlayer.blockPosition(), this.blockPosition()) ? targetPlayer.blockPosition().above().above() : null;
-        }
-        if (targetBlockEntity != null) {
-            return isWithinRange(targetBlockEntity.getBlockPos(), this.blockPosition()) ? targetBlockEntity.getBlockPos().above().above() : null;
-        }
-        return null;
-    }
-
-    public static boolean isWithinRange(BlockPos targetPos, BlockPos originPos) {
-        int maxDistance = CMPConfigs.server().beeMaxDistance.get();
-        if (targetPos == null || originPos == null) return false;
-        if (maxDistance == -1) return true;
-        return targetPos.distSqr(originPos) <= maxDistance * maxDistance;
-    }
-
-    /**
-     * Finds the closest BeePortBlockEntity to this RoboEntity, optionally filtered by an address.
-     * <p>
-     * This method searches for all available BeePortBlockEntity instances in the current level.
-     * If an address is provided, only ports matching the address filter are considered.
-     * All full ports are removed from the selection.
-     * Finally, the closest port to this RoboEntity's position is determined.
-     *
-     * @param address The address to filter by, or {@code null} for no filtering.
-     * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
-     */
-    public static BeePortBlockEntity getClosestBeePort(Level level, String address, BlockPos origin, RoboEntity entity) {
-        final BeePortBlockEntity[] closest = {null};
-        level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
-            List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
-            allBEs.removeIf(be -> be.isRemoved());
-            allBEs.removeIf(dpbe -> !isWithinRange(dpbe.getBlockPos(), origin));
-            if (address != null) {
-                allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
-            }
-            allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity, (entity != null && !entity.getItemStack().isEmpty())));
-            closest[0] = allBEs.stream()
-                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin)))
-                    .orElse(null);
-        });
-        return closest[0];
-    }
-
     @Override
     public void tick() {
     }
 
     public void roboMangerTick() {
         super.tick();
+        target.tick(level());
         CreateMobilePackages.ROBO_MANAGER.markDirty();
         if (state != null) state.tick(this);
         this.setDeltaMovement(targetVelocity);
@@ -235,11 +115,11 @@ public class RoboEntity extends Mob {
         if (!CMPConfigs.server().displayNametag.get()) {
             setCustomName(null);
             setCustomNameVisible(false);
-        } else if (targetAddress != null && !targetAddress.isBlank()) {
-            setCustomName(Component.literal("-> " + targetAddress));
+        } else if (target.getTargetAddress() != null && !target.getTargetAddress().isBlank()) {
+            setCustomName(Component.literal("-> " + target.getTargetAddress()));
             setCustomNameVisible(true);
-        } else if (targetBlockEntity != null) {
-            BlockPos pos = targetBlockEntity.getBlockPos();
+        } else if (target.getTargetType() == Target.TargetType.BLOCKENTITY) {
+            BlockPos pos = BlockPos.containing(target.getTargetPosition());
             setCustomName(Component.literal("-> [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]"));
             setCustomNameVisible(true);
         } else {
@@ -301,10 +181,8 @@ public class RoboEntity extends Mob {
      * @return The angle to the target.
      */
     public double getAngleToTarget() {
-        BlockPos targetPos = getTargetPosition();
-        return targetPos != null
-                ? Math.atan2(targetPos.getZ() - this.getZ(), targetPos.getX() - this.getX())
-                : 0;
+        BlockPos targetPos = BlockPos.containing(target.getTargetPosition());
+        return Math.atan2(targetPos.getZ() - this.getZ(), targetPos.getX() - this.getX());
     }
 
     @Override
@@ -322,18 +200,22 @@ public class RoboEntity extends Mob {
         if (!this.getItemStack().isEmpty()) {
             level().addFreshEntity(PackageEntity.fromItemStack(level(), this.position(), getItemStack()));
             setItemStack(ItemStack.EMPTY);
+            Player targetPlayer = getTargetPlayer();
             if (targetPlayer != null) {
                 targetPlayer.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.death", Math.round(this.getX()), Math.round(this.getY()), Math.round(this.getZ()), targetPlayer.getName().getString()), false);
             }
         }
     }
 
-    public Player getTargetPlayer() {
-        updateTarget();
-        return targetPlayer;
+    public @Nullable Player getTargetPlayer() {
+        return target.getTargetPlayer(level());
     }
-    public BeePortBlockEntity getTargetBlockEntity() {
-        return targetBlockEntity;
+    public @Nullable BeePortBlockEntity getTargetBlockEntity() {
+        BlockEntity targetBlockEntity = target.getTargetBlockEntity(level());
+        if (targetBlockEntity instanceof BeePortBlockEntity bpbe) {
+            return bpbe;
+        }
+        return null;
     }
 
     /**
@@ -363,11 +245,9 @@ public class RoboEntity extends Mob {
      */
     public void lookAtTarget(){
         if (level().isClientSide()) return;
-        BlockPos targetPos = getTargetPosition();
-        if (targetPos != null) {
-            Vec3 direction = new Vec3(targetPos.getX(), targetPos.getY(), targetPos.getZ()).subtract(this.position()).normalize();
-            this.entityData.set(ROT_YAW, (float) Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90);
-        }
+        BlockPos targetPos = BlockPos.containing(target.getTargetPosition());
+        Vec3 direction = new Vec3(targetPos.getX(), targetPos.getY(), targetPos.getZ()).subtract(this.position()).normalize();
+        this.entityData.set(ROT_YAW, (float) Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90);
     }
 
     /**
@@ -425,7 +305,6 @@ public class RoboEntity extends Mob {
         } else {
             setItemStack(ItemStack.EMPTY);
         }
-        setTargetFromItemStack(getItemStack());
         setState(new AdjustRotationToTarget());
     }
 
@@ -435,22 +314,9 @@ public class RoboEntity extends Mob {
         if (pCompound.contains("itemStack")) {
             setItemStack(ItemStack.of(pCompound.getCompound("itemStack")));
         }
-        setTargetFromItemStack(getItemStack());
         if (!level().isClientSide() && !getItemStack().isEmpty()) {
             setPackageHeightScale(1.0f);
         }
-    }
-
-    /**
-     * Sets the target for the RoboEntity based on the provided address.
-     * If the address is null, the target is set to the closest drone port.
-     * Otherwise, it attempts to find a player or drone port matching the address.
-     * 
-     * @param address the target address
-     */
-    public void setTargetAddress(String address) {
-        this.targetAddress = address;
-        updateTarget();
     }
 
     @Override
@@ -489,10 +355,6 @@ public class RoboEntity extends Mob {
         }
 
         return true;
-    }
-
-    public void setRequest(boolean request) {
-        this.isRequest = request;
     }
 
     @Override

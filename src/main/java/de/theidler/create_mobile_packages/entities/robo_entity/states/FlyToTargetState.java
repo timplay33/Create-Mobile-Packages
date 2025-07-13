@@ -9,8 +9,7 @@ import net.minecraft.world.phys.Vec3;
 public class FlyToTargetState implements RoboEntityState {
     @Override
     public void tick(RoboEntity re) {
-        BlockPos targetPos = re.getTargetPosition();
-        if (targetPos == null) { return; }
+        BlockPos targetPos = BlockPos.containing(re.target.getTargetPosition());
         if (re.position().distanceTo(targetPos.getCenter()) <= CMPConfigs.server().beeSpeed.get()/12.0) {
             if (re.getTargetPlayer() != null) {
                 re.setState(new InteractWithPlayerState());

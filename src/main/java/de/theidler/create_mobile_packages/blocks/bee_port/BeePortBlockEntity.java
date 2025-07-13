@@ -6,6 +6,8 @@ import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockE
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
+import de.theidler.create_mobile_packages.entities.robo_entity.RoboHelper;
+import de.theidler.create_mobile_packages.entities.robo_entity.Target;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
@@ -262,30 +264,19 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         String address = PackageItem.getAddress(itemStack);
 
         // Check if the item can be sent to a player.
-        for (Player player : level.players()) {
-            if (doesAddressStringMatchPlayerName(player, address)
-                    && RoboEntity.isWithinRange(player.blockPosition(), this.getBlockPos())) {
-                sendToPlayer(player, itemStack, slot);
-                return;
-            }
+        Player player = RoboHelper.getPlayerFromAddress(level, address);
+        if (player != null) {
+            sendToPlayer(player, itemStack, slot);
+            return;
         }
 
         // Check if the item can be sent to another drone port.
         if (CMPConfigs.server().portToPort.get() && !PackageItem.matchAddress(address, addressFilter)) {
-            BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, this.getBlockPos(), null);
+            BeePortBlockEntity beePortBlockEntity = RoboHelper.getClosestBeePort(level, address, this.getBlockPos(), null);
             if (beePortBlockEntity != null && !beePortBlockEntity.isFull()) {
                 sendDrone(itemStack, slot);
             }
         }
-    }
-
-    public static boolean doesAddressStringMatchPlayerName(Player player, String address) {
-        String playerName = player.getName().getString();
-        int atIndex = address.lastIndexOf('@');
-        if (atIndex == -1) {
-            return address.equals(playerName);
-        }
-        return address.substring(atIndex + 1).equals(playerName);
     }
 
     private static void requestRoboEntity(Level level, BlockPos blockPos) {
@@ -298,7 +289,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                     .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(blockPos)))
                     .orElse(null);
             if (target != null) {
-                target.sendDrone(blockPos, true);
+                target.sendDrone(new Target(blockPos.getCenter(), Target.TargetType.BLOCKENTITY, null, null));
             }
         });
     }
@@ -340,16 +331,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         sendItemThisTime = 2;
         RoboBeeEntity drone = new RoboBeeEntity(level, itemStack, null, this.getBlockPos());
         level.addFreshEntity(drone);
-        drone.setRequest(false);
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
-    private void sendDrone(BlockPos tagetPos, boolean request) {
+    private void sendDrone(Target target) {
         if (!tryConsumeDrone())
             return;
         sendItemThisTime = 2;
-        RoboBeeEntity drone = new RoboBeeEntity(level, ItemStack.EMPTY, tagetPos, this.getBlockPos());
+        RoboBeeEntity drone = new RoboBeeEntity(level, ItemStack.EMPTY, target, this.getBlockPos());
         level.addFreshEntity(drone);
-        drone.setRequest(request);
     }
 
     /**
