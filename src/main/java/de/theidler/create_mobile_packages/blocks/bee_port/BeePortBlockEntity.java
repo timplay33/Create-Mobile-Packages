@@ -160,7 +160,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         //Update Client Data
         if (!level.isClientSide()) {
             if (this.getRoboEntity() != null)
-                this.data.set(0, calcETA(this.getBlockPos().getCenter(), this.getRoboEntity().position()));
+                this.data.set(0, calcETA(this.getBlockPos().getCenter(), this.getRoboEntity().position(), this.getRoboEntity().getState()));
             this.data.set(1, this.getRoboEntity() != null ? 1 : 0);
         }
     }
@@ -204,7 +204,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         RoboEntity currentEntity = this.getRoboEntity();
         if (hasFullInventory(currentEntity != null ? 1 : 0)) return;
 
-        getAdjacentInventories().forEach(( inventory) -> {
+        getAdjacentInventories().forEach((inventory) -> {
             if (inventory == null) return;
             if (hasFullInventory(currentEntity != null  ? 1 : 0)) return;
             for (int i = 0; i < inventory.getSlots(); i++) {
@@ -226,6 +226,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
         return inventories;
     }
+
     private IItemHandler getAdjacentInventory(Direction side) {
         BlockEntity blockEntity = level.getBlockEntity(worldPosition.relative(side));
         if (blockEntity == null || blockEntity instanceof FrogportBlockEntity)
@@ -354,7 +355,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     /**
      * Tries to remove a drone from the inventory.
-     * 
+     *
      * @return whether a drone was available
      */
     private boolean tryConsumeDrone() {
@@ -383,9 +384,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @param itemStack The Create Mod package to add.
      * @return True if the package was added, false otherwise.
      */
-    public boolean addItemStack(ItemStack itemStack){
+    public boolean addItemStack(ItemStack itemStack) {
         for (int i = 0; i < inventory.getSlots(); i++) {
-            if (inventory.getStackInSlot(i).isEmpty()){
+            if (inventory.getStackInSlot(i).isEmpty()) {
                 inventory.insertItem(i, itemStack, false);
                 return true;
             }
@@ -403,25 +404,25 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         return player.getInventory().items.stream().limit(player.getInventory().getContainerSize() - 5).noneMatch(ItemStack::isEmpty);
     }
 
-/**
- * Sends a Create Mod package to a player. If the player's inventory is full, the item is not added.
- *
- * @param player    The player to send the package to. Must not be null.
- * @param itemStack The Create Mod package to send. Must not be empty.
- * @return True if the package was successfully sent to the player, false otherwise.
- */
-public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
-    if (player == null || itemStack.isEmpty()) {
-        return false;
-    }
-    player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
+    /**
+     * Sends a Create Mod package to a player. If the player's inventory is full, the item is not added.
+     *
+     * @param player    The player to send the package to. Must not be null.
+     * @param itemStack The Create Mod package to send. Must not be empty.
+     * @return True if the package was successfully sent to the player, false otherwise.
+     */
+    public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
+        if (player == null || itemStack.isEmpty()) {
+            return false;
+        }
+        player.displayClientMessage(Component.translatableWithFallback("create_mobile_packages.drone_port.send_items", "Send Items to Player"), true);
 
-    if (isPlayerInventoryFull(player)) {
-        return false;
+        if (isPlayerInventoryFull(player)) {
+            return false;
+        }
+        player.getInventory().add(itemStack);
+        return true;
     }
-    player.getInventory().add(itemStack);
-    return true;
-}
 
     /**
      * Handles changes to the open state of the drone port.
@@ -430,7 +431,9 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
      */
     @Override
     protected void onOpenChange(boolean open) {
-        if (level == null) { return; }
+        if (level == null) {
+            return;
+        }
         level.playSound(null, worldPosition, open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE, SoundSource.BLOCKS);
         setOpen(this, open);
     }
@@ -441,7 +444,7 @@ public static boolean sendPackageToPlayer(Player player, ItemStack itemStack) {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!level.isClientSide){
+        if (!level.isClientSide) {
             level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
         }
     }

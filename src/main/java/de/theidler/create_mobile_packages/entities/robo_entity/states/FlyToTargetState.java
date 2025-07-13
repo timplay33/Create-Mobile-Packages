@@ -4,14 +4,24 @@ import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.*;
+import java.util.function.Function;
+
 public class FlyToTargetState implements RoboEntityState {
+    public boolean pathing;
+    public List<Node> path = new ArrayList<>();
+    private final Pathfinder pathfinder = new Pathfinder();
+
     @Override
     public void tick(RoboEntity re) {
+        pathing = re.getPathing();
         BlockPos targetPos = re.getTargetPosition();
-        if (targetPos == null) { return; }
-        if (re.position().distanceTo(targetPos.getCenter()) <= CMPConfigs.server().beeSpeed.get()/12.0) {
+        if (targetPos == null)
+            return;
+        if (re.position().distanceTo(targetPos.getCenter()) <= CMPConfigs.server().beeSpeed.get() / 12.0) {
             if (re.getTargetPlayer() != null) {
                 re.setState(new InteractWithPlayerState());
             } else if (re.getTargetBlockEntity() != null) {
@@ -22,14 +32,117 @@ public class FlyToTargetState implements RoboEntityState {
             if (re.getTargetPlayer() != null) {
                 re.updateDisplay(re.getTargetPlayer());
             }
-            Vec3 direction = targetPos.getCenter().subtract(re.position()).normalize();
+
             double speed = CMPConfigs.server().beeSpeed.get() / 20.0;
-            re.setTargetVelocity(direction.scale(speed));
-            if (re.position().distanceTo(targetPos.getCenter()) > 2.5) { // entity rotation starts drifting
-                re.lookAtTarget();
+            if (pathing) {
+                Function<BlockPos, Boolean> isWalkable = pos ->
+                        re.level().getBlockState(new BlockPos(pos)).isAir();
+                path = pathfinder.findPath(re.blockPosition(), targetPos, isWalkable);
+                if (!path.isEmpty()) {
+                    Node nextNode = path.get(0);
+                    if (re.position().distanceTo(nextNode.pos.getCenter()) < 0.5 && path.size() > 1)
+                        nextNode = path.get(1);
+
+                    Vec3 direction = path.size() > 2 ? path.get(2).pos.getCenter().subtract(re.position()).normalize() : nextNode.pos.getCenter().subtract(re.position()).normalize();
+                    re.setTargetVelocity(direction.scale(speed));
+                    re.lookAt(path.size() > 2 ? path.get(2).pos : nextNode.pos);
+                }
+            } else {
+                Vec3 direction = targetPos.getCenter().subtract(re.position()).normalize();
+                re.setTargetVelocity(direction.scale(speed));
+                if (re.position().distanceTo(targetPos.getCenter()) > 2.5) // entity rotation starts drifting
+                    re.lookAtTarget();
             }
         }
+    }
 
+    public static class Node {
+        public final BlockPos pos;
+        public double gCost = Double.POSITIVE_INFINITY;
+        public double hCost = 0;
+        public double fCost = 0;
+        public Node parent = null;
 
+        public Node(BlockPos pos) {
+            this.pos = pos;
+        }
+
+        public double distanceTo(Node other) {
+            return pos.getCenter().distanceTo(other.pos.getCenter());
+        }
+    }
+
+    public class Pathfinder {
+        public List<Node> findPath(BlockPos startPos, BlockPos goalPos,
+                                   Function<BlockPos, Boolean> isWalkable) {
+            Map<BlockPos, Node> nodeMap = new HashMap<>();
+            PriorityQueue<Node> openSet = new PriorityQueue<>(Comparator.comparingDouble(n -> n.fCost));
+            Set<BlockPos> closedSet = new HashSet<>();
+
+            Node start = getOrCreateNode(startPos, nodeMap);
+            Node goal = getOrCreateNode(goalPos, nodeMap);
+
+            start.gCost = 0;
+            start.hCost = start.distanceTo(goal);
+            start.fCost = start.hCost;
+
+            openSet.add(start);
+
+            int maxIterations = 50000;
+            int iterations = 0;
+
+            while (!openSet.isEmpty() && iterations++ < maxIterations) {
+                Node current = openSet.poll();
+                if (current.equals(goal))
+                    return reconstructPath(current);
+
+                closedSet.add(current.pos);
+                for (BlockPos neighborPos : getNeighbors(current)) {
+                    if (!isWalkable.apply(neighborPos) || closedSet.contains(neighborPos)) continue;
+                    if (!isWalkable.apply(neighborPos.below())) continue;
+
+                    Node neighbor = getOrCreateNode(neighborPos, nodeMap);
+                    double tentativeG = current.gCost + 1;
+
+                    if (tentativeG < neighbor.gCost) {
+                        neighbor.parent = current;
+                        neighbor.gCost = tentativeG;
+                        neighbor.hCost = neighbor.distanceTo(goal);
+                        neighbor.fCost = neighbor.gCost + neighbor.hCost;
+
+                        openSet.remove(neighbor);
+                        openSet.add(neighbor);
+                    }
+                }
+            }
+
+            pathing = false;
+            return Collections.emptyList();
+        }
+
+        private Node getOrCreateNode(BlockPos pos, Map<BlockPos, Node> nodeMap) {
+            return nodeMap.computeIfAbsent(pos, Node::new);
+        }
+
+        private List<BlockPos> getNeighbors(Node node) {
+            List<BlockPos> neighbors = new ArrayList<>(6);
+            Vec3i[] directions = {
+                    new Vec3i(1, 0, 0), new Vec3i(0, 1, 0), new Vec3i(0, 0, 1),
+                    new Vec3i(1, 1, 0), new Vec3i(0, 1, 1), new Vec3i(1, 0, 1),
+
+                    new Vec3i(-1, 0, 0), new Vec3i(0, -1, 0), new Vec3i(0, 0, -1),
+                    new Vec3i(-1, -1, 0), new Vec3i(0, -1, -1), new Vec3i(-1, 0, -1),
+            };
+            for (Vec3i offset : directions)
+                neighbors.add(node.pos.offset(offset));
+            return neighbors;
+        }
+
+        private static List<Node> reconstructPath(Node end) {
+            List<Node> path = new ArrayList<>();
+            for (Node n = end; n != null; n = n.parent) path.add(n);
+            Collections.reverse(path);
+            return path;
+        }
     }
 }
