@@ -1,4 +1,11 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.5.5 - 1.21.1 - 13.09.2025
+------------------------------------------------------
+
+### Bug Fixes
+- Fix Hotkey for Portable Stock Ticker Network Error if no Portable Stock Ticker is in the inventory
+
+------------------------------------------------------
 Create: Mobile Packages - v0.5.4 - 1.21.1 - 13.07.2025
 ------------------------------------------------------
 
