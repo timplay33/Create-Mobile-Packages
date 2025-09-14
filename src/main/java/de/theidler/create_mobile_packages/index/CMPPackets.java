@@ -31,9 +31,9 @@ public enum CMPPackets {
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT),
-    SHOW_TOAST_ON_CLIENT(ShowToastOnClientPacket .class, ShowToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
-    REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket .class, RemoveToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
-    REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket .class, RemoveAllToastsOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT);
+    SHOW_TOAST_ON_CLIENT(ShowToastOnClientPacket.class, ShowToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
+    REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket.class, RemoveToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
+    REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT);
 
     public static final ResourceLocation CHANNEL_NAME = CreateMobilePackages.asResource("main");
     public static final int NETWORK_VERSION = 3;
