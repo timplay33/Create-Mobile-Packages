@@ -92,7 +92,6 @@ public class VirtualRobo {
 
         VirtualRobo virtualRobo = new VirtualRobo(level, id, itemStack, BlockPos.containing(pos), null, logisticsNetworkId);
         virtualRobo.setSpeed(speed);
-        virtualRobo.setTargetFromItemStack(virtualRobo.getItemStack());
         if (!virtualRobo.getItemStack().isEmpty()) {
             virtualRobo.setPackageHeightScale(1.0f);
         }
@@ -132,8 +131,8 @@ public class VirtualRobo {
     }
 
     private void setTargetFromItemStack(ItemStack itemStack) {
-        if (itemStack == null || itemStack.isEmpty()) setTargetAddress(null);
-        else setTargetAddress(PackageItem.getAddress(itemStack));
+        if (itemStack == null || itemStack.isEmpty()) setTargetAddress(null, false);
+        else setTargetAddress(PackageItem.getAddress(itemStack), false);
     }
 
     private void updateTarget() {
@@ -378,8 +377,14 @@ public class VirtualRobo {
      * @param address the target address
      */
     public void setTargetAddress(String address) {
+        setTargetAddress(address, true);
+    }
+
+    public void setTargetAddress(String address, boolean update) {
         this.targetAddress = address;
-        updateTarget();
+        if (update) {
+            updateTarget();
+        }
     }
 
     public float getPackageHeightScale() {
