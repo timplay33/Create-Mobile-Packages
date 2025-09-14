@@ -13,7 +13,6 @@ import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -330,11 +329,6 @@ public class VirtualRobo {
 
     public BeePortBlockEntity getTargetBlockEntity() {
         return targetBlockEntity;
-    }
-
-    public void updateDisplay(Player player) {
-        if (player == null) return;
-        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", CMPHelper.calcETA(player.position(), this.currentPos)), true);
     }
 
     public void lookAtTarget() {

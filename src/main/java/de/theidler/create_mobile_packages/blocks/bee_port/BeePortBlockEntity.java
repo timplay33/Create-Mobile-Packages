@@ -123,7 +123,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
     private UUID entityOnTravelID;
-    private UUID logisticsNetworkId;
+    private final UUID logisticsNetworkId = UUID.randomUUID(); // TODO: implement
 
     /**
      * Constructor for the BeePortBlockEntity.

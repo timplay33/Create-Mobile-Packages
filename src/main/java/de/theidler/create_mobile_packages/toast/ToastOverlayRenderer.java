@@ -1,0 +1,66 @@
+package de.theidler.create_mobile_packages.toast;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Mod.EventBusSubscriber(value = Dist.CLIENT)
+public class ToastOverlayRenderer {
+
+    private static final List<CustomToast> TOASTS = new ArrayList<>();
+
+    public static void showToast(CustomToast toast) {
+        // replace Toast with same UUID or add new Toast
+        for (int i = 0; i < TOASTS.size(); i++) {
+            if (TOASTS.get(i).uuid.equals(toast.uuid)) {
+                TOASTS.set(i, toast);
+                return;
+            }
+        }
+        TOASTS.add(toast);
+    }
+
+    public static void removeToast(UUID uuid) {
+        TOASTS.removeIf(t -> t.uuid.equals(uuid));
+    }
+
+    public static void removeAllToasts() {
+        TOASTS.clear();
+    }
+
+    @SubscribeEvent
+    public static void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
+        if (!event.getOverlay().id().equals(VanillaGuiOverlay.HOTBAR.id())) return;
+
+        GuiGraphics guiGraphics = event.getGuiGraphics();
+        Minecraft mc = Minecraft.getInstance();
+
+        int toastWidth = 160;
+        int x = event.getWindow().getGuiScaledWidth() - toastWidth - 10;
+        int y = 10;
+
+        TOASTS.removeIf(toast -> toast.lastUpdate < System.currentTimeMillis() - 5000); // Remove toasts older 5 seconds
+
+        for (CustomToast toast : TOASTS) {
+            // Draw background rectangle
+            guiGraphics.fill(x, y, x + toastWidth, y + 32, 0xAA000000);
+
+            // Draw icon
+            guiGraphics.renderItem(toast.icon, x + 6, y + 6);
+
+            // Draw title
+            guiGraphics.drawString(mc.font, toast.title, x + 28, y + 6, 0xFFFFFF, false);
+            // Draw subtitle
+            guiGraphics.drawString(mc.font, toast.subtitle, x + 28, y + 18, 0xAAAAAA, false);
+            y += 36;
+        }
+    }
+}
