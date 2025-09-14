@@ -1,13 +1,13 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
+import de.theidler.create_mobile_packages.robo.VirtualRobo;
 
 public class LandingPrepareState implements RoboEntityState {
     boolean init = true;
     @Override
-    public void tick(RoboEntity re) {
+    public void tick(VirtualRobo re) {
         if (re.getTargetBlockEntity() != null) {
             if (init) {
                 BeePortBlockEntity.setOpen(re.getTargetBlockEntity(), true);

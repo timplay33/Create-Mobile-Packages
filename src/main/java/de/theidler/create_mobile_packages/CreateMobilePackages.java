@@ -34,7 +34,6 @@ public class CreateMobilePackages
                     new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                             .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
             );
-    public static final RoboManager ROBO_MANAGER = new RoboManager();
 
     public CreateMobilePackages(FMLJavaModLoadingContext context) {
         onCtor(context);

@@ -1,15 +1,15 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
+import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.world.item.ItemStack;
 
 public class LandingDescendFinishState implements RoboEntityState {
     boolean init = true;
 
     @Override
-    public void tick(RoboEntity re) {
+    public void tick(VirtualRobo re) {
         if (re.getTargetBlockEntity() != null && init) {
             BeePortBlockEntity.setOpen(re.getTargetBlockEntity(), false);
             re.getTargetBlockEntity().addBeeToRoboBeeInventory(1);

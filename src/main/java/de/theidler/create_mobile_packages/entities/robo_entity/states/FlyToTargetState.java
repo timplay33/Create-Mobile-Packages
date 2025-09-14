@@ -1,17 +1,17 @@
 package de.theidler.create_mobile_packages.entities.robo_entity.states;
 
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
+import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
 public class FlyToTargetState implements RoboEntityState {
     @Override
-    public void tick(RoboEntity re) {
+    public void tick(VirtualRobo re) {
         BlockPos targetPos = re.getTargetPosition();
         if (targetPos == null) { return; }
-        if (re.position().distanceTo(targetPos.getCenter()) <= CMPConfigs.server().beeSpeed.get()/12.0) {
+        if (re.getCurrentPos().distanceTo(targetPos.getCenter()) <= CMPConfigs.server().beeSpeed.get()/12.0) {
             if (re.getTargetPlayer() != null) {
                 re.setState(new InteractWithPlayerState());
             } else if (re.getTargetBlockEntity() != null) {
@@ -22,10 +22,10 @@ public class FlyToTargetState implements RoboEntityState {
             if (re.getTargetPlayer() != null) {
                 re.updateDisplay(re.getTargetPlayer());
             }
-            Vec3 direction = targetPos.getCenter().subtract(re.position()).normalize();
+            Vec3 direction = targetPos.getCenter().subtract(re.getCurrentPos()).normalize();
             double speed = CMPConfigs.server().beeSpeed.get() / 20.0;
             re.setTargetVelocity(direction.scale(speed));
-            if (re.position().distanceTo(targetPos.getCenter()) > 2.5) { // entity rotation starts drifting
+            if (re.getCurrentPos().distanceTo(targetPos.getCenter()) > 2.5) { // entity rotation starts drifting
                 re.lookAtTarget();
             }
         }
