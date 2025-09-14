@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkEvent;
 public class RemoveAllToastsOnClientPacket extends SimplePacketBase {
     @Override
     public void write(FriendlyByteBuf buffer) {
-        
+        // No data to write; this packet is only a signal and carries no payload.
     }
 
     @Override
