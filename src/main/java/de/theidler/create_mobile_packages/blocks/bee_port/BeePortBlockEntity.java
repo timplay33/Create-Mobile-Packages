@@ -3,8 +3,8 @@ package de.theidler.create_mobile_packages.blocks.bee_port;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
+import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
-import static de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity.calcETA;
+import static de.theidler.create_mobile_packages.CMPHelper.calcETA;
 
 /**
  * Represents a Drone Port block entity that handles the processing and sending of Create Mod packages
@@ -269,7 +269,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         // Check if the item can be sent to a player.
         for (Player player : level.players()) {
             if (doesAddressStringMatchPlayerName(player, address)
-                    && RoboEntity.isWithinRange(player.blockPosition(), this.getBlockPos())) {
+                    && CMPHelper.isWithinRange(player.blockPosition(), this.getBlockPos())) {
                 sendToPlayer(player, itemStack, slot);
                 return;
             }
@@ -277,7 +277,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to another drone port.
         if (CMPConfigs.server().portToPort.get() && !PackageItem.matchAddress(address, addressFilter)) {
-            BeePortBlockEntity beePortBlockEntity = RoboEntity.getClosestBeePort(level, address, this.getBlockPos(), null);
+            BeePortBlockEntity beePortBlockEntity = CMPHelper.getClosestBeePort(level, address, this.getBlockPos(), null);
             if (beePortBlockEntity != null && !beePortBlockEntity.isFull()) {
                 sendDrone(itemStack, slot);
             }

@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.robo;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
+import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
@@ -24,21 +25,20 @@ import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.CMPHelper.readVec3FromTag;
 import static de.theidler.create_mobile_packages.CMPHelper.writeVec3ToTag;
-import static de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity.*;
 
 
 public class VirtualRobo {
+    private final UUID id;
+    private final UUID logisticsNetworkId;
     private BeePortBlockEntity targetBlockEntity;
     private BeePortBlockEntity startBeePortBlockEntity;
     private Player targetPlayer;
-    private final UUID id;
     private ItemStack itemStack = ItemStack.EMPTY;
     private Vec3 currentPos = Vec3.ZERO;
     private float yaw;
     private float pitch;
     private UUID entityId; // if a RoboEntity is spawned
     private int speed;
-    private final UUID logisticsNetworkId;
     private RoboEntityState state;
     private String targetAddress;
     private String activeTargetAddress;
@@ -61,7 +61,9 @@ public class VirtualRobo {
         this.itemStack = itemStack;
         setTargetFromItemStack(itemStack);
         this.currentPos = spawnPos.getCenter().subtract(0, 0.5, 0);
-        if (targetBlockEntity != null) {targetBlockEntity.trySetEntityOnTravel(this);}
+        if (targetBlockEntity != null) {
+            targetBlockEntity.trySetEntityOnTravel(this);
+        }
         if (level.getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
             startBeePortBlockEntity = dpbe;
         }
@@ -76,100 +78,6 @@ public class VirtualRobo {
             return;
         }
         setState(new LaunchPrepareState());
-    }
-
-    /**
-     * Calculates the snap angle for a given angle. (45, 135, 225, 315)
-     *
-     * @param angle The angle to snap.
-     * @return The snapped angle.
-     */
-    private int getSnapAngle(double angle) {
-        return (int) Math.abs(Math.round(angle / 90) * 90 - 45);
-    }
-
-    /**
-     * Calculates the angle to the current target.
-     *
-     * @return The angle to the target.
-     */
-    private double getAngleToTarget() {
-        BlockPos targetPos = getTargetPosition();
-        return targetPos != null
-                ? Math.atan2(targetPos.getZ() - this.currentPos.z, targetPos.getX() - this.currentPos.x())
-                : 0;
-    }
-
-    public BlockPos getTargetPosition() {
-        updateTarget();
-        if (targetPlayer != null) {
-            return isWithinRange(targetPlayer.blockPosition(), BlockPos.containing(currentPos)) ? targetPlayer.blockPosition().above().above() : null;
-        }
-        if (targetBlockEntity != null) {
-            return isWithinRange(targetBlockEntity.getBlockPos(), BlockPos.containing(currentPos)) ? targetBlockEntity.getBlockPos().above().above() : null;
-        }
-        return null;
-    }
-
-    private void setTargetFromItemStack(ItemStack itemStack) {
-        if (itemStack == null || itemStack.isEmpty())
-            setTargetAddress(null);
-        else
-            setTargetAddress(PackageItem.getAddress(itemStack));
-    }
-
-    /**
-     * Sets the target for the RoboEntity based on the provided address.
-     * If the address is null, the target is set to the closest drone port.
-     * Otherwise, it attempts to find a player or drone port matching the address.
-     *
-     * @param address the target address
-     */
-    public void setTargetAddress(String address) {
-        this.targetAddress = address;
-        updateTarget();
-    }
-
-    private void updateTarget() {
-        targetPlayer = getTargetPlayerFromAddress();
-        if (targetPlayer != null) { return; }
-        if (
-                targetBlockEntity == null ||
-                        targetBlockEntity.isRemoved() ||
-                        !targetBlockEntity.canAcceptEntity(this, !itemStack.isEmpty()) ||
-                        !Objects.equals(activeTargetAddress,targetAddress)
-        ) {
-            BeePortBlockEntity oldTarget = targetBlockEntity;
-            activeTargetAddress = targetAddress;
-            targetBlockEntity = getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this);
-            if (oldTarget != targetBlockEntity) {
-                if (oldTarget != null) {
-                    oldTarget.trySetEntityOnTravel(null);
-                }
-                if (targetBlockEntity != null) {
-                    targetBlockEntity.trySetEntityOnTravel(this);
-                }
-            }
-            if (targetBlockEntity == null && targetPlayer == null) {
-                setTargetVelocity(Vec3.ZERO);
-            }
-        }
-        if (!isRequest) {
-            // Check if there is a new target block entity that is closer than the current one
-            BeePortBlockEntity newTargetBlockEntity = getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this);
-            if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
-                if (targetBlockEntity != null) {
-                    targetBlockEntity.trySetEntityOnTravel(null);
-                }
-                targetBlockEntity = newTargetBlockEntity;
-                targetBlockEntity.trySetEntityOnTravel(this);
-            }
-        }
-    }
-
-    private Player getTargetPlayerFromAddress() {
-        return serverLevel.players().stream()
-                .filter(player -> BeePortBlockEntity.doesAddressStringMatchPlayerName(player, PackageItem.getAddress(this.itemStack))).findFirst().orElse(null);
     }
 
     public static VirtualRobo deserializeNBT(ServerLevel level, CompoundTag roboTag) {
@@ -193,6 +101,80 @@ public class VirtualRobo {
         return virtualRobo;
     }
 
+    /**
+     * Calculates the snap angle for a given angle. (45, 135, 225, 315)
+     *
+     * @param angle The angle to snap.
+     * @return The snapped angle.
+     */
+    private int getSnapAngle(double angle) {
+        return (int) Math.abs(Math.round(angle / 90) * 90 - 45);
+    }
+
+    /**
+     * Calculates the angle to the current target.
+     *
+     * @return The angle to the target.
+     */
+    private double getAngleToTarget() {
+        BlockPos targetPos = getTargetPosition();
+        return targetPos != null ? Math.atan2(targetPos.getZ() - this.currentPos.z, targetPos.getX() - this.currentPos.x()) : 0;
+    }
+
+    public BlockPos getTargetPosition() {
+        updateTarget();
+        if (targetPlayer != null) {
+            return CMPHelper.isWithinRange(targetPlayer.blockPosition(), BlockPos.containing(currentPos)) ? targetPlayer.blockPosition().above().above() : null;
+        }
+        if (targetBlockEntity != null) {
+            return CMPHelper.isWithinRange(targetBlockEntity.getBlockPos(), BlockPos.containing(currentPos)) ? targetBlockEntity.getBlockPos().above().above() : null;
+        }
+        return null;
+    }
+
+    private void setTargetFromItemStack(ItemStack itemStack) {
+        if (itemStack == null || itemStack.isEmpty()) setTargetAddress(null);
+        else setTargetAddress(PackageItem.getAddress(itemStack));
+    }
+
+    private void updateTarget() {
+        targetPlayer = getTargetPlayerFromAddress();
+        if (targetPlayer != null) {
+            return;
+        }
+        if (targetBlockEntity == null || targetBlockEntity.isRemoved() || !targetBlockEntity.canAcceptEntity(this, !itemStack.isEmpty()) || !Objects.equals(activeTargetAddress, targetAddress)) {
+            BeePortBlockEntity oldTarget = targetBlockEntity;
+            activeTargetAddress = targetAddress;
+            targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this);
+            if (oldTarget != targetBlockEntity) {
+                if (oldTarget != null) {
+                    oldTarget.trySetEntityOnTravel(null);
+                }
+                if (targetBlockEntity != null) {
+                    targetBlockEntity.trySetEntityOnTravel(this);
+                }
+            }
+            if (targetBlockEntity == null && targetPlayer == null) {
+                setTargetVelocity(Vec3.ZERO);
+            }
+        }
+        if (!isRequest) {
+            // Check if there is a new target block entity that is closer than the current one
+            BeePortBlockEntity newTargetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this);
+            if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
+                if (targetBlockEntity != null) {
+                    targetBlockEntity.trySetEntityOnTravel(null);
+                }
+                targetBlockEntity = newTargetBlockEntity;
+                targetBlockEntity.trySetEntityOnTravel(this);
+            }
+        }
+    }
+
+    private Player getTargetPlayerFromAddress() {
+        return serverLevel.players().stream().filter(player -> BeePortBlockEntity.doesAddressStringMatchPlayerName(player, PackageItem.getAddress(this.itemStack))).findFirst().orElse(null);
+    }
+
     public float getPitch() {
         return pitch;
     }
@@ -210,13 +192,13 @@ public class VirtualRobo {
         return itemStack;
     }
 
-    public void setRequest(boolean isRequest) {
-        this.isRequest = isRequest;
-    }
-
     public void setItemStack(ItemStack itemStack) {
         if (itemStack == null) return;
         this.itemStack = itemStack;
+    }
+
+    public void setRequest(boolean isRequest) {
+        this.isRequest = isRequest;
     }
 
     public void tick(ServerLevel level) {
@@ -318,8 +300,8 @@ public class VirtualRobo {
      *
      * @return The number of ticks required to complete the rotation.
      */
-    public int rotateLookAtTarget(){
-        return rotateToAngle((float) getAngleToTarget()+90);
+    public int rotateLookAtTarget() {
+        return rotateToAngle((float) getAngleToTarget() + 90);
     }
 
     /**
@@ -352,10 +334,10 @@ public class VirtualRobo {
 
     public void updateDisplay(Player player) {
         if (player == null) return;
-        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", calcETA(player.position(), this.currentPos)), true);
+        player.displayClientMessage(Component.translatable("create_mobile_packages.robo_entity.eta", CMPHelper.calcETA(player.position(), this.currentPos)), true);
     }
 
-    public void lookAtTarget(){
+    public void lookAtTarget() {
         BlockPos targetPos = getTargetPosition();
         if (targetPos != null) {
             Vec3 direction = new Vec3(targetPos.getX(), targetPos.getY(), targetPos.getZ()).subtract(this.currentPos).normalize();
@@ -367,11 +349,6 @@ public class VirtualRobo {
         return serverLevel;
     }
 
-    public void setPackageHeightScale(float scale) {
-        if (scale < 0.0f || scale > 1.0f) return;
-        this.packageHeightScale = scale;
-    }
-
     public void setPos(Vec3 pos) {
         this.currentPos = pos;
     }
@@ -381,8 +358,8 @@ public class VirtualRobo {
      *
      * @return The number of ticks required to complete the rotation.
      */
-    public int rotateToSnap(){
-        return rotateToAngle((float) getSnapAngle(getAngleToTarget())+90);
+    public int rotateToSnap() {
+        return rotateToAngle((float) getSnapAngle(getAngleToTarget()) + 90);
     }
 
     public BeePortBlockEntity getStartBeePortBlockEntity() {
@@ -399,7 +376,24 @@ public class VirtualRobo {
         return targetAddress;
     }
 
+    /**
+     * Sets the target for the RoboEntity based on the provided address.
+     * If the address is null, the target is set to the closest drone port.
+     * Otherwise, it attempts to find a player or drone port matching the address.
+     *
+     * @param address the target address
+     */
+    public void setTargetAddress(String address) {
+        this.targetAddress = address;
+        updateTarget();
+    }
+
     public float getPackageHeightScale() {
         return packageHeightScale;
+    }
+
+    public void setPackageHeightScale(float scale) {
+        if (scale < 0.0f || scale > 1.0f) return;
+        this.packageHeightScale = scale;
     }
 }

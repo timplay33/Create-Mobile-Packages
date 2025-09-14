@@ -12,12 +12,9 @@ public class CommonEvents {
 
     @SubscribeEvent
     public static void onServerWorldTick(TickEvent.LevelTickEvent event) {
-        if (event.phase == TickEvent.Phase.START)
-            return;
-        if (event.side == LogicalSide.CLIENT)
-            return;
-        if (!(event.level instanceof net.minecraft.server.level.ServerLevel))
-            return;
+        if (event.phase == TickEvent.Phase.START) return;
+        if (event.side == LogicalSide.CLIENT) return;
+        if (!(event.level instanceof net.minecraft.server.level.ServerLevel)) return;
         RoboManager.get((ServerLevel) event.level).tick((ServerLevel) event.level);
     }
 }
