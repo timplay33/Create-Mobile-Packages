@@ -49,7 +49,8 @@ public class RoboBeeItem extends StockCheckingItem {
         }
         if (level instanceof ServerLevel serverLevel) {
             UUID networkId = networkFromStack(context.getItemInHand());
-            RoboManager.get(serverLevel).newRobo(serverLevel, packageItem, pos, null, networkId != null ? networkId : UUID.randomUUID(), true);
+            UUID finalNetworkId = networkId != null ? networkId : UUID.randomUUID();
+            RoboManager.get(serverLevel).newRobo(serverLevel, packageItem, pos, null, finalNetworkId, true);
         }
         context.getItemInHand().shrink(1);
         return InteractionResult.SUCCESS;
