@@ -1,4 +1,18 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.6.0 - unreleased
+------------------------------------------------------
+
+### Breaking Changes
+#### Logistics Network support
+
+**Warning! This will break all existing ports. They need to be replaced to link to a logistics network!**
+
+- link a bee port to a logistics network or place one to create a new one
+- bees will only fly to bee ports within their network.
+- the bee item can be linked to a logistics network
+- if a bee item is not connected to a network, then the bee will fly to any port (closest)
+
+------------------------------------------------------
 Create: Mobile Packages - v0.5.5 - 13.07.2025
 ------------------------------------------------------
 
