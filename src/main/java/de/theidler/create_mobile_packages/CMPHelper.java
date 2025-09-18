@@ -14,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 public class CMPHelper {
 
@@ -49,19 +50,21 @@ public class CMPHelper {
      * @param address The address to filter by, or {@code null} for no filtering.
      * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
-    public static BeePortBlockEntity getClosestBeePort(Level level, String address, BlockPos origin, VirtualRobo entity) {
+    public static BeePortBlockEntity getClosestBeePort(Level level, String address, BlockPos origin, VirtualRobo entity, UUID logisticsNetworkId) {
         final BeePortBlockEntity[] closest = {null};
         level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
-            List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAll());
+            List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAllByNetwork(logisticsNetworkId));
+            if (allBEs.isEmpty()) {
+                // if there are no Bee Ports in the network, then allow the bee to fly to any network
+                allBEs.addAll(tracker.getAll());
+            }
             allBEs.removeIf(BlockEntity::isRemoved);
             allBEs.removeIf(dpbe -> !isWithinRange(dpbe.getBlockPos(), origin));
             if (address != null) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
             }
             allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity, (entity != null && !entity.getItemStack().isEmpty())));
-            closest[0] = allBEs.stream()
-                    .min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin)))
-                    .orElse(null);
+            closest[0] = allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin))).orElse(null);
         });
         return closest[0];
     }
