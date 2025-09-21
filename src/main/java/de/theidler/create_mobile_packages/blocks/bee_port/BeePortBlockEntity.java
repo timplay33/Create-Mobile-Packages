@@ -20,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -591,5 +592,13 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     public UUID getLogisticsNetworkId() {
         return behaviour.freqId;
+    }
+
+    @Override
+    public InteractionResult use(Player player) {
+        if (!behaviour.mayInteractMessage(player)) {
+            return InteractionResult.SUCCESS;
+        }
+        return super.use(player);
     }
 }
