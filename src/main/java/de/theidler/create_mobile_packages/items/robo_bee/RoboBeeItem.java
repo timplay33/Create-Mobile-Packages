@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.items.robo_bee;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.StockCheckingItem;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -11,7 +12,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -20,8 +20,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
-public class RoboBeeItem extends Item {
+import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem.networkFromStack;
+
+public class RoboBeeItem extends StockCheckingItem {
 
     public RoboBeeItem(Properties pProperties) {
         super(pProperties);
@@ -31,6 +34,7 @@ public class RoboBeeItem extends Item {
     public @NotNull InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         if (level.isClientSide) return InteractionResult.SUCCESS;
+        if (super.useOn(context) != InteractionResult.PASS) return InteractionResult.SUCCESS;
 
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
@@ -39,19 +43,14 @@ public class RoboBeeItem extends Item {
         BlockPos pos = context.getClickedPos().relative(context.getClickedFace());
 
         ItemStack packageItem = ItemStack.EMPTY;
-        if (PackageItem.isPackage(offhandItem) && CMPConfigs.server().allowRoboBeeSpawnPackageTransport.get()){
+        if (PackageItem.isPackage(offhandItem) && CMPConfigs.server().allowRoboBeeSpawnPackageTransport.get()) {
             packageItem = offhandItem.copy();
             player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
         }
         if (level instanceof ServerLevel serverLevel) {
-            RoboManager.get(serverLevel).newRobo(
-                    serverLevel,
-                    packageItem,
-                    pos,
-                    null,
-                    null,
-                    true
-            );
+            UUID networkId = networkFromStack(context.getItemInHand());
+            UUID finalNetworkId = networkId != null ? networkId : UUID.randomUUID();
+            RoboManager.get(serverLevel).newRobo(serverLevel, packageItem, pos, null, finalNetworkId, true);
         }
         context.getItemInHand().shrink(1);
         return InteractionResult.SUCCESS;

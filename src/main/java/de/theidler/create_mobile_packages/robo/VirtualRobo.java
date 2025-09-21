@@ -66,8 +66,6 @@ public class VirtualRobo {
         if (level.getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
             startBeePortBlockEntity = dpbe;
         }
-        this.yaw = getSnapAngle(getAngleToTarget());
-        // don't fly out of the port if target is origin
         if (targetBlockEntity != null && targetBlockEntity.equals(startBeePortBlockEntity)) {
             setState(new LandingDescendFinishState());
             return;
@@ -143,7 +141,7 @@ public class VirtualRobo {
         if (targetBlockEntity == null || targetBlockEntity.isRemoved() || !targetBlockEntity.canAcceptEntity(this, !itemStack.isEmpty()) || !Objects.equals(activeTargetAddress, targetAddress)) {
             BeePortBlockEntity oldTarget = targetBlockEntity;
             activeTargetAddress = targetAddress;
-            targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this);
+            targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, this.logisticsNetworkId);
             if (oldTarget != targetBlockEntity) {
                 if (oldTarget != null) {
                     oldTarget.trySetEntityOnTravel(null);
@@ -158,7 +156,7 @@ public class VirtualRobo {
         }
         if (!isRequest) {
             // Check if there is a new target block entity that is closer than the current one
-            BeePortBlockEntity newTargetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this);
+            BeePortBlockEntity newTargetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
             if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
                 if (targetBlockEntity != null) {
                     targetBlockEntity.trySetEntityOnTravel(null);
