@@ -2,7 +2,8 @@
 <h1 align="center">Create: Mobile Packages  <br>
   <a href="https://www.curseforge.com/minecraft/mc-mods/create-mobile-packages"><img src="https://cf.way2muchnoise.eu/1232978.svg" alt="CF"></a>
   <a href="https://modrinth.com/mod/create-mobile-packages"><img src="https://img.shields.io/modrinth/dt/create-mobile-packages?logo=modrinth&label=&suffix=%20&style=flat&color=242629&labelColor=5ca424&logoColor=1c1c1c" alt="Modrinth"></a>
-  <br></br>
+  <a href="https://crowdin.com/project/create-mobile-packages"><img src="https://badges.crowdin.net/create-mobile-packages/localized.svg" alt="Crowdin"></a>
+<br></br>
 </h1>
 
 A Minecraft mod that adds support for delivering Create Mod Packages directly to the player.
@@ -22,14 +23,11 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 - Modrinth: https://modrinth.com/mod/create-mobile-packages
 - Curseforge: https://www.curseforge.com/minecraft/mc-mods/create-mobile-packages
 
-## Translations 
-This project is translated using Hosted Weblate. https://hosted.weblate.org/engage/create-mobile-packages/
+## Translations
+
+[![Crowdin](https://badges.crowdin.net/create-mobile-packages/localized.svg)](https://crowdin.com/project/create-mobile-packages) This project is translated using Crowdin.[https://crowdin.com/project/create-mobile-packages](https://crowdin.com/project/create-mobile-packages)
 
 You're welcome to contribute to the translations or add your language.
-
-<a href="https://hosted.weblate.org/engage/create-mobile-packages/">
-<img src="https://hosted.weblate.org/widget/create-mobile-packages/mc1-20-1dev/multi-auto.svg" alt="translation state" />
-</a>
 
 ## Items
 ### Bee Port
