@@ -61,7 +61,7 @@ public class CMPHelper {
             }
             allBEs.removeIf(BlockEntity::isRemoved);
             allBEs.removeIf(dpbe -> !isWithinRange(dpbe.getBlockPos(), origin));
-            if (address != null) {
+            if (address != null && !address.isEmpty()) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
             }
             allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity, (entity != null && !entity.getItemStack().isEmpty())));

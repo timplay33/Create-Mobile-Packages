@@ -541,10 +541,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         return hasPackage ? !isFull() : !hasFullRoboSlot(0);
     }
 
-    public synchronized boolean trySetEntityOnTravel(VirtualRobo entity) {
+    public synchronized boolean trySetEntityOnTravel(VirtualRobo entity, boolean set) {
+        if (entity == null) { return false; }
         VirtualRobo currentEntity = getRoboEntity();
-        if (currentEntity == null || entity == null) {
-            setRoboEntityOnTravel(entity);
+        if (currentEntity == null || currentEntity == entity) {
+            setRoboEntityOnTravel(set ? entity : null);
             return true;
         }
         return false;

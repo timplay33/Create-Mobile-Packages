@@ -109,7 +109,7 @@ public class VirtualRobo {
 
         // check if the old target was a BeePortBlockEntity if so, then remove the reference
         if (target != null && target.asBeePortBlockEntity() != null) {
-            target.asBeePortBlockEntity().trySetEntityOnTravel(null);
+            target.asBeePortBlockEntity().trySetEntityOnTravel(this, false );
         }
 
         // try finding a Player first
@@ -122,7 +122,7 @@ public class VirtualRobo {
             target = new BeePortBlockEntityTarget(targetBlockEntity);
         }
         if (target.isValid() && target.asBeePortBlockEntity() != null) {
-            target.asBeePortBlockEntity().trySetEntityOnTravel(this);
+            target.asBeePortBlockEntity().trySetEntityOnTravel(this, true );
             return;
         }
 
@@ -308,7 +308,7 @@ public class VirtualRobo {
 
     public void setRemoved(ServerLevel level) {
         RoboManager.get(level).remove(this.getId());
-        target.asBeePortBlockEntity().trySetEntityOnTravel(null);
+        target.asBeePortBlockEntity().trySetEntityOnTravel(null, false );
         despawnEntity();
     }
 
