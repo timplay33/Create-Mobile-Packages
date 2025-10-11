@@ -93,6 +93,9 @@ public class RoboEntity extends Mob {
             BlockPos pos = virtualRobo.getTarget().asBeePortBlockEntity().getBlockPos();
             setCustomName(Component.literal("-> [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]"));
             setCustomNameVisible(true);
+        } else {
+            setCustomName(Component.translatable("entity.create_mobile_packages.robo_bee.no_valid_target"));
+            setCustomNameVisible(true);
         }
     }
 
