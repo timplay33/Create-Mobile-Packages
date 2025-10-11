@@ -12,6 +12,7 @@
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "Przenośny Licznik Zapasów otworzy mobilne menu magazino",
     "item.create_mobile_packages.robo_bee": "Robo-Pszczoła",
     "entity.create_mobile_packages.robo_bee": "Robo-Pszczoła",
+    "entity.create_mobile_packages.robo_bee.no_valid_target": "No valid target",
     "create_mobile_packages.bee_port.send_items": "Wysłano Przedmioty do Gracza",
     "create_mobile_packages.bee_port.screen.arrival_time": "Robo-Pszcól przybędzie za: %1$ss",
     "create_mobile_packages.bee_port.screen.no_bee_on_travel": "Niema Robo-Pszcól w Podróży",
