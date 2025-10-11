@@ -138,6 +138,8 @@ public class RoboBeeBehaviorController {
     }
 
     private void handleShutdown(VirtualRobo robo) {
+        if (robo.getServerLevel().getBlockEntity(BlockPos.containing(robo.getCurrentPos())) instanceof BeePortBlockEntity bpbe)
+            bpbe.addBeeToRoboBeeInventory(1);
         robo.setRemoved(robo.getServerLevel());
     }
 
