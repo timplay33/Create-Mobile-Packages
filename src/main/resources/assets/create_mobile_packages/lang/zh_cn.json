@@ -12,6 +12,7 @@
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "仓库管理器将会打开一个仓库管理界面",
     "item.create_mobile_packages.robo_bee": "运输蜂",
     "entity.create_mobile_packages.robo_bee": "运输蜂",
+    "entity.create_mobile_packages.robo_bee.no_valid_target": "No valid target",
     "create_mobile_packages.bee_port.send_items": "已经将物品送至玩家",
     "create_mobile_packages.bee_port.screen.arrival_time": "运输蜂将在 %1$ss 后抵达",
     "create_mobile_packages.bee_port.screen.no_bee_on_travel": "没有运输蜂正在执行任务",
