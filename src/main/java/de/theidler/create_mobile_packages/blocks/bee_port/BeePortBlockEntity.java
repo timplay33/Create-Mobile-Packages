@@ -7,7 +7,6 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBeha
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
@@ -138,15 +137,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public BeePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
         itemHandler = LazyOptional.of(() -> handler);
-    }
-
-    public static boolean doesAddressStringMatchPlayerName(Player player, String address) {
-        String playerName = player.getName().getString();
-        int atIndex = address.lastIndexOf('@');
-        if (atIndex == -1) {
-            return address.equals(playerName);
-        }
-        return address.substring(atIndex + 1).equals(playerName);
     }
 
     private static void requestRoboEntity(Level level, BlockPos blockPos, UUID logisticsNetworkId) {
@@ -338,7 +328,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         // Check if the item can be sent to a player.
         for (Player player : level.players()) {
-            if (doesAddressStringMatchPlayerName(player, address) && CMPHelper.isWithinRange(player.blockPosition(), this.getBlockPos())) {
+            if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(player.blockPosition(), this.getBlockPos())) {
                 sendToPlayer(player, itemStack, slot);
                 return;
             }
@@ -389,7 +379,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
         sendItemThisTime = 2;
         if (level instanceof ServerLevel serverLevel) {
-            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), null, this.getLogisticsNetworkId(), false);
+            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId(), false);
         }
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
@@ -398,7 +388,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (!tryConsumeDrone()) return;
         sendItemThisTime = 2;
         if (level instanceof ServerLevel serverLevel) {
-            RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, this.getBlockPos(), tagetPos, this.getLogisticsNetworkId(), request);
+            RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, this.getBlockPos(), this.getLogisticsNetworkId(), request);
         }
     }
 
@@ -457,12 +447,13 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * Unregisters the entity from the tracker and halts any incoming bees.
      */
     private void invalidateTarget() {
-        level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
+        if (level != null) {
+            level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
+        }
 
         VirtualRobo currentEntity = getRoboEntity();
         if (currentEntity != null) {
             currentEntity.setTargetVelocity(Vec3.ZERO);
-            currentEntity.setState(new AdjustRotationToTarget());
         }
     }
 
@@ -473,14 +464,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private void dropBees() {
         ItemStack bees = roboBeeInventory.getStackInSlot(0);
 
-        if (bees.getCount() > 0) {
-            level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), bees));
+        if (bees.getCount() > 0 && level != null) {
+                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), bees));
         }
     }
 
     @Override
     public void onChunkUnloaded() {
-        if (!level.isClientSide) {
+        if (level != null && !level.isClientSide) {
             this.invalidateTarget();
         }
         super.onChunkUnloaded();
@@ -488,7 +479,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     @Override
     public void remove() {
-        if (!level.isClientSide) {
+        if (level != null && !level.isClientSide) {
             this.invalidateTarget();
         }
         super.remove();

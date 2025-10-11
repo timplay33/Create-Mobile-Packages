@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;
@@ -88,13 +89,10 @@ public class RoboEntity extends Mob {
         } else if (virtualRobo.getTargetAddress() != null && !virtualRobo.getTargetAddress().isBlank()) {
             setCustomName(Component.literal("-> " + virtualRobo.getTargetAddress()));
             setCustomNameVisible(true);
-        } else if (virtualRobo.getTargetBlockEntity() != null) {
-            BlockPos pos = virtualRobo.getTargetBlockEntity().getBlockPos();
+        } else if (virtualRobo.getTarget() != null && virtualRobo.getTarget().asBeePortBlockEntity() != null) {
+            BlockPos pos = virtualRobo.getTarget().asBeePortBlockEntity().getBlockPos();
             setCustomName(Component.literal("-> [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]"));
             setCustomNameVisible(true);
-        } else {
-            setCustomName(null);
-            setCustomNameVisible(false);
         }
     }
 
@@ -107,7 +105,7 @@ public class RoboEntity extends Mob {
     }
 
     @Override
-    public boolean hurt(DamageSource pSource, float pAmount) {
+    public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
         return false; // RoboEntity cannot be damaged.
     }
 

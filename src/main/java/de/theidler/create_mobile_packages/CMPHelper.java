@@ -7,6 +7,7 @@ import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -79,5 +80,15 @@ public class CMPHelper {
         if (targetPosition == null || currentPosition == null) return Integer.MAX_VALUE;
         double distance = targetPosition.distanceTo(currentPosition);
         return (int) (distance / CMPConfigs.server().beeSpeed.get()) + 1;
+    }
+
+    public static boolean doesAddressMatchPlayer(Player player, String address) {
+        if (address == null) return false;
+        String playerName = player.getName().getString();
+        int atIndex = address.lastIndexOf('@');
+        if (atIndex == -1) {
+            return address.equals(playerName);
+        }
+        return address.substring(atIndex + 1).equals(playerName);
     }
 }
