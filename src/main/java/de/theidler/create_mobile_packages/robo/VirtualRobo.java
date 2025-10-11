@@ -343,4 +343,12 @@ public class VirtualRobo {
     public void setTarget(RoboTarget target) {
         this.target = target;
     }
+
+    public void setYaw(float yaw) {
+        this.yaw = yaw;
+    }
+
+    public void setPitch(float pitch) {
+        this.pitch = pitch;
+    }
 }

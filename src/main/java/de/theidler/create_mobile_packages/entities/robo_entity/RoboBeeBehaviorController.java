@@ -182,6 +182,9 @@ public class RoboBeeBehaviorController {
             dir = dir.normalize();
             robo.setTargetVelocity(dir.scale(speed));
         }
+        // look at the target
+        robo.setYaw((float) (Math.toDegrees(Math.atan2(-dir.x, dir.z))));
+        robo.setPitch((float) (Math.toDegrees(Math.asin(dir.y))));
     }
 
     private void moveAndScale(VirtualRobo robo, Vec3 target, double speed, float scaleStart, float scaleEnd, boolean ascending) {
