@@ -151,7 +151,7 @@ public class RoboBeeBehaviorController {
             }
         }
         // else go to the new target
-        setState(RoboBeeState.NAVIGATE_TO_TARGET);
+        setState(RoboBeeState.TAKEOFF);
     }
 
     private void handleShutdown(VirtualRobo robo) {

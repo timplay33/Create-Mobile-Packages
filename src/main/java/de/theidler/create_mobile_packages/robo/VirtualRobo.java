@@ -300,6 +300,9 @@ public class VirtualRobo {
     }
 
     public BeePortBlockEntity getStartBeePortBlockEntity() {
+        if (serverLevel.getBlockEntity(BlockPos.containing(currentPos)) instanceof BeePortBlockEntity bpbe) {
+            startBeePortBlockEntity = bpbe;
+        }
         return startBeePortBlockEntity;
     }
 
