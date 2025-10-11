@@ -218,9 +218,6 @@ public class RoboBeeBehaviorController {
         return robo.getCurrentPos().distanceTo(target) < 0.1;
     }
 
-    public RoboBeeState getState() {
-        return state;
-    }
     public void setState(RoboBeeState newState) {
         this.state = newState;
         this.init = true;

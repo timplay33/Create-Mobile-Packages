@@ -36,7 +36,6 @@ public class VirtualRobo {
     private RoboTarget target;
     private String targetAddress;
     private Vec3 targetVelocity = Vec3.ZERO;
-    private boolean isRequest = true;
     private ServerLevel serverLevel;
     private float packageHeightScale;
 
@@ -125,19 +124,6 @@ public class VirtualRobo {
             target.asBeePortBlockEntity().trySetEntityOnTravel(this, true );
             return;
         }
-
-
-        /*if (!isRequest) {
-            // Check if there is a new target block entity that is closer than the current one
-            BeePortBlockEntity newTargetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
-            if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
-                if (targetBlockEntity != null) {
-                    targetBlockEntity.trySetEntityOnTravel(null);
-                }
-                targetBlockEntity = newTargetBlockEntity;
-                targetBlockEntity.trySetEntityOnTravel(this);
-            }
-        }*/
     }
 
     public float getPitch() {
@@ -160,10 +146,6 @@ public class VirtualRobo {
     public void setItemStack(ItemStack itemStack) {
         if (itemStack == null) return;
         this.itemStack = itemStack;
-    }
-
-    public void setRequest(boolean isRequest) {
-        this.isRequest = isRequest;
     }
 
     public void tick(ServerLevel level) {
@@ -229,25 +211,12 @@ public class VirtualRobo {
         this.speed = speed;
     }
 
-    public UUID getLogisticsNetworkId() {
-        return logisticsNetworkId;
-    }
-
     public Vec3 getCurrentPos() {
         return currentPos;
     }
 
     public UUID getId() {
         return id;
-    }
-
-    /**
-     * Rotates the RoboEntity to face its target.
-     *
-     * @return The number of ticks required to complete the rotation.
-     */
-    public int rotateLookAtTarget() {
-        return rotateToAngle((float) getAngleToTarget() + 90);
     }
 
     /**
@@ -272,14 +241,6 @@ public class VirtualRobo {
 
     public @Nullable RoboTarget getTarget() {
         return target;
-    }
-
-    public void lookAtTarget() {
-        Vec3 targetPos = getTargetPosition();
-        if (targetPos != null) {
-            Vec3 direction = targetPos.subtract(this.currentPos).normalize();
-            this.yaw = (float) (Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90);
-        }
     }
 
     public ServerLevel getServerLevel() {
@@ -314,17 +275,6 @@ public class VirtualRobo {
 
     public String getTargetAddress() {
         return targetAddress;
-    }
-
-    /**
-     * Sets the target for the RoboEntity based on the provided address.
-     * If the address is null, the target is set to the closest drone port.
-     * Otherwise, it attempts to find a player or drone port matching the address.
-     *
-     * @param address the target address
-     */
-    public void setTargetAddress(String address) {
-        setTargetAddress(address, true);
     }
 
     public void setTargetAddress(String address, boolean update) {

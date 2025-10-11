@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsManager;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
@@ -34,7 +35,7 @@ public class StockCheckingItem extends Item {
     protected static UUID Freq;
 
     @Override
-    public boolean isFoil(ItemStack pStack) {
+    public boolean isFoil(@NotNull ItemStack pStack) {
         return isTuned(pStack);
     }
 
@@ -71,7 +72,7 @@ public class StockCheckingItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!isTuned(stack)) {
             player.displayClientMessage(
@@ -83,7 +84,7 @@ public class StockCheckingItem extends Item {
 
 
     @Override
-    public InteractionResult useOn(UseOnContext pContext) {
+    public @NotNull InteractionResult useOn(UseOnContext pContext) {
         //from com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem
         ItemStack stack = pContext.getItemInHand();
         BlockPos pos = pContext.getClickedPos();
@@ -105,22 +106,18 @@ public class StockCheckingItem extends Item {
             return InteractionResult.SUCCESS;
         }
 
-        InteractionResult useOn = super.useOn(pContext);
-        if (level.isClientSide || useOn == InteractionResult.FAIL)
-            return useOn;
-        return useOn;
+        return super.useOn(pContext);
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
+    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltip, @NotNull TooltipFlag pFlag) {
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
         if (!isTuned(pStack))
             return;
 
-        CompoundTag tag = pStack.getTag()
-                .getCompound(BLOCK_ENTITY_TAG);
-        if (!tag.hasUUID("Freq"))
-            return;
+        CompoundTag tag = pStack.getTag() != null ? pStack.getTag()
+                .getCompound(BLOCK_ENTITY_TAG) : null;
+        if (tag != null && !tag.hasUUID("Freq")) return;
 
         CreateLang.translate("logistically_linked.tooltip")
                 .style(ChatFormatting.GOLD)
