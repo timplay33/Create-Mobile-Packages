@@ -25,7 +25,6 @@ import static de.theidler.create_mobile_packages.CMPHelper.writeVec3ToTag;
 public class VirtualRobo {
     private final UUID id;
     private final UUID logisticsNetworkId;
-    private BeePortBlockEntity startBeePortBlockEntity;
     private ItemStack itemStack;
     private Vec3 currentPos = Vec3.ZERO;
     private float yaw;
@@ -47,9 +46,6 @@ public class VirtualRobo {
         this.itemStack = itemStack;
         setTargetFromItemStack(itemStack);
         this.currentPos = spawnPos.getCenter().subtract(0, 0.5, 0);
-        if (level.getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
-            startBeePortBlockEntity = dpbe;
-        }
         this.behaviorController = new RoboBeeBehaviorController();
     }
 
@@ -262,9 +258,13 @@ public class VirtualRobo {
 
     public BeePortBlockEntity getStartBeePortBlockEntity() {
         if (serverLevel.getBlockEntity(BlockPos.containing(currentPos)) instanceof BeePortBlockEntity bpbe) {
-            startBeePortBlockEntity = bpbe;
+            return bpbe;
+        } else if (serverLevel.getBlockEntity(BlockPos.containing(currentPos.subtract(0,1,0))) instanceof BeePortBlockEntity bpbe) {
+            return bpbe;
+        } else if (serverLevel.getBlockEntity(BlockPos.containing(currentPos.subtract(0,2,0))) instanceof BeePortBlockEntity bpbe) {
+            return bpbe;
         }
-        return startBeePortBlockEntity;
+        return null;
     }
 
     public void setRemoved(ServerLevel level) {
