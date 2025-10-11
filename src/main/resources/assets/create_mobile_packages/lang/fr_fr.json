@@ -12,6 +12,7 @@
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour2": "Le Téléscripteur de Stock Portable ouvrira un menu mobile du Magasinier",
     "item.create_mobile_packages.robo_bee": "Robeille",
     "entity.create_mobile_packages.robo_bee": "Robeille",
+    "entity.create_mobile_packages.robo_bee.no_valid_target": "No valid target",
     "create_mobile_packages.bee_port.send_items": "Objets envoyés au joueur",
     "create_mobile_packages.bee_port.screen.arrival_time": "Le Robeille arrivera dans : %1$ss",
     "create_mobile_packages.bee_port.screen.no_bee_on_travel": "Pas de Robeille en voyage",
