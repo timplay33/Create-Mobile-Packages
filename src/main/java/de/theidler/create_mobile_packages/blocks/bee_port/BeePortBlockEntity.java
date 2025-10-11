@@ -10,6 +10,7 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
+import de.theidler.create_mobile_packages.robo.BeePortBlockEntityTarget;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
@@ -145,7 +146,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             allBEs.removeIf(BlockEntity::isRemoved);
             allBEs.removeIf(be -> be.getBlockPos().equals(blockPos));
             allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
-            allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(blockPos))).ifPresent(target -> target.sendDrone(blockPos, true));
+            allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(blockPos))).ifPresent(target -> target.requestRobo(blockPos));
         });
     }
 
@@ -384,11 +385,12 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
 
-    private void sendDrone(BlockPos tagetPos, boolean request) {
+    private void requestRobo(BlockPos tagetPos) {
         if (!tryConsumeDrone()) return;
         sendItemThisTime = 2;
         if (level instanceof ServerLevel serverLevel) {
-            RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, this.getBlockPos(), this.getLogisticsNetworkId(), request);
+            UUID uuid = RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, this.getBlockPos(), this.getLogisticsNetworkId(), true);
+            RoboManager.get(serverLevel).get(uuid).setTarget(new BeePortBlockEntityTarget((BeePortBlockEntity) serverLevel.getBlockEntity(tagetPos)));
         }
     }
 

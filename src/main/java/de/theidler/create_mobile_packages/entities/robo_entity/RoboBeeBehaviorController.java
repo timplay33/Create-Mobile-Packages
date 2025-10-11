@@ -54,9 +54,18 @@ public class RoboBeeBehaviorController {
             setState(RoboBeeState.NAVIGATE_TO_TARGET);
             return;
         }
-        Vec3 takeoffTarget = getAbove(robo.getStartBeePortBlockEntity(), 2);
-        moveAndScale(robo, takeoffTarget, 0.1, 0, 1, true);
-        if (isAtTarget(robo, takeoffTarget)) {
+        Vec3 mid = getAbove(robo.getStartBeePortBlockEntity(), 1.6);
+        Vec3 end = getAbove(robo.getStartBeePortBlockEntity(), 2);
+
+        double y = robo.getCurrentPos().y;
+        if (y < mid.y - 0.05) {
+            moveAndScale(robo, mid, 0.1, 0, 1); // 1st part with scaling package
+        } else if (y < end.y - 0.05) {
+            moveTo(robo, end, 0.1); // 2nd part without scaling package
+            robo.setPackageHeightScale(1.0f);
+        } else {
+            robo.setPos(end);
+            robo.setTargetVelocity(Vec3.ZERO);
             openPort(robo.getStartBeePortBlockEntity(), false);
             setState(RoboBeeState.NAVIGATE_TO_TARGET);
         }
@@ -90,15 +99,23 @@ public class RoboBeeBehaviorController {
             setState(RoboBeeState.DELIVER_PACKAGE);
             return;
         }
-        Vec3 landTarget = getBelow(robo.getTarget() != null ? robo.getTarget().asBeePortBlockEntity() : null, 0.5);
+        Vec3 end = getBelow(robo.getTarget() != null ? robo.getTarget().asBeePortBlockEntity() : null, 0.5);
+        Vec3 mid = getAbove(robo.getTarget().asBeePortBlockEntity(), 1);
+        Vec3 start = getAbove(robo.getTarget().asBeePortBlockEntity(), 2);
         if (init) {
-            Vec3 above = getAbove(robo.getTarget().asBeePortBlockEntity(), 2);
-            robo.setPos(above);
+            robo.setPos(start);
             robo.setPackageHeightScale(1.0f);
             init = false;
         }
-        moveAndScale(robo, landTarget, 0.1, 1, 0, false);
-        if (isAtTarget(robo, landTarget)) {
+        double y = robo.getCurrentPos().y;
+        if (y > mid.y + 0.05) {
+            moveTo(robo, mid, 0.1); // 1st part without scaling package
+            robo.setPackageHeightScale(1.0f);
+        } else if (y > end.y + 0.05) {
+            moveAndScale(robo, end, 0.1, 1, 0); // 2nd part with scaling package
+        } else {
+            robo.setPos(end);
+            robo.setTargetVelocity(Vec3.ZERO);
             openPort(robo.getTarget().asBeePortBlockEntity(), false);
             setState(RoboBeeState.DELIVER_PACKAGE);
         }
@@ -187,13 +204,11 @@ public class RoboBeeBehaviorController {
         robo.setPitch((float) (Math.toDegrees(Math.asin(dir.y))));
     }
 
-    private void moveAndScale(VirtualRobo robo, Vec3 target, double speed, float scaleStart, float scaleEnd, boolean ascending) {
+    private void moveAndScale(VirtualRobo robo, Vec3 target, double speed, float scaleStart, float scaleEnd) {
         Vec3 dir = target.subtract(robo.getCurrentPos());
         double dist = dir.length();
         double totalDist = 2.0;
-        float progress = ascending
-            ? (float) Math.min(1.0, (totalDist - dist) / totalDist)
-            : (float) Math.max(0.0, dist / totalDist);
+        float progress = (float) Math.max(0.0, Math.min(1.0, 1.0 - (dist / totalDist)));
         float scale = scaleStart + (scaleEnd - scaleStart) * progress;
         robo.setPackageHeightScale(scale);
         moveTo(robo, target, speed);
