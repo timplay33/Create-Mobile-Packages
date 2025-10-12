@@ -27,6 +27,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
@@ -50,18 +51,18 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
     }
 
     @Override
-    public Class<? extends PortableStockTickerMenu> getContainerClass() {
+    public @NotNull Class<? extends PortableStockTickerMenu> getContainerClass() {
         return PortableStockTickerMenu.class;
     }
 
     @Override
-    public Optional<MenuType<PortableStockTickerMenu>> getMenuType() {
+    public @NotNull Optional<MenuType<PortableStockTickerMenu>> getMenuType() {
         return Optional.of(CMPMenuTypes.PORTABLE_STOCK_TICKER_MENU.get());
     }
 
     @Override
-    public @Nullable IRecipeTransferError transferRecipe(PortableStockTickerMenu container, Object object,
-                                                         IRecipeSlotsView recipeSlots, Player player,
+    public @Nullable IRecipeTransferError transferRecipe(@NotNull PortableStockTickerMenu container, @NotNull Object object,
+                                                         @NotNull IRecipeSlotsView recipeSlots, Player player,
                                                          boolean maxTransfer, boolean doTransfer) {
         Level level = player.level();
         if (!(object instanceof RecipeHolder<?> recipe))

@@ -2,6 +2,9 @@ package de.theidler.create_mobile_packages.index;
 
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
+import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
+import de.theidler.create_mobile_packages.toast.RemoveToastOnClientPacket;
+import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
 import net.createmod.catnip.net.base.BasePacketPayload;
 import net.createmod.catnip.net.base.CatnipPacketRegistry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -19,9 +22,8 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC),
-    BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT),
     SHOW_TOAST_ON_CLIENT(ShowToastOnClientPacket.class, ShowToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
-    REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket.class, RemoveToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
+    REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket .class, RemoveToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
     REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT);
 
 

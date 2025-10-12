@@ -9,6 +9,7 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import org.jetbrains.annotations.NotNull;
 
 //Thanks to @AzulConspirator & @SNRTom for the model
 public class RoboBeeModel<T extends RoboBeeEntity> extends EntityModel<T> {
@@ -58,7 +59,7 @@ public class RoboBeeModel<T extends RoboBeeEntity> extends EntityModel<T> {
 	}
 
 	@Override
-	public void setupAnim(RoboBeeEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+	public void setupAnim(@NotNull RoboBeeEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		float rotationSpeed = 20.0F; // Geschwindigkeit der Rotation
 		float rotation = ageInTicks * rotationSpeed;
 
@@ -67,7 +68,7 @@ public class RoboBeeModel<T extends RoboBeeEntity> extends EntityModel<T> {
 	}
 
 	@Override
-	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int i, int i1, int i2) {
+	public void renderToBuffer(PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int i, int i1, int i2) {
 		poseStack.pushPose();
 		poseStack.scale(0.8F,0.8F,0.8F);
 		poseStack.translate(0.0F, 0.4F, 0.0F);

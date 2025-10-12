@@ -4,11 +4,19 @@ import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.utility.CreateLang;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
@@ -16,6 +24,7 @@ import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsMana
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.UUID;
 
 public abstract class StockCheckingItem extends LogisticallyLinkedItem {
@@ -100,20 +109,5 @@ public abstract class StockCheckingItem extends LogisticallyLinkedItem {
 
     @Override
     public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltip, @NotNull TooltipFlag pFlag) {
-        super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
-        if (!isTuned(pStack))
-            return;
-
-        CompoundTag tag = pStack.getTag() != null ? pStack.getTag()
-                .getCompound(BLOCK_ENTITY_TAG) : null;
-        if (tag != null && !tag.hasUUID("Freq")) return;
-
-        CreateLang.translate("logistically_linked.tooltip")
-                .style(ChatFormatting.GOLD)
-                .addTo(pTooltip);
-
-        CreateLang.translate("logistically_linked.tooltip_clear")
-                .style(ChatFormatting.GRAY)
-                .addTo(pTooltip);
     }
 }

@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
 import java.util.*;
@@ -105,7 +106,7 @@ public class PortableStockTicker extends StockCheckingItem {
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
             MenuProvider provider = new SimpleMenuProvider(
-                    (id, inv, p) -> new PortableStockTickerMenu(id, inv),
+                    (id, inv, _) -> new PortableStockTickerMenu(id, inv),
                     Component.translatable("item.create_mobile_packages.portable_stock_ticker")
             );
             pPlayer.openMenu(provider);

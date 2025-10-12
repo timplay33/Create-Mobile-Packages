@@ -23,7 +23,7 @@ import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.index.CMPDataComponents.CMP_FREQ;
 
-public class LogisticallyLinkedItem extends Item {
+public abstract class LogisticallyLinkedItem extends Item {
 
     public LogisticallyLinkedItem(Properties properties) {
         super(properties);
@@ -104,4 +104,8 @@ public class LogisticallyLinkedItem extends Item {
 
 		stack.set(CMP_FREQ, CustomData.of(tag));
 	}
+
+    public abstract @NotNull InteractionResult useOn(UseOnContext pContext);
+
+    public abstract void appendHoverText(@NotNull ItemStack pStack, @javax.annotation.Nullable Level pLevel, @NotNull List<Component> pTooltip, @NotNull TooltipFlag pFlag);
 }

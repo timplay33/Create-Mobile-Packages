@@ -5,8 +5,6 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTicker;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
 
-import static de.theidler.create_mobile_packages.index.CMPDataComponents.CMP_FREQ;
-
 public class CMPItems {
 
     public static final ItemEntry<PortableStockTicker> PORTABLE_STOCK_TICKER =

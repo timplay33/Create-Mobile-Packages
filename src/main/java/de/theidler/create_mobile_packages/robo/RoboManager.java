@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.robo;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -21,6 +22,16 @@ public class RoboManager extends SavedData {
         init();
     }
 
+    @Override
+    public @NotNull CompoundTag save(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider provider) {
+        ListTag robosList = new ListTag();
+        for (VirtualRobo robo : robos.values()) {
+            robosList.add(robo.serializeNBT());
+        }
+        tag.put("robos", robosList);
+        return tag;
+    }
+
     public static RoboManager load(ServerLevel level, CompoundTag tag) {
         RoboManager manager = new RoboManager();
 
@@ -36,16 +47,6 @@ public class RoboManager extends SavedData {
 
     public static RoboManager get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent((tag) -> RoboManager.load(level, tag), RoboManager::new, "create_mobile_packages_robo_manager");
-    }
-
-    @Override
-    public @NotNull CompoundTag save(@NotNull CompoundTag tag) {
-        ListTag robosList = new ListTag();
-        for (VirtualRobo robo : robos.values()) {
-            robosList.add(robo.serializeNBT());
-        }
-        tag.put("robos", robosList);
-        return tag;
     }
 
     public VirtualRobo get(UUID roboId) {

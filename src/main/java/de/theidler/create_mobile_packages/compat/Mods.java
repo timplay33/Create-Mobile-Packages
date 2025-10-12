@@ -43,9 +43,9 @@ public enum Mods {
         if (!isLoaded())
             return false;
         Item asItem = entry.asItem();
-        return asItem != null && RegisteredObjectsHelper.getKeyOrThrow(asItem)
-                .getNamespace()
-                .equals(id);
+        return RegisteredObjectsHelper.getKeyOrThrow(asItem)
+                        .getNamespace()
+                        .equals(id);
     }
 
     /**
