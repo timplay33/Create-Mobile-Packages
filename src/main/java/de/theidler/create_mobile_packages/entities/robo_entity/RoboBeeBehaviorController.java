@@ -58,10 +58,11 @@ public class RoboBeeBehaviorController {
         Vec3 end = getAbove(robo.getStartBeePortBlockEntity(), 2);
 
         double y = robo.getCurrentPos().y;
-        if (y < mid.y - 0.05) {
-            moveAndScale(robo, mid, 0.1, 0, 1); // 1st part with scaling package
-        } else if (y < end.y - 0.05) {
-            moveTo(robo, end, 0.1); // 2nd part without scaling package
+        double speed = (robo.getSpeed() / 20.0) / 2; // Takeoff slower
+        if (y < mid.y - speed) {
+            moveAndScale(robo, mid, speed, 0, 1); // 1st part with scaling package
+        } else if (y < end.y - speed) {
+            moveTo(robo, end, speed); // 2nd part without scaling package
             robo.setPackageHeightScale(1.0f);
         } else {
             robo.setPos(end);
@@ -77,8 +78,9 @@ public class RoboBeeBehaviorController {
             return;
         }
         Vec3 target = getAbove(robo.getTargetPosition(), 2);
-        moveTo(robo, target, 0.2);
-        if (isAtTarget(robo, target)) {
+        double speed = robo.getSpeed() / 20.0;
+        moveTo(robo, target, speed);
+        if (isAtTarget(robo, target, speed)) {
             setState(RoboBeeState.ALIGN_FOR_DELIVERY);
             robo.setTargetVelocity(Vec3.ZERO);
         }
@@ -108,11 +110,12 @@ public class RoboBeeBehaviorController {
             init = false;
         }
         double y = robo.getCurrentPos().y;
-        if (y > mid.y + 0.05) {
-            moveTo(robo, mid, 0.1); // 1st part without scaling package
+        double speed = (robo.getSpeed() / 20.0) / 2; // landing slower
+        if (y > mid.y + speed) {
+            moveTo(robo, mid, speed); // 1st part without scaling package
             robo.setPackageHeightScale(1.0f);
-        } else if (y > end.y + 0.05) {
-            moveAndScale(robo, end, 0.1, 1, 0); // 2nd part with scaling package
+        } else if (y > end.y + speed) {
+            moveAndScale(robo, end, speed, 1, 0); // 2nd part with scaling package
         } else {
             robo.setPos(end);
             robo.setTargetVelocity(Vec3.ZERO);
@@ -214,8 +217,8 @@ public class RoboBeeBehaviorController {
         moveTo(robo, target, speed);
     }
 
-    private boolean isAtTarget(VirtualRobo robo, Vec3 target) {
-        return robo.getCurrentPos().distanceTo(target) < 0.1;
+    private boolean isAtTarget(VirtualRobo robo, Vec3 target, double speed) {
+        return robo.getCurrentPos().distanceTo(target) < speed;
     }
 
     public void setState(RoboBeeState newState) {

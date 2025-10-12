@@ -206,6 +206,9 @@ public class VirtualRobo {
     private void setSpeed(int speed) {
         this.speed = speed;
     }
+    public int getSpeed() {
+        return speed;
+    }
 
     public Vec3 getCurrentPos() {
         return currentPos;
