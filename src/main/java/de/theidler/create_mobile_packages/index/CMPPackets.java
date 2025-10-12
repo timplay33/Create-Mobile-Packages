@@ -18,7 +18,11 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
     OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker.STREAM_CODEC),
 
     // Server to Client
-    BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC);
+    BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC),
+    BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT),
+    SHOW_TOAST_ON_CLIENT(ShowToastOnClientPacket.class, ShowToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
+    REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket.class, RemoveToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
+    REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT);
 
 
     private final CatnipPacketRegistry.PacketType<?> type;

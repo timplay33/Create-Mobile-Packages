@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsManager;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
@@ -21,7 +22,7 @@ public abstract class StockCheckingItem extends LogisticallyLinkedItem {
     protected static UUID Freq;
 
     @Override
-    public boolean isFoil(ItemStack pStack) {
+    public boolean isFoil(@NotNull ItemStack pStack) {
         return isTuned(pStack);
     }
 
@@ -29,11 +30,13 @@ public abstract class StockCheckingItem extends LogisticallyLinkedItem {
         super(pProperties);
     }
 
+    // Retrieve the recent summary of the network
     public static GenericInventorySummary getRecentSummary(ItemStack stack) {
         Freq = networkFromStack(stack);
         return GenericInventorySummary.of(LogisticsManager.getSummaryOfNetwork(Freq, false));
     }
 
+    // Retrieve an accurate summary of the network
     public static GenericInventorySummary getAccurateSummary(ItemStack stack) {
         Freq = networkFromStack(stack);
         if (Freq == null) {
@@ -55,7 +58,7 @@ public abstract class StockCheckingItem extends LogisticallyLinkedItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!isTuned(stack)) {
             player.displayClientMessage(
@@ -67,5 +70,50 @@ public abstract class StockCheckingItem extends LogisticallyLinkedItem {
 
     public UUID getFrequency() {
         return Freq;
+    }
+
+    @Override
+    public @NotNull InteractionResult useOn(UseOnContext pContext) {
+        //from com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem
+        ItemStack stack = pContext.getItemInHand();
+        BlockPos pos = pContext.getClickedPos();
+        Level level = pContext.getLevel();
+        Player player = pContext.getPlayer();
+
+        if (player == null)
+            return InteractionResult.FAIL;
+
+        LogisticallyLinkedBehaviour link = BlockEntityBehaviour.get(level, pos, LogisticallyLinkedBehaviour.TYPE);
+
+        if (link != null) {
+            if (level.isClientSide)
+                return InteractionResult.SUCCESS;
+            if (!link.mayInteractMessage(player))
+                return InteractionResult.SUCCESS;
+
+            assignFrequency(stack, player, link.freqId);
+            return InteractionResult.SUCCESS;
+        }
+
+        return super.useOn(pContext);
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltip, @NotNull TooltipFlag pFlag) {
+        super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
+        if (!isTuned(pStack))
+            return;
+
+        CompoundTag tag = pStack.getTag() != null ? pStack.getTag()
+                .getCompound(BLOCK_ENTITY_TAG) : null;
+        if (tag != null && !tag.hasUUID("Freq")) return;
+
+        CreateLang.translate("logistically_linked.tooltip")
+                .style(ChatFormatting.GOLD)
+                .addTo(pTooltip);
+
+        CreateLang.translate("logistically_linked.tooltip_clear")
+                .style(ChatFormatting.GRAY)
+                .addTo(pTooltip);
     }
 }

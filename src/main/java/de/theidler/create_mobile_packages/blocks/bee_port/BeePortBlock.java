@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem;
 import com.simibubi.create.foundation.block.IBE;
 import de.theidler.create_mobile_packages.index.CMPBlockEntities;
 import de.theidler.create_mobile_packages.index.CMPBlocks;

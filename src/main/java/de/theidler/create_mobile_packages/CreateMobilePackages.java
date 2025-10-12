@@ -32,7 +32,6 @@ public class CreateMobilePackages
                     new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                             .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
             );
-    public static final RoboManager ROBO_MANAGER = new RoboManager();
 
     public CreateMobilePackages(IEventBus eventBus, ModContainer modContainer) {
         onCtor(eventBus, modContainer);
@@ -55,5 +54,10 @@ public class CreateMobilePackages
 
     public static ResourceLocation asResource(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+        CMPCommands.register(event.getDispatcher());
     }
 }

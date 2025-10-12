@@ -43,7 +43,7 @@ import java.util.Optional;
 
 public class DroneControllerTransferHandler implements IUniversalRecipeTransferHandler<PortableStockTickerMenu> {
 
-    private IJeiHelpers helpers;
+    private final IJeiHelpers helpers;
 
     public DroneControllerTransferHandler(IJeiHelpers helpers) {
         this.helpers = helpers;

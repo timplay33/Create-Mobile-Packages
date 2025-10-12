@@ -1,4 +1,23 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.6.0 - 1.21.1 - unreleased
+------------------------------------------------------
+
+### Breaking Changes
+#### Logistics Network support
+
+**Warning! This will break all existing ports. They need to be replaced to link to a logistics network!**
+
+- link a bee port to a logistics network or place one to create a new one
+- bees will only fly to bee ports within their network.
+- the bee item can be linked to a logistics network
+- if a bee item is not connected to a network, then the bee will fly to any port (closest)
+
+### Changes
+- simplify Robo behavior state system
+- add nametag 'No valid target' to Robos
+- added Abstractions for the target
+
+------------------------------------------------------
 Create: Mobile Packages - v0.5.5 - 1.21.1 - 13.09.2025
 ------------------------------------------------------
 

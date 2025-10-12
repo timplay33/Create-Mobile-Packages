@@ -19,52 +19,6 @@ public class CMPBlockEntities {
             .validBlocks(CMPBlocks.BEE_PORT)
             .register();
 
-    public static final BlockEntityEntry<DronePortBlockEntity> DRONE_PORT = CreateMobilePackages.REGISTRATE
-            .blockEntity("drone_port", DronePortBlockEntity::new)
-            .validBlocks(CMPBlocks.DRONE_PORT)
-            .register();
-
-
     public static void register() {
-    }
-
-    @Deprecated
-    public static class DronePortBlockEntity extends PackagePortBlockEntity {
-
-        public DronePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
-            super(pType, pPos, pBlockState);
-            itemHandler = new ItemHandlerWrapper(inventory);
-        }
-
-        @Override
-        public void tick() {
-            if (!level.isClientSide) {
-                tryConvert(level, worldPosition);
-            }
-        }
-
-        public static void tryConvert(Level level, BlockPos pos) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (!(be instanceof DronePortBlockEntity dummy)) return;
-
-            // Save old data
-            CompoundTag data = new CompoundTag();
-            dummy.saveAdditional(data, level.registryAccess());
-
-            // Replace block
-            level.removeBlockEntity(pos);
-            level.setBlock(pos, CMPBlocks.BEE_PORT.get().defaultBlockState(), 3);
-
-            // Restore data to new block entity
-            BlockEntity newBe = level.getBlockEntity(pos);
-            if (newBe instanceof BeePortBlockEntity beePort) {
-                beePort.loadWithComponents(data, level.registryAccess());
-            }
-        }
-
-        @Override
-        protected void onOpenChange(boolean open) {
-
-        }
     }
 }

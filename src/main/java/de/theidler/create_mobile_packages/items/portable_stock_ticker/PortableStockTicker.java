@@ -68,7 +68,7 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext pContext) {
+    public @NotNull InteractionResult useOn(UseOnContext pContext) {
         ItemStack stack = pContext.getItemInHand();
         BlockPos pos = pContext.getClickedPos();
         Level level = pContext.getLevel();
@@ -93,7 +93,7 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, Player pPlayer, @NotNull InteractionHand pUsedHand) {
         ItemStack stack = pPlayer.getItemInHand(pUsedHand);
         previouslyUsedAddress = loadAddressFromStack(stack);
         categories = loadCategoriesFromStack(stack);

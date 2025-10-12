@@ -13,17 +13,11 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 public class CommonEvents {
 
     @SubscribeEvent
-    public static void onWorldTick(LevelTickEvent.Pre event) {
-        Level world = event.getLevel();
-        if (world.isClientSide() && Minecraft.getInstance().hasSingleplayerServer())
-            return;
-        CreateMobilePackages.ROBO_MANAGER.tick(world);
-    }
-
-    @SubscribeEvent
-    public static void onLoadWorld(LevelEvent.Load event) {
-        LevelAccessor world = event.getLevel();
-        CreateMobilePackages.ROBO_MANAGER.levelLoaded(world);
+    public static void onServerWorldTick(TickEvent.LevelTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) return;
+        if (event.side == LogicalSide.CLIENT) return;
+        if (!(event.level instanceof net.minecraft.server.level.ServerLevel)) return;
+        RoboManager.get((ServerLevel) event.level).tick((ServerLevel) event.level);
     }
 
     @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
