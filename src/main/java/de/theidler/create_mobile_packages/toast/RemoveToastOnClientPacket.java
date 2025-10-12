@@ -1,15 +1,23 @@
 package de.theidler.create_mobile_packages.toast;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+
+import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.UUID;
 
-public class RemoveToastOnClientPacket extends SimplePacketBase {
+public class RemoveToastOnClientPacket implements ClientboundPacketPayload {
 
+    public static final StreamCodec<? super RegistryFriendlyByteBuf, RemoveToastOnClientPacket> STREAM_CODEC = StreamCodec.composite(
+            UUIDUtil.STREAM_CODEC, packet -> packet.toastid,
+            RemoveToastOnClientPacket::new
+    );
     private final UUID toastid;
 
     public RemoveToastOnClientPacket(UUID toastid) {
@@ -17,24 +25,13 @@ public class RemoveToastOnClientPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeUUID(toastid);
-    }
-
-    @Override
-    public boolean handle(NetworkEvent.Context context) {
-        context.enqueueWork(this::handleClient);
-        context.setPacketHandled(true);
-        return true;
-    }
-
     @OnlyIn(Dist.CLIENT)
-    private void handleClient() {
+    public void handle(LocalPlayer player) {
         ToastOverlayRenderer.removeToast(toastid);
     }
 
-    public static RemoveToastOnClientPacket read(FriendlyByteBuf buffer) {
-        UUID uuid = buffer.readUUID();
-        return new RemoveToastOnClientPacket(uuid);
+    @Override
+    public PacketTypeProvider getTypeProvider() {
+        return CMPPackets.REMOVE_TOAST_ON_CLIENT;
     }
 }

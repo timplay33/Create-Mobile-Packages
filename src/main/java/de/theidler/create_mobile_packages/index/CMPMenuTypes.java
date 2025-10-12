@@ -13,7 +13,7 @@ public class CMPMenuTypes {
     public static final MenuEntry<PortableStockTickerMenu> PORTABLE_STOCK_TICKER_MENU =
             CreateMobilePackages.REGISTRATE.menu(
                     "portable_stock_ticker_menu",
-                    (_, containerId, playerInventory) -> new PortableStockTickerMenu(containerId, playerInventory),
+                    (menuType, containerId, playerInventory) -> new PortableStockTickerMenu(containerId, playerInventory),
                     () -> PortableStockTickerScreen::new
             ).register();
 

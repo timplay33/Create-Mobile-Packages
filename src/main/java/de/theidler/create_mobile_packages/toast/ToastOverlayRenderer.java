@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 
 import java.util.ArrayList;
@@ -36,14 +37,13 @@ public class ToastOverlayRenderer {
     }
 
     @SubscribeEvent
-    public static void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
-        if (!event.getOverlay().id().equals(VanillaGuiOverlay.HOTBAR.id())) return;
+    public static void onRenderGuiPost(RenderGuiEvent.Post event) {
 
         GuiGraphics guiGraphics = event.getGuiGraphics();
         Minecraft mc = Minecraft.getInstance();
 
         int toastWidth = 160;
-        int x = event.getWindow().getGuiScaledWidth() - toastWidth - 10;
+        int x = mc.getWindow().getGuiScaledWidth() - toastWidth - 10;
         int y = 10;
 
         TOASTS.removeIf(toast -> toast.lastUpdate < System.currentTimeMillis() - 5000); // Remove toasts older 5 seconds

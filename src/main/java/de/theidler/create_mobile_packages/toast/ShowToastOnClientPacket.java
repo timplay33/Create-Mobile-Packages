@@ -1,15 +1,19 @@
 package de.theidler.create_mobile_packages.toast;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-import java.util.UUID;
+public class ShowToastOnClientPacket implements ClientboundPacketPayload {
 
-public class ShowToastOnClientPacket extends SimplePacketBase {
+    public static final StreamCodec<RegistryFriendlyByteBuf, ShowToastOnClientPacket> STREAM_CODEC = StreamCodec.of(
+        (buf, packet) -> CustomToast.STREAM_CODEC.encode(buf, packet.toast),
+        buf -> new ShowToastOnClientPacket(CustomToast.STREAM_CODEC.decode(buf))
+    );
 
     private final CustomToast toast;
 
@@ -18,29 +22,13 @@ public class ShowToastOnClientPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeUUID(toast.uuid);
-        buffer.writeUtf(Component.Serializer.toJson(toast.title));
-        buffer.writeUtf(Component.Serializer.toJson(toast.subtitle));
-        buffer.writeItem(toast.icon);
-    }
-
-    @Override
-    public boolean handle(NetworkEvent.Context context) {
-        context.enqueueWork(this::handleClient);
-        context.setPacketHandled(true);
-        return true;
-    }
-
     @OnlyIn(Dist.CLIENT)
-    private void handleClient() {
+    public void handle(LocalPlayer player) {
         ToastOverlayRenderer.showToast(toast);
     }
 
-    public static ShowToastOnClientPacket read(FriendlyByteBuf buffer) {
-        UUID uuid = buffer.readUUID();
-        Component title = Component.Serializer.fromJson(buffer.readUtf());
-        Component subtitle = Component.Serializer.fromJson(buffer.readUtf());
-        return new ShowToastOnClientPacket(new CustomToast(uuid, title, subtitle, buffer.readItem()));
+    @Override
+    public PacketTypeProvider getTypeProvider() {
+        return CMPPackets.SHOW_TOAST_ON_CLIENT;
     }
 }

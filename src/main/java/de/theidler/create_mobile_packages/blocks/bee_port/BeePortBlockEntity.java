@@ -145,7 +145,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 CMPBlockEntities.BEE_PORT.get(),
-                (be, _) -> be.handler
+                (be, direction) -> be.handler
         );
     }
 

@@ -6,11 +6,11 @@ import com.mojang.brigadier.context.CommandContext;
 import de.theidler.create_mobile_packages.toast.CustomToast;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.UUID;
 
@@ -46,7 +46,7 @@ public class CMPCommands {
         ServerPlayer player = source.getPlayer();
         if (player == null) return 0;
         CustomToast toast = new CustomToast(UUID.randomUUID(), Component.literal(message), Component.literal(""), CMPItems.ROBO_BEE.asStack());
-        CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), new ShowToastOnClientPacket(toast));
+        CatnipServices.NETWORK.sendToClient(player, new ShowToastOnClientPacket(toast));
         return 1;
     }
 
@@ -55,7 +55,7 @@ public class CMPCommands {
         if (!source.isPlayer()) return 0;
         ServerPlayer player = source.getPlayer();
         if (player == null) return 0;
-        CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), new RemoveAllToastsOnClientPacket());
+        CatnipServices.NETWORK.sendToClient(player, new RemoveAllToastsOnClientPacket());
         return 1;
     }
 }

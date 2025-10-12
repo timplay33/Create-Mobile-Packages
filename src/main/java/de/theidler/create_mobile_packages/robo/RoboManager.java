@@ -32,21 +32,24 @@ public class RoboManager extends SavedData {
         return tag;
     }
 
-    public static RoboManager load(ServerLevel level, CompoundTag tag) {
+    public static RoboManager load(CompoundTag tag, HolderLookup.Provider provider) {
         RoboManager manager = new RoboManager();
 
         // Load robos
         ListTag robosList = tag.getList("robos", Tag.TAG_COMPOUND);
         for (int i = 0; i < robosList.size(); i++) {
             CompoundTag roboTag = robosList.getCompound(i);
-            VirtualRobo robo = VirtualRobo.deserializeNBT(level, roboTag);
+            VirtualRobo robo = VirtualRobo.deserializeNBT(null, roboTag); // ServerLevel wird später gesetzt
             manager.robos.put(robo.getId(), robo);
         }
         return manager;
     }
 
     public static RoboManager get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent((tag) -> RoboManager.load(level, tag), RoboManager::new, "create_mobile_packages_robo_manager");
+        return level.getDataStorage().computeIfAbsent(
+            new SavedData.Factory<>(RoboManager::new, RoboManager::load),
+            "create_mobile_packages_robo_manager"
+        );
     }
 
     public VirtualRobo get(UUID roboId) {

@@ -22,9 +22,9 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC),
-    SHOW_TOAST_ON_CLIENT(ShowToastOnClientPacket.class, ShowToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
-    REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket .class, RemoveToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
-    REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT);
+    SHOW_TOAST_ON_CLIENT(ShowToastOnClientPacket.class, ShowToastOnClientPacket.STREAM_CODEC),
+    REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket.class, RemoveToastOnClientPacket.STREAM_CODEC),
+    REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket.STREAM_CODEC);
 
 
     private final CatnipPacketRegistry.PacketType<?> type;

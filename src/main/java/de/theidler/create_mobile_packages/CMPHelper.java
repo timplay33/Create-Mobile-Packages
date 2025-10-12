@@ -2,11 +2,12 @@ package de.theidler.create_mobile_packages;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
-import de.theidler.create_mobile_packages.blocks.bee_port.ModCapabilities;
+import de.theidler.create_mobile_packages.blocks.bee_port.DronePortTracker;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -52,8 +53,8 @@ public class CMPHelper {
      * @return The closest BeePortBlockEntity that matches the filter criteria, or {@code null} if none found.
      */
     public static BeePortBlockEntity getClosestBeePort(Level level, String address, BlockPos origin, VirtualRobo entity, UUID logisticsNetworkId) {
-        final BeePortBlockEntity[] closest = {null};
-        level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
+        if (level instanceof ServerLevel serverLevel) {
+            DronePortTracker tracker = DronePortTracker.get(serverLevel);
             List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAllByNetwork(logisticsNetworkId));
             if (allBEs.isEmpty()) {
                 // if there are no Bee Ports in the network, then allow the bee to fly to any network
@@ -65,9 +66,9 @@ public class CMPHelper {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
             }
             allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity, (entity != null && !entity.getItemStack().isEmpty())));
-            closest[0] = allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin))).orElse(null);
-        });
-        return closest[0];
+            return allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin))).orElse(null);
+        }
+        return null;
     }
 
     /**

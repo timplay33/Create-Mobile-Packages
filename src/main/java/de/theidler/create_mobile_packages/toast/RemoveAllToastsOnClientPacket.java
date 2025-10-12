@@ -1,30 +1,29 @@
 package de.theidler.create_mobile_packages.toast;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-public class RemoveAllToastsOnClientPacket extends SimplePacketBase {
-    @Override
-    public void write(FriendlyByteBuf buffer) {
-        // No data to write; this packet is only a signal and carries no payload.
+public class RemoveAllToastsOnClientPacket implements ClientboundPacketPayload {
+
+    public static final RemoveAllToastsOnClientPacket INSTANCE = new RemoveAllToastsOnClientPacket();
+    public static final StreamCodec<? super RegistryFriendlyByteBuf, RemoveAllToastsOnClientPacket> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+
+    public RemoveAllToastsOnClientPacket() {
     }
 
     @Override
-    public boolean handle(NetworkEvent.Context context) {
-        context.enqueueWork(this::handleClient);
-        context.setPacketHandled(true);
-        return true;
-    }
-
     @OnlyIn(Dist.CLIENT)
-    private void handleClient() {
+    public void handle(LocalPlayer player) {
         ToastOverlayRenderer.removeAllToasts();
     }
 
-    public static RemoveAllToastsOnClientPacket read(FriendlyByteBuf ignoredFriendlyByteBuf) {
-        return new RemoveAllToastsOnClientPacket();
+    @Override
+    public PacketTypeProvider getTypeProvider() {
+        return CMPPackets.REMOVE_ALL_TOAST_ON_CLIENT;
     }
 }

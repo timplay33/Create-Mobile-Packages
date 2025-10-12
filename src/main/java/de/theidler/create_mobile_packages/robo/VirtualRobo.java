@@ -57,7 +57,7 @@ public class VirtualRobo {
 
         ItemStack itemStack = ItemStack.EMPTY;
         if (roboTag.contains("itemStack", Tag.TAG_COMPOUND)) {
-            itemStack = (ItemStack.of(roboTag.getCompound("itemStack")));
+            itemStack = ItemStack.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, roboTag.get("itemStack")).result().orElse(ItemStack.EMPTY);
         }
 
         VirtualRobo virtualRobo = new VirtualRobo(level, id, itemStack, BlockPos.containing(pos), logisticsNetworkId);
@@ -198,7 +198,7 @@ public class VirtualRobo {
         tag.putInt("speed", speed);
         tag.putUUID("logisticsNetworkId", logisticsNetworkId);
         if (!getItemStack().isEmpty()) {
-            tag.put("itemStack", getItemStack().save(new CompoundTag()));
+            tag.put("itemStack", getItemStack().save(serverLevel.registryAccess(), new CompoundTag()));
         }
         return tag;
     }

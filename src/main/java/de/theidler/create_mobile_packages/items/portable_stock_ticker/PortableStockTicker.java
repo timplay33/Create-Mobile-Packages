@@ -106,7 +106,7 @@ public class PortableStockTicker extends StockCheckingItem {
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
             MenuProvider provider = new SimpleMenuProvider(
-                    (id, inv, _) -> new PortableStockTickerMenu(id, inv),
+                    (id, inv, p) -> new PortableStockTickerMenu(id, inv),
                     Component.translatable("item.create_mobile_packages.portable_stock_ticker")
             );
             pPlayer.openMenu(provider);
