@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 public class RoboBeeBehaviorController {
     private RoboBeeState state = RoboBeeState.IDLE;
@@ -97,13 +98,14 @@ public class RoboBeeBehaviorController {
     }
 
     private void handleLand(VirtualRobo robo) {
-        if (robo.getTarget() != null && robo.getTarget().asBeePortBlockEntity() == null) {
+        @Nullable BeePortBlockEntity port = robo.getTarget() != null ? robo.getTarget().asBeePortBlockEntity() : null;
+        if (port == null) {
             setState(RoboBeeState.DELIVER_PACKAGE);
             return;
         }
-        Vec3 end = getBelow(robo.getTarget() != null ? robo.getTarget().asBeePortBlockEntity() : null, 0.5);
-        Vec3 mid = getAbove(robo.getTarget().asBeePortBlockEntity(), 1);
-        Vec3 start = getAbove(robo.getTarget().asBeePortBlockEntity(), 2);
+        Vec3 end = getBelow(port, 0.5);
+        Vec3 mid = getAbove(port, 1);
+        Vec3 start = getAbove(port, 2);
         if (init) {
             robo.setPos(start);
             robo.setPackageHeightScale(1.0f);

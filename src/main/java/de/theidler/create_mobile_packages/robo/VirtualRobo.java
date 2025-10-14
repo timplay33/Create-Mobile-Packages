@@ -32,7 +32,7 @@ public class VirtualRobo {
     private UUID entityId; // if a RoboEntity is spawned
     private int speed;
     private final RoboBeeBehaviorController behaviorController;
-    private RoboTarget target;
+    private @Nullable RoboTarget target;
     private String targetAddress;
     private Vec3 targetVelocity = Vec3.ZERO;
     private ServerLevel serverLevel;
@@ -88,8 +88,9 @@ public class VirtualRobo {
         return targetPos != null ? Math.atan2(targetPos.z - this.currentPos.z, targetPos.x - this.currentPos.x()) : 0;
     }
 
-    public Vec3 getTargetPosition() {
+    public @Nullable Vec3 getTargetPosition() {
         updateTarget();
+        if (target == null) return null;
         return target.getTargetPos();
     }
 
@@ -120,6 +121,8 @@ public class VirtualRobo {
             target.asBeePortBlockEntity().trySetEntityOnTravel(this, true );
             return;
         }
+        // if no valid target is found, set the target to null
+        target = null;
     }
 
     public float getPitch() {
@@ -272,7 +275,9 @@ public class VirtualRobo {
 
     public void setRemoved(ServerLevel level) {
         RoboManager.get(level).remove(this.getId());
-        target.asBeePortBlockEntity().trySetEntityOnTravel(null, false );
+        if (target != null) {
+            target.asBeePortBlockEntity().trySetEntityOnTravel(null, false );
+        }
         despawnEntity();
     }
 
@@ -296,7 +301,7 @@ public class VirtualRobo {
         this.packageHeightScale = scale;
     }
 
-    public void setTarget(RoboTarget target) {
+    public void setTarget(@Nullable RoboTarget target) {
         this.target = target;
     }
 

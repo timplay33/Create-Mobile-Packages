@@ -17,14 +17,14 @@ public class CommonEvents {
     @SubscribeEvent
     public static void onServerWorldTick(LevelTickEvent.Pre event) {
         Level level = event.getLevel();
-        if (level instanceof ServerLevel serverLevel && !Minecraft.getInstance().hasSingleplayerServer())
+        if (level instanceof ServerLevel serverLevel)
             RoboManager.get(serverLevel).tick(serverLevel);
     }
 
     @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
     public static class ModBusEvents {
 
-        @net.neoforged.bus.api.SubscribeEvent
+        @SubscribeEvent
         public static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
             BeePortBlockEntity.registerCapabilities(event);
         }
