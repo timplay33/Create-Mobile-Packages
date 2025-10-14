@@ -9,6 +9,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import static de.theidler.create_mobile_packages.CMPHelper.calcETA;
+
 public class RoboBeeBehaviorController {
     private RoboBeeState state = RoboBeeState.IDLE;
     private boolean init = true;
@@ -78,10 +80,16 @@ public class RoboBeeBehaviorController {
             setState(RoboBeeState.IDLE);
             return;
         }
+        if (robo.getTarget() != null) {
+            robo.getTarget().setETA(robo, calcETA(robo.getTargetPosition(), robo.getCurrentPos()));
+        }
         Vec3 target = getAbove(robo.getTargetPosition(), 2);
         double speed = robo.getSpeed() / 20.0;
         moveTo(robo, target, speed);
         if (isAtTarget(robo, target, speed)) {
+            if (robo.getTarget() != null) {
+                robo.getTarget().setETA(robo, 0); // set ETA to 0 as the bee arrived
+            }
             setState(RoboBeeState.ALIGN_FOR_DELIVERY);
             robo.setTargetVelocity(Vec3.ZERO);
         }

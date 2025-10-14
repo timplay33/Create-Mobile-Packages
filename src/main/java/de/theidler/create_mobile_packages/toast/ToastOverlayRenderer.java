@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.toast;
 
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.neoforged.api.distmarker.Dist;
@@ -12,7 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@EventBusSubscriber(value = Dist.CLIENT)
+@EventBusSubscriber(
+        value = Dist.CLIENT,
+        bus = EventBusSubscriber.Bus.GAME,
+        modid = CreateMobilePackages.MODID
+)
 public class ToastOverlayRenderer {
 
     private static final List<CustomToast> TOASTS = new ArrayList<>();
@@ -46,7 +51,7 @@ public class ToastOverlayRenderer {
         int x = mc.getWindow().getGuiScaledWidth() - toastWidth - 10;
         int y = 10;
 
-        TOASTS.removeIf(toast -> toast.lastUpdate < System.currentTimeMillis() - 5000); // Remove toasts older 5 seconds
+        TOASTS.removeIf(toast -> toast.lastUpdate < System.currentTimeMillis() - toast.timeout); // Remove toasts older than timeout
 
         for (CustomToast toast : TOASTS) {
             // Draw background rectangle

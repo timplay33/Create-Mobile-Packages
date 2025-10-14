@@ -24,4 +24,9 @@ public class BeePortBlockEntityTarget implements RoboTarget {
     public boolean isValid() {
         return !be.isRemoved() && !be.isFull();
     }
+
+    @Override
+    public void setETA(VirtualRobo robo, int eta) {
+
+    }
 }

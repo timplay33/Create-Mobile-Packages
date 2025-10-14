@@ -1,5 +1,10 @@
 package de.theidler.create_mobile_packages.robo;
 
+import de.theidler.create_mobile_packages.index.CMPItems;
+import de.theidler.create_mobile_packages.toast.CustomToast;
+import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
+import net.createmod.catnip.platform.CatnipServices;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -32,5 +37,18 @@ public class PlayerTarget implements RoboTarget {
     @Override
     public boolean isValid() {
         return player != null && player.isAlive();
+    }
+
+    @Override
+    public void setETA(VirtualRobo robo, int eta) {
+        CustomToast toast = new CustomToast(
+                robo.getId(),
+                Component.translatable("create_mobile_packages.toast.robo_bee_on_the_way"),
+                Component.translatable("create_mobile_packages.toast.eta", eta),
+                CMPItems.ROBO_BEE.asStack(),
+                1100
+        );
+        if (player instanceof ServerPlayer serverPlayer)
+            CatnipServices.NETWORK.sendToClient(serverPlayer, new ShowToastOnClientPacket(toast));
     }
 }
