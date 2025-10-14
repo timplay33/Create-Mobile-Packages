@@ -23,5 +23,7 @@ public interface RoboTarget {
     default boolean isValid() {
         return true;
     }
+
+    void setETA(VirtualRobo robo, int eta);
 }
 

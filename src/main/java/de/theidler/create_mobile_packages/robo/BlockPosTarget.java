@@ -19,4 +19,9 @@ public class BlockPosTarget implements RoboTarget {
     public BlockPos asBlockPos() {
         return pos;
     }
+
+    @Override
+    public void setETA(VirtualRobo robo, int eta) {
+
+    }
 }

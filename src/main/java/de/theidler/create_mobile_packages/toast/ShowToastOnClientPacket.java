@@ -22,6 +22,7 @@ public class ShowToastOnClientPacket extends SimplePacketBase {
         buffer.writeUUID(toast.uuid);
         buffer.writeUtf(Component.Serializer.toJson(toast.title));
         buffer.writeUtf(Component.Serializer.toJson(toast.subtitle));
+        buffer.writeInt(toast.timeout);
         buffer.writeItem(toast.icon);
     }
 
@@ -41,6 +42,7 @@ public class ShowToastOnClientPacket extends SimplePacketBase {
         UUID uuid = buffer.readUUID();
         Component title = Component.Serializer.fromJson(buffer.readUtf());
         Component subtitle = Component.Serializer.fromJson(buffer.readUtf());
-        return new ShowToastOnClientPacket(new CustomToast(uuid, title, subtitle, buffer.readItem()));
+        int timeout = buffer.readInt();
+        return new ShowToastOnClientPacket(new CustomToast(uuid, title, subtitle, buffer.readItem(), timeout));
     }
 }
