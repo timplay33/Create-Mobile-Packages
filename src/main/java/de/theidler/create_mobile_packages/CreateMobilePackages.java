@@ -14,11 +14,13 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 
 @Mod(CreateMobilePackages.MODID)
+@EventBusSubscriber(modid = CreateMobilePackages.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class CreateMobilePackages
 {
     public static final String MODID = "create_mobile_packages";

@@ -55,7 +55,7 @@ public class CMPCommands {
         if (!source.isPlayer()) return 0;
         ServerPlayer player = source.getPlayer();
         if (player == null) return 0;
-        CatnipServices.NETWORK.sendToClient(player, new RemoveAllToastsOnClientPacket());
+        CatnipServices.NETWORK.sendToClient(player, RemoveAllToastsOnClientPacket.INSTANCE);
         return 1;
     }
 }
