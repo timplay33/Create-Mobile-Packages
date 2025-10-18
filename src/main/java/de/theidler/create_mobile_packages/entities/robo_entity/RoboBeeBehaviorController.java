@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 import static de.theidler.create_mobile_packages.CMPHelper.calcETA;
 
+import static de.theidler.create_mobile_packages.CMPHelper.calcETA;
+
 public class RoboBeeBehaviorController {
     private RoboBeeState state = RoboBeeState.IDLE;
     private boolean init = true;

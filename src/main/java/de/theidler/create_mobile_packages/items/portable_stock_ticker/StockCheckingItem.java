@@ -3,16 +3,11 @@ package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
@@ -22,37 +17,26 @@ import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public abstract class StockCheckingItem extends LogisticallyLinkedItem {
-    protected static UUID Freq;
+public class StockCheckingItem extends LogisticallyLinkedItem {
 
     public StockCheckingItem(Properties pProperties) {
         super(pProperties);
     }
 
-    // Retrieve the recent summary of the network
-    public static GenericInventorySummary getRecentSummary(ItemStack stack) {
-        Freq = networkFromStack(stack);
-        return GenericInventorySummary.of(LogisticsManager.getSummaryOfNetwork(Freq, false));
-    }
-
     // Retrieve an accurate summary of the network
     public static GenericInventorySummary getAccurateSummary(ItemStack stack) {
-        Freq = networkFromStack(stack);
+        UUID Freq = networkFromStack(stack);
         if (Freq == null) {
             return GenericInventorySummary.empty();
         }
         return GenericInventorySummary.of(LogisticsManager.getSummaryOfNetwork(Freq, true));
     }
 
-    public static boolean broadcastPackageRequest(ItemStack stack, LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order,
-                                                  @Nullable IdentifiedInventory ignoredHandler, String address) {
-        Freq = networkFromStack(stack);
-        return LogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
-    }
-
-    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,
+    // Send a package request
+    public boolean broadcastPackageRequest(ItemStack stack, LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,
                                            @Nullable IdentifiedInventory ignoredHandler,
                                            String address) {
+        UUID Freq = networkFromStack(stack);
         return GenericLogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
     }
 
@@ -65,35 +49,5 @@ public abstract class StockCheckingItem extends LogisticallyLinkedItem {
             return super.use(level, player, hand);
         }
         return super.use(level, player, hand);
-    }
-
-    public UUID getFrequency() {
-        return Freq;
-    }
-
-    @Override
-    public @NotNull InteractionResult useOn(UseOnContext pContext) {
-        //from com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem
-        ItemStack stack = pContext.getItemInHand();
-        BlockPos pos = pContext.getClickedPos();
-        Level level = pContext.getLevel();
-        Player player = pContext.getPlayer();
-
-        if (player == null)
-            return InteractionResult.FAIL;
-
-        LogisticallyLinkedBehaviour link = BlockEntityBehaviour.get(level, pos, LogisticallyLinkedBehaviour.TYPE);
-
-        if (link != null) {
-            if (level.isClientSide)
-                return InteractionResult.SUCCESS;
-            if (!link.mayInteractMessage(player))
-                return InteractionResult.SUCCESS;
-
-            assignFrequency(stack, player, link.freqId);
-            return InteractionResult.SUCCESS;
-        }
-
-        return super.useOn(pContext);
     }
 }

@@ -56,7 +56,7 @@ public class PortableStockTicker extends StockCheckingItem {
     public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,
                                            IdentifiedInventory ignoredHandler,
                                            String address, Player player) {
-        boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address);
+        boolean result = super.broadcastPackageRequest(stack, type, order, ignoredHandler, address);
         previouslyUsedAddress = address;
 
         if (player instanceof ServerPlayer) {
@@ -80,10 +80,12 @@ public class PortableStockTicker extends StockCheckingItem {
 
         if (!level.isClientSide() && player.isShiftKeyDown()) {
             if (level.getBlockEntity(pos) instanceof StockTickerBlockEntity stbe) {
+                // Copy categories from StockTickerBlockEntity
                 CompoundTag tag = new CompoundTag();
                 stbe.saveAdditional(tag, level.registryAccess());
                 categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND), level.registryAccess());
             } else if (level.getBlockEntity(pos) instanceof PackagerLinkBlockEntity) {
+                // Clear categories from an old link
                 categories = new ArrayList<>();
             }
             saveCategoriesToStack(stack, categories);
@@ -99,7 +101,7 @@ public class PortableStockTicker extends StockCheckingItem {
         previouslyUsedAddress = loadAddressFromStack(stack);
         categories = loadCategoriesFromStack(stack);
         hiddenCategoriesByPlayer = getHiddenCategoriesByPlayerFromStack(stack);
-        if (!pLevel.isClientSide) {
+        if (!pLevel.isClientSide && !pPlayer.isShiftKeyDown()) {
             if (!isTuned(stack)) {
                 pPlayer.displayClientMessage(
                         Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);

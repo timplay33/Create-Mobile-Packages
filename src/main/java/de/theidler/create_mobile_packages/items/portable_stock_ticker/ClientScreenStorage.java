@@ -13,7 +13,7 @@ public class ClientScreenStorage {
     private static int ticks = 0;
 
     public static void tick(UUID networkId) {
-        if (ticks++ > 120) {
+        if (ticks++ > 20) {
             update(networkId);
             ticks = 0;
         }

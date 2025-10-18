@@ -23,20 +23,21 @@ import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.index.CMPDataComponents.CMP_FREQ;
 
-public abstract class LogisticallyLinkedItem extends Item {
+// inspired by com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem
+public class LogisticallyLinkedItem extends Item {
 
     public LogisticallyLinkedItem(Properties properties) {
         super(properties);
     }
 
     @Override
-	public boolean isFoil(@NotNull ItemStack pStack) {
-		return isTuned(pStack);
-	}
+    public boolean isFoil(@NotNull ItemStack stack) {
+        return isTuned(stack);
+    }
 
-	public static boolean isTuned(ItemStack pStack) {
-		return pStack.has(CMP_FREQ);
-	}
+    public static boolean isTuned(ItemStack pStack) {
+        return pStack.has(CMP_FREQ);
+    }
 
 	@Nullable
 	public static UUID networkFromStack(ItemStack pStack) {
