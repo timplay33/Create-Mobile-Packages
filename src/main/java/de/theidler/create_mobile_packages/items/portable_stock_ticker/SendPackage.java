@@ -43,7 +43,7 @@ public class SendPackage implements ServerboundPacketPayload {
         ItemStack pstStack = PortableStockTicker.find(player.getInventory());
         PortableStockTicker pst = pstStack != null ? (PortableStockTicker) pstStack.getItem() : null;
         if (pstStack != null) {
-            pst.broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address, player);
+            pst.broadcastPackageRequest(pstStack, LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null, address, player);
         }
     }
 

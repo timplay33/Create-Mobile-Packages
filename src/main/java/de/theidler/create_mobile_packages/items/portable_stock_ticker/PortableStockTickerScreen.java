@@ -112,7 +112,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     protected void containerTick() {
         super.containerTick();
         addressBox.tick();
-        ClientScreenStorage.tick(menu.portableStockTicker.getFrequency());
+        ClientScreenStorage.tick();
 
         if (forcedEntries != null && !forcedEntries.isEmpty()) {
             GenericInventorySummary summary = GenericInventorySummary.empty();
@@ -236,7 +236,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         addressBox.setTextColor(0x714A40);
         addressBox.setValue(previouslyUsedAddress);
         addRenderableWidget(addressBox);
-        ClientScreenStorage.manualUpdate(menu.portableStockTicker.getFrequency());
+        ClientScreenStorage.manualUpdate();
 
         if (initial) {
             playUiSound(SoundEvents.WOOD_HIT, 0.5f, 1.5f);
@@ -1039,7 +1039,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         recipesToOrder = new ArrayList<>();
         //blockEntity.ticksSinceLastUpdate = 10;
         successTicks = 1;
-        ClientScreenStorage.manualUpdate(menu.portableStockTicker.getFrequency());
+        ClientScreenStorage.manualUpdate();
 
     }
 

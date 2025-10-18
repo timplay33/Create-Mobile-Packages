@@ -53,7 +53,7 @@ public class PortableStockTicker extends StockCheckingItem {
         return null;
     }
 
-    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,
+    public boolean broadcastPackageRequest(ItemStack stack, LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,
                                            IdentifiedInventory ignoredHandler,
                                            String address, Player player) {
         boolean result = super.broadcastPackageRequest(stack, type, order, ignoredHandler, address);
