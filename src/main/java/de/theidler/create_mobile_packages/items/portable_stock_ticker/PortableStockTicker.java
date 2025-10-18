@@ -25,8 +25,6 @@ import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem.isTuned;
-
 public class PortableStockTicker extends StockCheckingItem {
 
     public Map<UUID, List<Integer>> hiddenCategoriesByPlayer;
@@ -61,10 +59,10 @@ public class PortableStockTicker extends StockCheckingItem {
         return Rarity.UNCOMMON;
     }
 
-    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,
+    public boolean broadcastPackageRequest(ItemStack stack, LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,
                                            IdentifiedInventory ignoredHandler,
                                            String address, Player player) {
-        boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address);
+        boolean result = super.broadcastPackageRequest(stack, type, order, ignoredHandler, address);
         previouslyUsedAddress = address;
 
         if (player instanceof ServerPlayer) {
@@ -88,10 +86,12 @@ public class PortableStockTicker extends StockCheckingItem {
 
         if (!level.isClientSide() && player.isShiftKeyDown()) {
             if (level.getBlockEntity(pos) instanceof StockTickerBlockEntity stbe) {
+                // Copy categories from StockTickerBlockEntity
                 CompoundTag tag = new CompoundTag();
                 stbe.saveAdditional(tag);
                 categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND));
             } else if (level.getBlockEntity(pos) instanceof PackagerLinkBlockEntity) {
+                // Clear categories from an old link
                 categories = new ArrayList<>();
             }
             saveCategoriesToStack(stack, categories);
@@ -107,22 +107,16 @@ public class PortableStockTicker extends StockCheckingItem {
         previouslyUsedAddress = loadAddressFromStack(stack);
         categories = loadCategoriesFromStack(stack);
         hiddenCategoriesByPlayer = getHiddenCategoriesByPlayerFromStack(stack);
-        if (!pLevel.isClientSide) {
+        if (!pLevel.isClientSide && !pPlayer.isShiftKeyDown()) {
             if (!isTuned(stack)) {
                 pPlayer.displayClientMessage(
                         Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
-            MenuProvider provider = new SimpleMenuProvider(
-                    (id, inv, p) -> new PortableStockTickerMenu(id, inv),
-                    Component.translatable("item.create_mobile_packages.portable_stock_ticker")
-            );
-            NetworkHooks.openScreen((ServerPlayer) pPlayer, provider);
             if (pPlayer instanceof ServerPlayer serverPlayer) {
-                NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
-                        (id, inv, ply) -> new PortableStockTickerMenu(id, inv),
-                        Component.translatable("item.create_mobile_packages.portable_stock_ticker")
-                ), buf -> {
+                MenuProvider provider = new SimpleMenuProvider((id, inv, p) -> new PortableStockTickerMenu(id, inv),
+                        Component.translatable("item.create_mobile_packages.portable_stock_ticker"));
+                NetworkHooks.openScreen(serverPlayer, provider, buf -> {
                 });
             }
             return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));

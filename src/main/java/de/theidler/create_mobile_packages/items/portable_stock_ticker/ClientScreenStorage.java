@@ -12,7 +12,7 @@ public class ClientScreenStorage {
     private static int ticks = 0;
 
     public static void tick() {
-        if (ticks++ > 120) {
+        if (ticks++ > 20) {
             update();
             ticks = 0;
         }
