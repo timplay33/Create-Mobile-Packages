@@ -12,7 +12,6 @@ import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
-import com.simibubi.create.foundation.gui.ScreenWithStencils;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -56,7 +55,7 @@ import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class PortableStockTickerScreen extends AbstractSimiContainerScreen<PortableStockTickerMenu> implements ScreenWithStencils, OrderProvider, CategoriesProvider {
+public class PortableStockTickerScreen extends AbstractSimiContainerScreen<PortableStockTickerMenu> implements OrderProvider, CategoriesProvider {
 
     private static final AllGuiTextures HEADER = AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER;
     private static final AllGuiTextures BODY = AllGuiTextures.STOCK_KEEPER_REQUEST_BODY;
@@ -416,11 +415,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         int itemWindowY = y + 17;
         int itemWindowY2 = y + windowHeight - 80;
 
-        if (UIRenderHelper.framebuffer != null) {
-            UIRenderHelper.swapAndBlitColor(minecraft.getMainRenderTarget(), UIRenderHelper.framebuffer);
-        }
-        startStencil(pGuiGraphics, itemWindowX - 5, itemWindowY, itemWindowX2 - itemWindowX + 10,
-                     itemWindowY2 - itemWindowY);
+        pGuiGraphics.enableScissor(itemWindowX - 5, itemWindowY, itemWindowX2 + 10, itemWindowY2);
 
         ms.pushPose();
         ms.translate(0, -currentScroll * rowHeight, 0);
@@ -508,7 +503,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         }
 
         ms.popPose();
-        endStencil();
+        pGuiGraphics.disableScissor();
 
         // Scroll bar
         int windowH = windowHeight - 92;
@@ -554,10 +549,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             }
 
             ms.popPose();
-        }
-
-        if (UIRenderHelper.framebuffer != null) {
-            UIRenderHelper.swapAndBlitColor(UIRenderHelper.framebuffer, minecraft.getMainRenderTarget());
         }
     }
 
