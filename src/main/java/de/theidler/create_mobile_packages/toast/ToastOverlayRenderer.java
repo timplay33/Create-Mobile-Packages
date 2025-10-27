@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @EventBusSubscriber(
         value = Dist.CLIENT,
-        bus = EventBusSubscriber.Bus.GAME,
         modid = CreateMobilePackages.MODID
 )
 public class ToastOverlayRenderer {

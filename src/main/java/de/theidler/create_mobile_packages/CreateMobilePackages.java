@@ -20,7 +20,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 
 @Mod(CreateMobilePackages.MODID)
-@EventBusSubscriber(modid = CreateMobilePackages.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = CreateMobilePackages.MODID)
 public class CreateMobilePackages
 {
     public static final String MODID = "create_mobile_packages";

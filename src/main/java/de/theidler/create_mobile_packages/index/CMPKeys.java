@@ -10,7 +10,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import org.lwjgl.glfw.GLFW;
 
-@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(value = Dist.CLIENT)
 public enum CMPKeys {
     // From Create AllKeys.java
     OPEN_PORTABLE_STOCK_TICKER("open_portable_stock_ticker", GLFW.GLFW_KEY_G);

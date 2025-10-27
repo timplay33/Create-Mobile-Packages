@@ -2,7 +2,6 @@ package de.theidler.create_mobile_packages;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.robo.RoboManager;
-import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -21,7 +20,7 @@ public class CommonEvents {
             RoboManager.get(serverLevel).tick(serverLevel);
     }
 
-    @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber
     public static class ModBusEvents {
 
         @SubscribeEvent
