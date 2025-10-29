@@ -1,16 +1,16 @@
 package de.theidler.create_mobile_packages.items.mobile_packager;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import de.theidler.create_mobile_packages.CreateMobilePackages;
-import net.minecraft.network.FriendlyByteBuf;
+import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.net.base.ServerboundPacketPayload;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkHooks;
 
-public class OpenEditMenuPacket extends SimplePacketBase {
+public class OpenEditMenuPacket implements ServerboundPacketPayload {
+    public static final StreamCodec<RegistryFriendlyByteBuf, OpenEditMenuPacket> STREAM_CODEC = StreamCodec.composite(ItemStack.STREAM_CODEC, packet -> packet.originalPackage, OpenEditMenuPacket::new);
 
     private final ItemStack originalPackage;
 
@@ -18,35 +18,24 @@ public class OpenEditMenuPacket extends SimplePacketBase {
         this.originalPackage = originalPackage;
     }
 
-    public OpenEditMenuPacket(FriendlyByteBuf buffer) {
-        this.originalPackage = buffer.readItem();
+
+    @Override
+    public void handle(ServerPlayer player) {
+        if (player == null || !player.isAlive()) return;
+
+        if (player.containerMenu instanceof MobilePackagerMenu menu) {
+            menu.confirmed = true;
+        }
+        player.closeContainer();
+        player.openMenu(new SimpleMenuProvider(
+                (id, inv, p) -> new MobilePackagerEditMenu(id, inv, new MobilePackagerEdit(), originalPackage),
+                Component.translatable("item.create_mobile_packages.mobile_packager")
+        ), buf -> ItemStack.STREAM_CODEC.encode(buf, originalPackage));
+
     }
 
     @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeItem(originalPackage);
-    }
-
-    @Override
-    public boolean handle(NetworkEvent.Context context) {
-        context.enqueueWork(() -> {
-            ServerPlayer player = context.getSender();
-            if (player == null || !player.isAlive()) return;
-
-            if (player.containerMenu instanceof MobilePackagerMenu menu) {
-                menu.confirmed = true;
-            }
-            if (player.containerMenu != null) {
-                player.closeContainer();
-            }
-
-            player.getServer().tell(new net.minecraft.server.TickTask(1, () -> {
-                NetworkHooks.openScreen(player, new SimpleMenuProvider(
-                        (id, inv, p) -> new MobilePackagerEditMenu(id, inv, new MobilePackagerEdit(), originalPackage),
-                        Component.translatable("item.create_mobile_packages.mobile_packager")
-                ), buf -> buf.writeItem(originalPackage));
-            }));
-        });
-        return true;
+    public PacketTypeProvider getTypeProvider() {
+        return CMPPackets.OPEN_EDIT_MENU;
     }
 }

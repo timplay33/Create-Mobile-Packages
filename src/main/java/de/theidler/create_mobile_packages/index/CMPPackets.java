@@ -23,8 +23,8 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
     REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate.STREAM_CODEC),
     HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket.STREAM_CODEC),
     OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker.STREAM_CODEC),
-    OPEN_EDIT_MENU(OpenEditMenuPacket.class, OpenEditMenuPacket::new, PLAY_TO_SERVER),
-    CONFIRM_EDIT_MENU(ConfirmEditMenuPacket.class, ConfirmEditMenuPacket::new, PLAY_TO_SERVER),
+    OPEN_EDIT_MENU(OpenEditMenuPacket.class, OpenEditMenuPacket.STREAM_CODEC),
+    CONFIRM_EDIT_MENU(ConfirmEditMenuPacket.class, ConfirmEditMenuPacket.STREAM_CODEC),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC),

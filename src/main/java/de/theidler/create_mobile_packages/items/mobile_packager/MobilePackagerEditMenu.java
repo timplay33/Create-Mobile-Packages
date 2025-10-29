@@ -3,15 +3,15 @@ package de.theidler.create_mobile_packages.items.mobile_packager;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.SlotItemHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
@@ -19,8 +19,8 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
     public ItemStack originalPackage;
     public ItemStackHandler handler;
 
-    public MobilePackagerEditMenu(MenuType<MobilePackagerEditMenu> type, int id, Inventory inv, FriendlyByteBuf extraData) {
-        this(id, inv, new MobilePackagerEdit(), extraData != null ? extraData.readItem() : ItemStack.EMPTY);
+    public MobilePackagerEditMenu(MenuType<MobilePackagerEditMenu> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
+        this(id, inv, new MobilePackagerEdit(), extraData != null ? ItemStack.STREAM_CODEC.decode(extraData) : ItemStack.EMPTY);
     }
 
     public MobilePackagerEditMenu(int id, Inventory inv, MobilePackagerEdit contentHolder, ItemStack originalPackage) {
@@ -32,7 +32,7 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
     }
 
     @Override
-    protected MobilePackagerEdit createOnClient(FriendlyByteBuf extraData) {
+    protected MobilePackagerEdit createOnClient(RegistryFriendlyByteBuf extraData) {
         return null;
     }
 
@@ -57,7 +57,7 @@ public class MobilePackagerEditMenu extends MenuBase<MobilePackagerEdit> {
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int index) {
+    public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
         Slot clickedSlot = getSlot(index);
         if (!clickedSlot.hasItem())
             return ItemStack.EMPTY;

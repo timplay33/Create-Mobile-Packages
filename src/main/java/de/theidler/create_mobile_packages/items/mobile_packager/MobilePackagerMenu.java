@@ -3,15 +3,15 @@ package de.theidler.create_mobile_packages.items.mobile_packager;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
-import de.theidler.create_mobile_packages.index.CMPPackets;
-import net.minecraft.network.FriendlyByteBuf;
+import net.createmod.catnip.platform.CatnipServices;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.SlotItemHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class MobilePackagerMenu extends MenuBase<MobilePackager> {
@@ -24,7 +24,7 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
     }
 
     @Override
-    public MobilePackager createOnClient(FriendlyByteBuf extraData) {
+    protected MobilePackager createOnClient(RegistryFriendlyByteBuf extraData) {
         return null;
     }
 
@@ -44,7 +44,7 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
     }
 
     @Override
-    public ItemStack quickMoveStack(Player pPlayer, int index) {
+    public @NotNull ItemStack quickMoveStack(@NotNull Player pPlayer, int index) {
         Slot clickedSlot = getSlot(index);
         if (!clickedSlot.hasItem())
             return ItemStack.EMPTY;
@@ -68,7 +68,7 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
         if (player.level().isClientSide) {
             ItemStack stack = packageSlotInventory.getStackInSlot(0);
             if (!stack.isEmpty()) {
-                CMPPackets.getChannel().sendToServer(new OpenEditMenuPacket(packageSlotInventory.getStackInSlot(0)));
+                CatnipServices.NETWORK.sendToServer(new OpenEditMenuPacket(packageSlotInventory.getStackInSlot(0)));
             }
         }
     }
