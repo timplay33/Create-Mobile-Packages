@@ -6,8 +6,8 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.UUID;
@@ -16,8 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RoboManager extends SavedData {
 
     public Map<UUID, VirtualRobo> robos;
-
-    private Level level;
 
     public RoboManager() {
         init();
@@ -41,7 +39,7 @@ public class RoboManager extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
+    public @NotNull CompoundTag save(@NotNull CompoundTag tag) {
         ListTag robosList = new ListTag();
         for (VirtualRobo robo : robos.values()) {
             robosList.add(robo.serializeNBT());
@@ -69,21 +67,12 @@ public class RoboManager extends SavedData {
         this.setDirty();
     }
 
-    public UUID newRobo(ServerLevel level, ItemStack itemStack, BlockPos spawnPos, BlockPos targetPos, UUID logisticsNetworkId, boolean isRequest) {
+    public UUID newRobo(ServerLevel level, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId) {
         UUID id = UUID.randomUUID();
-        VirtualRobo robo = new VirtualRobo(level, id, itemStack, spawnPos, targetPos, logisticsNetworkId);
-        robo.setRequest(isRequest);
+        VirtualRobo robo = new VirtualRobo(level, id, itemStack, spawnPos, logisticsNetworkId);
         this.add(robo);
         setDirty();
         return id;
-    }
-
-    public Level getLevel() {
-        return level;
-    }
-
-    public void setLevel(Level level) {
-        this.level = level;
     }
 
     private void init() {

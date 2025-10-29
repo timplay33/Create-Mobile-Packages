@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jetbrains.annotations.NotNull;
 
 public class BeePortMenu extends PackagePortMenu {
 
@@ -37,7 +38,7 @@ public class BeePortMenu extends PackagePortMenu {
     protected BeePortBlockEntity createOnClient(FriendlyByteBuf extraData) {
         BlockPos readBlockPos = extraData.readBlockPos();
         ClientLevel world = Minecraft.getInstance().level;
-        BlockEntity blockEntity = world.getBlockEntity(readBlockPos);
+        BlockEntity blockEntity = world != null ? world.getBlockEntity(readBlockPos) : null;
         if (blockEntity instanceof BeePortBlockEntity beePortBlockEntity)
             return beePortBlockEntity;
         return null;
@@ -57,7 +58,7 @@ public class BeePortMenu extends PackagePortMenu {
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int index) {
+    public @NotNull ItemStack quickMoveStack(Player player, int index) {
         Slot slot = slots.get(index);
         if (!slot.hasItem()) {
             return super.quickMoveStack(player, index);

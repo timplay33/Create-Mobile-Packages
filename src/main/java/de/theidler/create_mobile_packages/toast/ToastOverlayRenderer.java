@@ -47,7 +47,7 @@ public class ToastOverlayRenderer {
         int x = event.getWindow().getGuiScaledWidth() - toastWidth - 10;
         int y = 10;
 
-        TOASTS.removeIf(toast -> toast.lastUpdate < System.currentTimeMillis() - 5000); // Remove toasts older 5 seconds
+        TOASTS.removeIf(toast -> toast.lastUpdate < System.currentTimeMillis() - toast.timeout); // Remove toasts older than timeout
 
         for (CustomToast toast : TOASTS) {
             // Draw background rectangle

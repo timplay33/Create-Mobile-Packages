@@ -50,7 +50,7 @@ public class RoboBeeItem extends StockCheckingItem {
         if (level instanceof ServerLevel serverLevel) {
             UUID networkId = networkFromStack(context.getItemInHand());
             UUID finalNetworkId = networkId != null ? networkId : UUID.randomUUID();
-            RoboManager.get(serverLevel).newRobo(serverLevel, packageItem, pos, null, finalNetworkId, true);
+            RoboManager.get(serverLevel).newRobo(serverLevel, packageItem, pos, finalNetworkId);
         }
         context.getItemInHand().shrink(1);
         return InteractionResult.SUCCESS;
@@ -62,7 +62,7 @@ public class RoboBeeItem extends StockCheckingItem {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
+    public void appendHoverText(@NotNull ItemStack pStack, @Nullable Level pLevel, @NotNull List<Component> pTooltipComponents, @NotNull TooltipFlag pIsAdvanced) {
         pTooltipComponents.add(Component.translatable("tooltip.create_mobile_packages.robo_bee.robo_bee").withStyle(ChatFormatting.GRAY));
         if (CMPConfigs.server().allowRoboBeeSpawnPackageTransport.get()) {
             pTooltipComponents.add(Component.translatable("tooltip.create_mobile_packages.robo_bee.package_transport").withStyle(ChatFormatting.GRAY));

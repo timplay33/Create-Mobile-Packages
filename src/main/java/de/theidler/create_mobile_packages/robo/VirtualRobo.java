@@ -3,11 +3,8 @@ package de.theidler.create_mobile_packages.robo;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import de.theidler.create_mobile_packages.entities.robo_entity.RoboBeeBehaviorController;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntityState;
-import de.theidler.create_mobile_packages.entities.robo_entity.states.AdjustRotationToTarget;
-import de.theidler.create_mobile_packages.entities.robo_entity.states.LandingDescendFinishState;
-import de.theidler.create_mobile_packages.entities.robo_entity.states.LaunchPrepareState;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
@@ -15,11 +12,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.CMPHelper.readVec3FromTag;
@@ -29,52 +25,28 @@ import static de.theidler.create_mobile_packages.CMPHelper.writeVec3ToTag;
 public class VirtualRobo {
     private final UUID id;
     private final UUID logisticsNetworkId;
-    private BeePortBlockEntity targetBlockEntity;
-    private BeePortBlockEntity startBeePortBlockEntity;
-    private Player targetPlayer;
-    private ItemStack itemStack = ItemStack.EMPTY;
+    private ItemStack itemStack;
     private Vec3 currentPos = Vec3.ZERO;
     private float yaw;
     private float pitch;
     private UUID entityId; // if a RoboEntity is spawned
     private int speed;
-    private RoboEntityState state;
+    private final RoboBeeBehaviorController behaviorController;
+    private RoboTarget target;
     private String targetAddress;
-    private String activeTargetAddress;
     private Vec3 targetVelocity = Vec3.ZERO;
-    private boolean isRequest = true;
     private ServerLevel serverLevel;
     private float packageHeightScale;
 
-    public VirtualRobo(ServerLevel level, UUID id, ItemStack itemStack, BlockPos spawnPos, BlockPos targetPos, UUID logisticsNetworkId) {
+    public VirtualRobo(ServerLevel level, UUID id, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId) {
         this.id = id;
         this.logisticsNetworkId = logisticsNetworkId;
         this.serverLevel = level;
         this.speed = CMPConfigs.server().beeSpeed.get();
-        if (targetPos != null) {
-            this.targetBlockEntity = level.getBlockEntity(targetPos) instanceof BeePortBlockEntity dpbe ? dpbe : null;
-            if (this.targetBlockEntity != null) {
-                setState(new LaunchPrepareState());
-            }
-        }
         this.itemStack = itemStack;
         setTargetFromItemStack(itemStack);
         this.currentPos = spawnPos.getCenter().subtract(0, 0.5, 0);
-        if (targetBlockEntity != null) {
-            targetBlockEntity.trySetEntityOnTravel(this);
-        }
-        if (level.getBlockEntity(spawnPos) instanceof BeePortBlockEntity dpbe) {
-            startBeePortBlockEntity = dpbe;
-        }
-        if (targetBlockEntity != null && targetBlockEntity.equals(startBeePortBlockEntity)) {
-            setState(new LandingDescendFinishState());
-            return;
-        }
-        if (startBeePortBlockEntity == null) {
-            setState(new AdjustRotationToTarget());
-            return;
-        }
-        setState(new LaunchPrepareState());
+        this.behaviorController = new RoboBeeBehaviorController();
     }
 
     public static VirtualRobo deserializeNBT(ServerLevel level, CompoundTag roboTag) {
@@ -88,12 +60,11 @@ public class VirtualRobo {
             itemStack = (ItemStack.of(roboTag.getCompound("itemStack")));
         }
 
-        VirtualRobo virtualRobo = new VirtualRobo(level, id, itemStack, BlockPos.containing(pos), null, logisticsNetworkId);
+        VirtualRobo virtualRobo = new VirtualRobo(level, id, itemStack, BlockPos.containing(pos), logisticsNetworkId);
         virtualRobo.setSpeed(speed);
         if (!virtualRobo.getItemStack().isEmpty()) {
             virtualRobo.setPackageHeightScale(1.0f);
         }
-        virtualRobo.setState(new AdjustRotationToTarget());
         return virtualRobo;
     }
 
@@ -113,19 +84,13 @@ public class VirtualRobo {
      * @return The angle to the target.
      */
     private double getAngleToTarget() {
-        BlockPos targetPos = getTargetPosition();
-        return targetPos != null ? Math.atan2(targetPos.getZ() - this.currentPos.z, targetPos.getX() - this.currentPos.x()) : 0;
+        Vec3 targetPos = getTargetPosition();
+        return targetPos != null ? Math.atan2(targetPos.z - this.currentPos.z, targetPos.x - this.currentPos.x()) : 0;
     }
 
-    public BlockPos getTargetPosition() {
+    public Vec3 getTargetPosition() {
         updateTarget();
-        if (targetPlayer != null) {
-            return CMPHelper.isWithinRange(targetPlayer.blockPosition(), BlockPos.containing(currentPos)) ? targetPlayer.blockPosition().above().above() : null;
-        }
-        if (targetBlockEntity != null) {
-            return CMPHelper.isWithinRange(targetBlockEntity.getBlockPos(), BlockPos.containing(currentPos)) ? targetBlockEntity.getBlockPos().above().above() : null;
-        }
-        return null;
+        return target.getTargetPos();
     }
 
     private void setTargetFromItemStack(ItemStack itemStack) {
@@ -134,41 +99,27 @@ public class VirtualRobo {
     }
 
     private void updateTarget() {
-        targetPlayer = getTargetPlayerFromAddress();
-        if (targetPlayer != null) {
+        // if the target is still valid, do nothing
+        if (target != null && target.isValid()) return;
+
+        // check if the old target was a BeePortBlockEntity if so, then remove the reference
+        if (target != null && target.asBeePortBlockEntity() != null) {
+            target.asBeePortBlockEntity().trySetEntityOnTravel(this, false );
+        }
+
+        // try finding a Player first
+        target = PlayerTarget.fromAddress(serverLevel, targetAddress);
+        if (target.isValid()) {return;}
+
+        // if no player found, try finding a BeePortBlockEntity within the network
+        BeePortBlockEntity targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
+        if (targetBlockEntity != null) {
+            target = new BeePortBlockEntityTarget(targetBlockEntity);
+        }
+        if (target.isValid() && target.asBeePortBlockEntity() != null) {
+            target.asBeePortBlockEntity().trySetEntityOnTravel(this, true );
             return;
         }
-        if (targetBlockEntity == null || targetBlockEntity.isRemoved() || !targetBlockEntity.canAcceptEntity(this, !itemStack.isEmpty()) || !Objects.equals(activeTargetAddress, targetAddress)) {
-            BeePortBlockEntity oldTarget = targetBlockEntity;
-            activeTargetAddress = targetAddress;
-            targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, this.logisticsNetworkId);
-            if (oldTarget != targetBlockEntity) {
-                if (oldTarget != null) {
-                    oldTarget.trySetEntityOnTravel(null);
-                }
-                if (targetBlockEntity != null) {
-                    targetBlockEntity.trySetEntityOnTravel(this);
-                }
-            }
-            if (targetBlockEntity == null && targetPlayer == null) {
-                setTargetVelocity(Vec3.ZERO);
-            }
-        }
-        if (!isRequest) {
-            // Check if there is a new target block entity that is closer than the current one
-            BeePortBlockEntity newTargetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
-            if (newTargetBlockEntity != null && newTargetBlockEntity != targetBlockEntity) {
-                if (targetBlockEntity != null) {
-                    targetBlockEntity.trySetEntityOnTravel(null);
-                }
-                targetBlockEntity = newTargetBlockEntity;
-                targetBlockEntity.trySetEntityOnTravel(this);
-            }
-        }
-    }
-
-    private Player getTargetPlayerFromAddress() {
-        return serverLevel.players().stream().filter(player -> BeePortBlockEntity.doesAddressStringMatchPlayerName(player, PackageItem.getAddress(this.itemStack))).findFirst().orElse(null);
     }
 
     public float getPitch() {
@@ -193,16 +144,11 @@ public class VirtualRobo {
         this.itemStack = itemStack;
     }
 
-    public void setRequest(boolean isRequest) {
-        this.isRequest = isRequest;
-    }
-
     public void tick(ServerLevel level) {
         this.serverLevel = level;
         updateEntity();
-
-        if (state != null) state.tick(this);
-        //this.setDeltaMovement(targetVelocity);
+        updateTarget();
+        if (behaviorController != null) behaviorController.tick(this);
         this.move(targetVelocity);
         //updateNametag(); -> client side only
 
@@ -229,24 +175,6 @@ public class VirtualRobo {
         }
     }
 
-    public void setState(RoboEntityState state) {
-        this.state = state;
-    }
-
-    private void moveTo(BlockPos pos) {
-        Vec3 targetVec = Vec3.atCenterOf(pos);
-        Vec3 direction = targetVec.subtract(currentPos);
-        double distance = direction.length();
-        if (distance < 0.1) {
-            currentPos = targetVec;
-            return;
-        }
-        direction = direction.normalize();
-        double moveDistance = Math.min(speed / 20.0, distance);
-        currentPos = currentPos.add(direction.scale(moveDistance));
-        yaw = (float) Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90;
-        pitch = (float) Math.toDegrees(Math.asin(direction.y));
-    }
 
     public void despawnEntity() {
         Entity entity = serverLevel.getEntity(entityId);
@@ -278,9 +206,8 @@ public class VirtualRobo {
     private void setSpeed(int speed) {
         this.speed = speed;
     }
-
-    public UUID getLogisticsNetworkId() {
-        return logisticsNetworkId;
+    public int getSpeed() {
+        return speed;
     }
 
     public Vec3 getCurrentPos() {
@@ -289,15 +216,6 @@ public class VirtualRobo {
 
     public UUID getId() {
         return id;
-    }
-
-    /**
-     * Rotates the RoboEntity to face its target.
-     *
-     * @return The number of ticks required to complete the rotation.
-     */
-    public int rotateLookAtTarget() {
-        return rotateToAngle((float) getAngleToTarget() + 90);
     }
 
     /**
@@ -320,20 +238,8 @@ public class VirtualRobo {
         return (int) Math.ceil(Math.abs(deltaYaw) / rotationSpeed);
     }
 
-    public Player getTargetPlayer() {
-        return targetPlayer;
-    }
-
-    public BeePortBlockEntity getTargetBlockEntity() {
-        return targetBlockEntity;
-    }
-
-    public void lookAtTarget() {
-        BlockPos targetPos = getTargetPosition();
-        if (targetPos != null) {
-            Vec3 direction = new Vec3(targetPos.getX(), targetPos.getY(), targetPos.getZ()).subtract(this.currentPos).normalize();
-            this.yaw = (float) (Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90);
-        }
+    public @Nullable RoboTarget getTarget() {
+        return target;
     }
 
     public ServerLevel getServerLevel() {
@@ -354,28 +260,24 @@ public class VirtualRobo {
     }
 
     public BeePortBlockEntity getStartBeePortBlockEntity() {
-        return startBeePortBlockEntity;
+        if (serverLevel.getBlockEntity(BlockPos.containing(currentPos)) instanceof BeePortBlockEntity bpbe) {
+            return bpbe;
+        } else if (serverLevel.getBlockEntity(BlockPos.containing(currentPos.subtract(0,1,0))) instanceof BeePortBlockEntity bpbe) {
+            return bpbe;
+        } else if (serverLevel.getBlockEntity(BlockPos.containing(currentPos.subtract(0,2,0))) instanceof BeePortBlockEntity bpbe) {
+            return bpbe;
+        }
+        return null;
     }
 
     public void setRemoved(ServerLevel level) {
         RoboManager.get(level).remove(this.getId());
-        getTargetBlockEntity().trySetEntityOnTravel(null);
+        target.asBeePortBlockEntity().trySetEntityOnTravel(null, false );
         despawnEntity();
     }
 
     public String getTargetAddress() {
         return targetAddress;
-    }
-
-    /**
-     * Sets the target for the RoboEntity based on the provided address.
-     * If the address is null, the target is set to the closest drone port.
-     * Otherwise, it attempts to find a player or drone port matching the address.
-     *
-     * @param address the target address
-     */
-    public void setTargetAddress(String address) {
-        setTargetAddress(address, true);
     }
 
     public void setTargetAddress(String address, boolean update) {
@@ -392,5 +294,17 @@ public class VirtualRobo {
     public void setPackageHeightScale(float scale) {
         if (scale < 0.0f || scale > 1.0f) return;
         this.packageHeightScale = scale;
+    }
+
+    public void setTarget(RoboTarget target) {
+        this.target = target;
+    }
+
+    public void setYaw(float yaw) {
+        this.yaw = yaw;
+    }
+
+    public void setPitch(float pitch) {
+        this.pitch = pitch;
     }
 }

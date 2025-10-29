@@ -56,9 +56,8 @@ public class RoboBeeEntity extends RoboEntity {
     public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
         UUID linkedId = null;
         if (level instanceof ServerLevel serverLevel) {
-            linkedId = RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, BlockPos.ZERO, null, UUID.randomUUID(), true); // TODO:Let the bee be liked to a network
+            linkedId = RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, BlockPos.ZERO, UUID.randomUUID()); // TODO:Let the bee be liked to a network
         }
-        RoboBeeEntity entity = new RoboBeeEntity(type, level, linkedId);
-        return entity;
+        return new RoboBeeEntity(type, level, linkedId);
     }
 }

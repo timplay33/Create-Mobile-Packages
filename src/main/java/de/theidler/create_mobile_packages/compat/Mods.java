@@ -43,9 +43,9 @@ public enum Mods {
         if (!isLoaded())
             return false;
         Item asItem = entry.asItem();
-        return asItem != null && CatnipServices.REGISTRIES.getKeyOrThrow(asItem)
-                .getNamespace()
-                .equals(id);
+        return CatnipServices.REGISTRIES.getKeyOrThrow(asItem)
+                        .getNamespace()
+                        .equals(id);
     }
 
     /**

@@ -12,6 +12,14 @@ Create: Mobile Packages - v0.6.0 - unreleased
 - the bee item can be linked to a logistics network
 - if a bee item is not connected to a network, then the bee will fly to any port (closest)
 
+### Changes
+- simplify Robo behavior state system
+- add nametag 'No valid target' to Robos
+- added Abstractions for the target
+
+### Bug Fixes
+- add support for Create 6.0.7 (#241)
+
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.5 - 13.07.2025
 ------------------------------------------------------
