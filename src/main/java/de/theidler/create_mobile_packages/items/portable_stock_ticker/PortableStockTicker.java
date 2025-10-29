@@ -5,6 +5,8 @@ import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
 import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
+import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.compat.curios.Curios;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -43,6 +45,15 @@ public class PortableStockTicker extends StockCheckingItem {
         if (playerInventory.player.getMainHandItem().getItem() instanceof PortableStockTicker) {
             return pst;
         }
+
+        // Check Curios if installed
+        if (Mods.CURIOS.isLoaded()) {
+            pst = Curios.findPortableStockTickerCurios(playerInventory.player);
+            if (pst.getItem() instanceof PortableStockTicker) {
+                return pst;
+            }
+        }
+
         // take first PST in inventory
         for (int i = 0; i < playerInventory.getContainerSize(); i++) {
             ItemStack portableStockTicker = playerInventory.getItem(i);

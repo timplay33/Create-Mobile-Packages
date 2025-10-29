@@ -87,6 +87,7 @@ repositories {
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven { url = "https://maven.blamejared.com/" } // JEI
     maven { url = "https://dl.zznty.ru/maven" } // Create Factory Abstractions, Create Factory Logistics
+    maven { url = "https://maven.theillusivec4.top/" } // Curios
     mavenCentral()
     mavenLocal()
     flatDir {
@@ -110,6 +111,8 @@ dependencies {
 
     // testing mod compatibilities
     modRuntimeOnly("tschipp.carryon:carryon-forge-1.20.1:2.1.2.7")
+    compileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
+    modRuntimeOnly("top.theillusivec4.curios:curios-forge:${curios_version}")
 }
 
 tasks.named('processResources', ProcessResources).configure {
