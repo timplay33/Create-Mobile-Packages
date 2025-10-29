@@ -135,6 +135,7 @@ repositories {
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven { url = "https://maven.blamejared.com/" } // JEI
     maven { url = "https://dl.zznty.ru/maven" } // Create Factory Abstractions, Create Factory Logistics
+    maven { url = "https://maven.theillusivec4.top/" } // Curios
     mavenCentral()
     mavenLocal()
     flatDir {
@@ -177,6 +178,8 @@ dependencies {
 
     // testing mod compatibilities
     runtimeOnly("tschipp.carryon:carryon-neoforge-1.21.1:2.2.3.3")
+    compileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
+    modRuntimeOnly("top.theillusivec4.curios:curios-forge:${curios_version}")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

@@ -5,6 +5,8 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.compat.curios.Curios;
 import de.theidler.create_mobile_packages.index.*;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.createmod.catnip.lang.FontHelper;
@@ -54,6 +56,9 @@ public class CreateMobilePackages
         CMPEntities.register();
         CMPDisplaySources.register();
         CMPDataComponents.register(modEventBus);
+
+        Mods.CURIOS.executeIfInstalled(() -> () -> Curios.init(modEventBus));
+
     }
 
     public static ResourceLocation asResource(String path) {
