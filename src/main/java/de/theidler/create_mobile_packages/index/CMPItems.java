@@ -4,6 +4,7 @@ import com.tterrag.registrate.util.entry.ItemEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTicker;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
+import de.theidler.create_mobile_packages.items.mobile_packager.MobilePackager;
 
 
 public class CMPItems {
@@ -14,6 +15,10 @@ public class CMPItems {
 
     public static final ItemEntry<RoboBeeItem> ROBO_BEE =
             CreateMobilePackages.REGISTRATE.item("robo_bee",RoboBeeItem::new)
+                    .register();
+
+    public static final ItemEntry<MobilePackager> MOBILE_PACKAGER =
+            CreateMobilePackages.REGISTRATE.item("mobile_packager", MobilePackager::new)
                     .register();
 
     public static void register() {

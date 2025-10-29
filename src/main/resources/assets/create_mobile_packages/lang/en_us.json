@@ -53,5 +53,11 @@
     "create_mobile_packages.ponder.port_to_port.text_4": "The package will be sent from one Port to the other.",
     "create_mobile_packages.ponder.port_to_port.text_5": "This feature can be disabled in the configuration files.",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "When holding a package in the offhand it will be send with the Robo Bee.",
-    "tooltip.create_mobile_packages.robo_bee.robo_bee": "Item to spawn a Robo Bee. Needed in Robo Bee Ports to send packages."
+    "tooltip.create_mobile_packages.robo_bee.robo_bee": "Item to spawn a Robo Bee. Needed in Robo Bee Ports to send packages.",
+  "item.create_mobile_packages.mobile_packager": "Mobile Packager",
+  "item.create_mobile_packages.mobile_packager.tooltip.summary": "Package items on the go",
+  "item.create_mobile_packages.mobile_packager.tooltip.condition1": "When used",
+  "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Opens a menu to create Packages",
+  "item.create_mobile_packages.mobile_packager.tooltip.condition2": "When sneak used",
+  "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages"
 }
