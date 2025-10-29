@@ -69,6 +69,14 @@ Key Features:
 
 ![Controller](https://github.com/user-attachments/assets/d8a85e58-3ffa-4c2a-8b74-48f6c2b76642)
 
+### Mobile Packager
+
+The **Mobile Packager** is a handheld device allowing players to create or modify Create mod Packages on the go.
+
+Key Features:
+- **Creating Packages** using the device opens a GUI where up to nine Stacks can be placed along with an address. On Submit, a new Package is placed in the player's inventory containing the added items.
+- **Edit Packages** using the device with the Shift key opens a GUI where an existing package can be placed. On Submit, the contents of the package are shown and can be modified.
+
 ## Gallery
 
 ![image](https://github.com/user-attachments/assets/80b6f028-61f9-415a-aa4d-bd911d1d1997)
