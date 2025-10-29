@@ -53,5 +53,11 @@
     "create_mobile_packages.ponder.port_to_port.text_4": "包裹将会从一个停泊港运输到另外一个停泊港。",
     "create_mobile_packages.ponder.port_to_port.text_5": "这个功能可以在配置文件中禁用。",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "当副手手持包裹时，其将会被运输蜂送走。",
-    "tooltip.create_mobile_packages.robo_bee.robo_bee": "运输蜂的物品形式。运输蜂停泊港发送包裹时需要使用。"
+    "tooltip.create_mobile_packages.robo_bee.robo_bee": "运输蜂的物品形式。运输蜂停泊港发送包裹时需要使用。",
+    "item.create_mobile_packages.mobile_packager": "Mobile Packager",
+    "item.create_mobile_packages.mobile_packager.tooltip.summary": "Package items on the go",
+    "item.create_mobile_packages.mobile_packager.tooltip.condition1": "When used",
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Opens a menu to create Packages",
+    "item.create_mobile_packages.mobile_packager.tooltip.condition2": "When sneak used",
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages"
 }
