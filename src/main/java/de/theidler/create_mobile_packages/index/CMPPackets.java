@@ -1,6 +1,10 @@
 package de.theidler.create_mobile_packages.index;
 
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.items.mobile_packager.ConfirmEditMenuPacket;
+import de.theidler.create_mobile_packages.items.mobile_packager.OpenEditMenuPacket;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.RemoveToastOnClientPacket;
@@ -19,6 +23,8 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
     REQUEST_STOCK_UPDATE(RequestStockUpdate.class, RequestStockUpdate.STREAM_CODEC),
     HIDDEN_CATEGORIES(HiddenCategoriesPacket.class, HiddenCategoriesPacket.STREAM_CODEC),
     OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker.STREAM_CODEC),
+    OPEN_EDIT_MENU(OpenEditMenuPacket.class, OpenEditMenuPacket::new, PLAY_TO_SERVER),
+    CONFIRM_EDIT_MENU(ConfirmEditMenuPacket.class, ConfirmEditMenuPacket::new, PLAY_TO_SERVER),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC),

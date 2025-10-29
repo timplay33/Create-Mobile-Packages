@@ -16,6 +16,7 @@ Create: Mobile Packages - v0.6.0 - 1.21.1 - unreleased
 - simplify Robo behavior state system
 - add nametag 'No valid target' to Robos
 - added Abstractions for the target
+- added Mobile Packager for packaging items on the go
 
 ### Bug Fixes
 - add support for Create 6.0.7 (#241)
