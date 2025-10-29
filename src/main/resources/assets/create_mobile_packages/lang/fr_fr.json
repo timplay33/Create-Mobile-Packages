@@ -53,5 +53,11 @@
     "create_mobile_packages.ponder.port_to_port.text_4": "Le colis sera envoyé d'un Port à l'autre.",
     "create_mobile_packages.ponder.port_to_port.text_5": "Cette fonctionnalité peut être désactivée dans les fichiers de configuration.",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "Lorsque vous tenez un colis dans la main secondaire, il sera envoyé avec la Robeille.",
-    "tooltip.create_mobile_packages.robo_bee.robo_bee": "Objet permettant de faire apparaître une Robeille. Nécessaire dans les Ports à Robeille pour envoyer des colis."
+    "tooltip.create_mobile_packages.robo_bee.robo_bee": "Objet permettant de faire apparaître une Robeille. Nécessaire dans les Ports à Robeille pour envoyer des colis.",
+    "item.create_mobile_packages.mobile_packager": "Mobile Packager",
+    "item.create_mobile_packages.mobile_packager.tooltip.summary": "Package items on the go",
+    "item.create_mobile_packages.mobile_packager.tooltip.condition1": "When used",
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Opens a menu to create Packages",
+    "item.create_mobile_packages.mobile_packager.tooltip.condition2": "When sneak used",
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages"
 }
