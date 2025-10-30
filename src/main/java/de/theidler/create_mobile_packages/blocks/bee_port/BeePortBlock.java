@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem;
 import com.simibubi.create.foundation.block.IBE;
 import de.theidler.create_mobile_packages.index.CMPBlockEntities;
 import de.theidler.create_mobile_packages.index.CMPBlocks;
@@ -84,6 +85,10 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
 
     @Override
     protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
+        if (stack.getItem() instanceof LogisticallyLinkedBlockItem) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
         return onBlockEntityUseItemOn(level, pos, be -> be.use(player));
     }
 }
