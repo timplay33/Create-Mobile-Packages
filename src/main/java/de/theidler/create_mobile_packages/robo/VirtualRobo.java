@@ -88,7 +88,7 @@ public class VirtualRobo {
         return targetPos != null ? Math.atan2(targetPos.z - this.currentPos.z, targetPos.x - this.currentPos.x()) : 0;
     }
 
-    public Vec3 getTargetPosition() {
+    public @Nullable Vec3 getTargetPosition() {
         updateTarget();
         return target.getTargetPos();
     }

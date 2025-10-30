@@ -3,7 +3,7 @@ package de.theidler.create_mobile_packages.index;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import de.theidler.create_mobile_packages.toast.CustomToast;
+import de.theidler.create_mobile_packages.toast.types.SimpleToast;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
 import net.minecraft.commands.CommandSourceStack;
@@ -45,7 +45,7 @@ public class CMPCommands {
         if (!source.isPlayer()) return 0;
         ServerPlayer player = source.getPlayer();
         if (player == null) return 0;
-        CustomToast toast = new CustomToast(UUID.randomUUID(), Component.literal(message), Component.literal(""), CMPItems.ROBO_BEE.asStack());
+        SimpleToast toast = new SimpleToast(UUID.randomUUID(), Component.literal(message), Component.literal(""), CMPItems.ROBO_BEE.asStack());
         CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), new ShowToastOnClientPacket(toast));
         return 1;
     }

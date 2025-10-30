@@ -56,6 +56,7 @@ public class CreateMobilePackages
         CMPConfigs.register(modLoadingContext);
         CMPEntities.register();
         CMPDisplaySources.register();
+        CMPToasts.registerAll();
 
         forgeEventBus.register(CreateMobilePackages.class);
 
