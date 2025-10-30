@@ -2,8 +2,6 @@ package de.theidler.create_mobile_packages.robo;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.index.CMPItems;
-import de.theidler.create_mobile_packages.toast.CustomToast;
-import de.theidler.create_mobile_packages.index.CMPPackets;
 import de.theidler.create_mobile_packages.toast.types.PackageToast;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
 import net.createmod.catnip.platform.CatnipServices;
@@ -13,6 +11,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static de.theidler.create_mobile_packages.CMPHelper.doesAddressMatchPlayer;
 

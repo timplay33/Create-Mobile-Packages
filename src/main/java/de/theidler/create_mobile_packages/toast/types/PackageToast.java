@@ -4,8 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import de.theidler.create_mobile_packages.index.CMPToasts;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -32,23 +33,23 @@ public class PackageToast extends SimpleToast {
     }
 
     @Override
-    protected void writeData(FriendlyByteBuf buf) {
+    protected void writeData(RegistryFriendlyByteBuf buf) {
         super.writeData(buf);
         buf.writeVarInt(items.size());
         for (ItemStack item : items) {
-            buf.writeItem(item);
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, item);
         }
     }
 
-    public static PackageToast readFromBuffer(FriendlyByteBuf buf, UUID uuid) {
-        Component title = buf.readComponent();
-        Component subtitle = buf.readComponent();
-        ItemStack icon = buf.readItem();
+    public static PackageToast readFromBuffer(RegistryFriendlyByteBuf buf, UUID uuid) {
+        Component title = ComponentSerialization.STREAM_CODEC.decode(buf);
+        Component subtitle = ComponentSerialization.STREAM_CODEC.decode(buf);
+        ItemStack icon = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
         int timeout = buf.readInt();
         int size = buf.readVarInt();
         List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            items.add(buf.readItem());
+            items.add(ItemStack.OPTIONAL_STREAM_CODEC.decode(buf));
         }
         return new PackageToast(uuid, title, subtitle, icon, items, timeout);
     }

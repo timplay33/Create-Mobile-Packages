@@ -10,9 +10,10 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 public class ShowToastOnClientPacket implements ClientboundPacketPayload {
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, ShowToastOnClientPacket> STREAM_CODEC = StreamCodec.of(
-        (buf, packet) -> CustomToast.STREAM_CODEC.encode(buf, packet.toast),
-        buf -> new ShowToastOnClientPacket(CustomToast.STREAM_CODEC.decode(buf))
+    public static final StreamCodec<RegistryFriendlyByteBuf, ShowToastOnClientPacket> STREAM_CODEC = StreamCodec.composite(
+        Toast.STREAM_CODEC,
+        packet -> packet.toast,
+        ShowToastOnClientPacket::new
     );
 
     private final Toast toast;

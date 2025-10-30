@@ -4,8 +4,9 @@ import de.theidler.create_mobile_packages.index.CMPToasts;
 import de.theidler.create_mobile_packages.toast.Toast;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
@@ -32,17 +33,17 @@ public class SimpleToast extends Toast {
     }
 
     @Override
-    protected void writeData(FriendlyByteBuf buf) {
-        buf.writeComponent(title);
-        buf.writeComponent(subtitle);
-        buf.writeItem(icon);
+    protected void writeData(RegistryFriendlyByteBuf buf) {
+        ComponentSerialization.STREAM_CODEC.encode(buf, title);
+        ComponentSerialization.STREAM_CODEC.encode(buf, subtitle);
+        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, icon);
         buf.writeInt(timeout);
     }
 
-    public static SimpleToast readFromBuffer(FriendlyByteBuf buf, UUID uuid) {
-        Component title = buf.readComponent();
-        Component subtitle = buf.readComponent();
-        ItemStack icon = buf.readItem();
+    public static SimpleToast readFromBuffer(RegistryFriendlyByteBuf buf, UUID uuid) {
+        Component title = ComponentSerialization.STREAM_CODEC.decode(buf);
+        Component subtitle = ComponentSerialization.STREAM_CODEC.decode(buf);
+        ItemStack icon = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
         int timeout = buf.readInt();
         return new SimpleToast(uuid, title, subtitle, icon, timeout);
     }

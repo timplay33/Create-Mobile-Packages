@@ -3,7 +3,7 @@ package de.theidler.create_mobile_packages.index;
 import de.theidler.create_mobile_packages.toast.types.PackageToast;
 import de.theidler.create_mobile_packages.toast.types.SimpleToast;
 import de.theidler.create_mobile_packages.toast.Toast;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -13,9 +13,9 @@ public enum CMPToasts {
     PACKAGE("package", PackageToast::readFromBuffer);
 
     public final String id;
-    private final BiFunction<FriendlyByteBuf, UUID, Toast> factory;
+    private final BiFunction<RegistryFriendlyByteBuf, UUID, Toast> factory;
 
-    CMPToasts(String id, BiFunction<FriendlyByteBuf, UUID, Toast> factory) {
+    CMPToasts(String id, BiFunction<RegistryFriendlyByteBuf, UUID, Toast> factory) {
         this.id = id;
         this.factory = factory;
     }

@@ -1,7 +1,8 @@
 package de.theidler.create_mobile_packages.toast;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +11,12 @@ import java.util.function.BiFunction;
 
 public abstract class Toast {
 
-    private static final Map<String, BiFunction<FriendlyByteBuf, UUID, Toast>> REGISTRY = new HashMap<>();
+    private static final Map<String, BiFunction<RegistryFriendlyByteBuf, UUID, Toast>> REGISTRY = new HashMap<>();
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, Toast> STREAM_CODEC = StreamCodec.of(
+        Toast::write,
+        Toast::read
+    );
 
     private final UUID id;
     public final long lastUpdate = System.currentTimeMillis();
@@ -27,28 +33,28 @@ public abstract class Toast {
         return id;
     }
 
-    public static void register(String typeId, BiFunction<FriendlyByteBuf, UUID, Toast> factory) {
+    public static void register(String typeId, BiFunction<RegistryFriendlyByteBuf, UUID, Toast> factory) {
         REGISTRY.put(typeId, factory);
     }
 
-    public static Toast read(FriendlyByteBuf buf) {
+    private static Toast read(RegistryFriendlyByteBuf buf) {
         String typeId = buf.readUtf(256);
         UUID uuid = buf.readUUID();
-        BiFunction<FriendlyByteBuf, UUID, Toast> factory = REGISTRY.get(typeId);
+        BiFunction<RegistryFriendlyByteBuf, UUID, Toast> factory = REGISTRY.get(typeId);
         if (factory == null) {
             throw new IllegalStateException("Unknown toast type: " + typeId);
         }
         return factory.apply(buf, uuid);
     }
 
-    public final void write(FriendlyByteBuf buf) {
-        buf.writeUtf(getTypeId());
-        buf.writeUUID(getId());
-        writeData(buf);
+    private static void write(RegistryFriendlyByteBuf buf, Toast toast) {
+        buf.writeUtf(toast.getTypeId());
+        buf.writeUUID(toast.getId());
+        toast.writeData(buf);
     }
 
     protected abstract String getTypeId();
-    protected abstract void writeData(FriendlyByteBuf buf);
+    protected abstract void writeData(RegistryFriendlyByteBuf buf);
 
     /**
      * Draws the toast.
