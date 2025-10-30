@@ -1,9 +1,6 @@
 package de.theidler.create_mobile_packages.entities;
 
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
-import de.theidler.create_mobile_packages.robo.RoboManager;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -21,7 +18,6 @@ public class RoboBeeEntity extends RoboEntity {
         this.setNoGravity(true);
         this.noPhysics = true;
         this.setNoAi(true);
-        this.setPersistenceRequired();
     }
 
     // No AI goals; movement is entirely controlled via tick().
@@ -56,14 +52,5 @@ public class RoboBeeEntity extends RoboEntity {
     public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
         UUID linkedId = UUID.randomUUID();
         return new RoboBeeEntity(type, level, linkedId);
-    }
-
-    @Override
-    public void onAddedToLevel() {
-        super.onAddedToLevel();
-        if (level() instanceof ServerLevel serverLevel) {
-            BlockPos spawnPos = this.blockPosition();
-            RoboManager.get(serverLevel).newRobo(serverLevel, this.getItemStack(), spawnPos, this.linkedId, 0);
-        }
     }
 }
