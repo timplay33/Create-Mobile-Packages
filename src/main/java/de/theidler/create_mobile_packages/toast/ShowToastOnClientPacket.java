@@ -15,9 +15,9 @@ public class ShowToastOnClientPacket implements ClientboundPacketPayload {
         buf -> new ShowToastOnClientPacket(CustomToast.STREAM_CODEC.decode(buf))
     );
 
-    private final CustomToast toast;
+    private final Toast toast;
 
-    public ShowToastOnClientPacket(CustomToast toast) {
+    public ShowToastOnClientPacket(Toast toast) {
         this.toast = toast;
     }
 

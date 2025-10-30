@@ -337,6 +337,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private void sendItem(ItemStack itemStack, int slot) {
         if (level == null || !PackageItem.isPackage(itemStack)) return;
         String address = PackageItem.getAddress(itemStack);
+        if (address.isBlank()) return; // return if the package has no address
 
         // Check if the item can be sent to a player.
         for (Player player : level.players()) {

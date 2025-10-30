@@ -54,6 +54,8 @@ public class CreateMobilePackages
         CMPEntities.register();
         CMPDisplaySources.register();
         CMPDataComponents.register(modEventBus);
+        CMPToasts.registerAll();
+
     }
 
     public static ResourceLocation asResource(String path) {
