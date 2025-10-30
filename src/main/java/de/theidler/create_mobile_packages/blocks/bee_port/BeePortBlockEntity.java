@@ -391,7 +391,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
         sendItemThisTime = 2;
         if (level instanceof ServerLevel serverLevel) {
-            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId());
+            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId(), 0);
         }
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
@@ -400,7 +400,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (!tryConsumeDrone()) return;
         sendItemThisTime = 2;
         if (level instanceof ServerLevel serverLevel) {
-            UUID uuid = RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, this.getBlockPos(), this.getLogisticsNetworkId());
+            UUID uuid = RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, this.getBlockPos(), this.getLogisticsNetworkId(), 0);
             RoboManager.get(serverLevel).get(uuid).setTarget(new BeePortBlockEntityTarget((BeePortBlockEntity) serverLevel.getBlockEntity(tagetPos)));
         }
     }

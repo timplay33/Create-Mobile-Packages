@@ -9,7 +9,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,7 +63,7 @@ public class RoboBeeEntity extends RoboEntity {
         super.onAddedToLevel();
         if (level() instanceof ServerLevel serverLevel) {
             BlockPos spawnPos = this.blockPosition();
-            RoboManager.get(serverLevel).newRobo(serverLevel, this.getItemStack(), spawnPos, this.linkedId);
+            RoboManager.get(serverLevel).newRobo(serverLevel, this.getItemStack(), spawnPos, this.linkedId, 0);
         }
     }
 }
