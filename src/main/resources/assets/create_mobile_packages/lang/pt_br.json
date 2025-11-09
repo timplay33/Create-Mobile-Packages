@@ -54,10 +54,10 @@
     "create_mobile_packages.ponder.port_to_port.text_5": "Este recurso pode ser desabilitado nos arquivos de configuração.",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "Ao segurar um pacote na mão secundária, ele será enviado com a Abelha Robô.",
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Item para gerar uma Abelha Robô. Necessário nos Portos da Abelha Robô para enviar pacotes.",
-    "item.create_mobile_packages.mobile_packager": "Mobile Packager",
-    "item.create_mobile_packages.mobile_packager.tooltip.summary": "Package items on the go",
-    "item.create_mobile_packages.mobile_packager.tooltip.condition1": "When used",
-    "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Opens a menu to create Packages",
-    "item.create_mobile_packages.mobile_packager.tooltip.condition2": "When sneak used",
-    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages"
+    "item.create_mobile_packages.mobile_packager": "Embalador Móvel",
+    "item.create_mobile_packages.mobile_packager.tooltip.summary": "Embalar itens em movimento",
+    "item.create_mobile_packages.mobile_packager.tooltip.condition1": "Quando usado",
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Abre um menu para criar Pacotes",
+    "item.create_mobile_packages.mobile_packager.tooltip.condition2": "Quando a furtividade é usada",
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Abre um menu para modificar Pacotes"
 }
