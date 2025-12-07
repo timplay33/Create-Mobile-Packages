@@ -17,6 +17,7 @@ Create: Mobile Packages - v0.6.0 - unreleased
 - add nametag 'No valid target' to Robos
 - added Abstractions for the target
 - added Mobile Packager for packaging items on the go
+- Bump create_version to 6.0.8-289
 
 ### Bug Fixes
 - add support for Create 6.0.7 (#241)
