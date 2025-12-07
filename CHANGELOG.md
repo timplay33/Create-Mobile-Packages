@@ -18,6 +18,7 @@ Create: Mobile Packages - v0.6.0 - unreleased
 - added Abstractions for the target
 - added Mobile Packager for packaging items on the go
 - Bump create_version to 6.0.8-289
+- added "/cmp robos clear" command to remove all robos (#261)
 
 ### Bug Fixes
 - add support for Create 6.0.7 (#241)
