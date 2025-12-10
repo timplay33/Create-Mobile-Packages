@@ -5,6 +5,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class BeePortBlockEntityTarget implements RoboTarget {
     private final BeePortBlockEntity be;
+    private int eta;
 
     public BeePortBlockEntityTarget(BeePortBlockEntity be) {
         this.be = be;
@@ -26,7 +27,12 @@ public class BeePortBlockEntityTarget implements RoboTarget {
     }
 
     @Override
-    public void setETA(VirtualRobo robo, int eta) {
+    public int getETA() {
+        return eta;
+    }
 
+    @Override
+    public void setETA(int eta) {
+        this.eta = eta;
     }
 }

@@ -10,7 +10,6 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
-import de.theidler.create_mobile_packages.robo.BeePortBlockEntityTarget;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
@@ -28,11 +27,9 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
@@ -40,12 +37,10 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-import static de.theidler.create_mobile_packages.CMPHelper.calcETA;
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
 
 /**
@@ -125,8 +120,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     };
     public LogisticallyLinkedBehaviour behaviour;
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
-    private int sendItemThisTime = 0; // Flag to indicate if an item was sent this time.
-    private UUID entityOnTravelID;
+    private int roboSendCooldown = 0; // Flag to indicate if an item was sent this time.
 
     /**
      * Constructor for the BeePortBlockEntity.
@@ -138,16 +132,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public BeePortBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
         itemHandler = LazyOptional.of(() -> handler);
-    }
-
-    private static void requestRoboEntity(Level level, BlockPos blockPos, UUID logisticsNetworkId) {
-        level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
-            List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAllByNetwork(logisticsNetworkId));
-            allBEs.removeIf(BlockEntity::isRemoved);
-            allBEs.removeIf(be -> be.getBlockPos().equals(blockPos));
-            allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
-            allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(blockPos))).ifPresent(target -> target.requestRobo(blockPos));
-        });
     }
 
     /**
@@ -194,6 +178,12 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         return true;
     }
 
+    private synchronized void requestRoboEntity() {
+        if (level instanceof ServerLevel serverLevel) {
+            RoboManager.get(serverLevel).requestRobo(this.getBlockPos(), this.getLogisticsNetworkId());
+        }
+    }
+
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
@@ -219,10 +209,12 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             processItems();
         }
         //Update Client Data
-        if (level != null && !level.isClientSide()) {
-            if (this.getRoboEntity() != null)
-                this.data.set(0, calcETA(this.getBlockPos().getCenter(), this.getRoboEntity().getCurrentPos()));
-            this.data.set(1, this.getRoboEntity() != null ? 1 : 0);
+        if (level instanceof ServerLevel serverLevel) {
+            List<Integer> eta = RoboManager.get(serverLevel).getETAs(this.getBlockPos());
+            // find min eta and set it
+            int minEta = eta.stream().min(Comparator.naturalOrder()).orElse(-1);
+            this.data.set(0, minEta);
+            this.data.set(1, eta.isEmpty() ? 0 : 1);
         }
     }
 
@@ -267,12 +259,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     private void tryPullingFromAdjacentInventories() {
-        VirtualRobo currentEntity = this.getRoboEntity();
-        if (hasFullInventory(currentEntity != null ? 1 : 0)) return;
-
         getAdjacentInventories().forEach((inventory) -> {
             if (inventory == null) return;
-            if (hasFullInventory(currentEntity != null ? 1 : 0)) return;
             for (int i = 0; i < inventory.getSlots(); i++) {
                 ItemStack itemStack = inventory.getStackInSlot(i);
                 if (!itemStack.isEmpty() && PackageItem.isPackage(itemStack)) {
@@ -307,7 +295,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (level == null || level.isClientSide) return;
 
         for (int i = 0; i < inventory.getSlots(); i++) {
-            if (sendItemThisTime-- > 0) {
+            if (roboSendCooldown-- > 0) {
                 return;
             }
             ItemStack itemStack = inventory.getStackInSlot(i);
@@ -354,15 +342,22 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     private void sendToPlayer(Player player, ItemStack itemStack, int slot) {
         if (roboBeeInventory.getStackInSlot(0).getCount() <= 0) {
-            if (this.getRoboEntity() == null && level != null) {
-                requestRoboEntity(level, this.getBlockPos(), this.getLogisticsNetworkId());
+            if (!hasRoboRequest() && level != null) {
+                requestRoboEntity();
                 return;
             }
             return;
         }
-        sendItemThisTime = 2;
+        roboSendCooldown = 2;
         CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
         sendDrone(itemStack, slot);
+    }
+
+    private boolean hasRoboRequest() {
+        if (level instanceof ServerLevel serverLevel) {
+            return RoboManager.get(serverLevel).getRoboRequests(this.getBlockPos()).stream().anyMatch(roboRequest -> roboRequest.getStatus() == RoboRequest.Status.PENDING || roboRequest.getStatus() == RoboRequest.Status.IN_PROGRESS);
+        }
+        return false;
     }
 
     /**
@@ -373,26 +368,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      */
     private void sendDrone(ItemStack itemStack, int slot) {
         if (!tryConsumeDrone()) {
-            if (this.getRoboEntity() == null && level != null) {
-                requestRoboEntity(level, this.getBlockPos(), this.getLogisticsNetworkId());
+            if (!hasRoboRequest() && level != null) {
+                requestRoboEntity();
                 return;
             }
             return;
         }
-        sendItemThisTime = 2;
+        roboSendCooldown = 2;
         if (level instanceof ServerLevel serverLevel) {
             RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId(), 0);
         }
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
-    }
-
-    private void requestRobo(BlockPos tagetPos) {
-        if (!tryConsumeDrone()) return;
-        sendItemThisTime = 2;
-        if (level instanceof ServerLevel serverLevel) {
-            UUID uuid = RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, this.getBlockPos(), this.getLogisticsNetworkId(), 0);
-            RoboManager.get(serverLevel).get(uuid).setTarget(new BeePortBlockEntityTarget((BeePortBlockEntity) serverLevel.getBlockEntity(tagetPos)));
-        }
     }
 
     /**
@@ -454,9 +440,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.remove(this));
         }
 
-        VirtualRobo currentEntity = getRoboEntity();
-        if (currentEntity != null) {
-            currentEntity.setTargetVelocity(Vec3.ZERO);
+        if (level instanceof ServerLevel serverLevel) {
+            RoboManager.get(serverLevel).getRoboRequests(this.getBlockPos()).forEach(roboRequest -> roboRequest.setStatus(RoboRequest.Status.CANCELLED));
         }
     }
 
@@ -468,7 +453,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         ItemStack bees = roboBeeInventory.getStackInSlot(0);
 
         if (bees.getCount() > 0 && level != null) {
-                level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), bees));
+            level.addFreshEntity(new ItemEntity(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), bees));
         }
     }
 
@@ -537,19 +522,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public boolean canAcceptEntity(VirtualRobo entity, Boolean hasPackage) {
         if (this.isRemoved()) return false;
         if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(0);
-        VirtualRobo currentEntity = getRoboEntity();
-        if (currentEntity != null && currentEntity != entity) return false;
+        if (hasRoboRequest()) return false;
         return hasPackage ? !isFull() : !hasFullRoboSlot(0);
-    }
-
-    public synchronized boolean trySetEntityOnTravel(VirtualRobo entity, boolean set) {
-        if (entity == null) { return false; }
-        VirtualRobo currentEntity = getRoboEntity();
-        if (currentEntity == null || currentEntity == entity) {
-            setRoboEntityOnTravel(set ? entity : null);
-            return true;
-        }
-        return false;
     }
 
     public ItemStackHandler getRoboBeeInventory() {
@@ -563,22 +537,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     @Override
     public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
         return BeePortMenu.create(pContainerId, pPlayerInventory, this);
-    }
-
-    public VirtualRobo getRoboEntity() {
-        if (level == null || entityOnTravelID == null) return null;
-        if (level instanceof ServerLevel serverLevel) {
-            return RoboManager.get(serverLevel).robos.get(entityOnTravelID);
-        }
-        return null;
-    }
-
-    public void setRoboEntityOnTravel(VirtualRobo entity) {
-        if (entity == null) {
-            this.entityOnTravelID = null;
-        } else {
-            this.entityOnTravelID = entity.getId();
-        }
     }
 
     public ContainerData getData() {
@@ -595,5 +553,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             return InteractionResult.SUCCESS;
         }
         return super.use(player);
+    }
+
+    public void handleRequest(RoboRequest request) {
+        if (!tryConsumeDrone()) return; // return if there is no bee available
+        request.setStatus(RoboRequest.Status.IN_PROGRESS);
+        roboSendCooldown = 2;
+        if (level instanceof ServerLevel serverLevel) {
+            RoboManager.get(serverLevel).newRequestRobo(serverLevel, this.getBlockPos(), request);
+        }
     }
 }

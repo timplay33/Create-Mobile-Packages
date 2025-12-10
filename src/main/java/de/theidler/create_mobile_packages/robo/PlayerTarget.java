@@ -3,8 +3,8 @@ package de.theidler.create_mobile_packages.robo;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPPackets;
-import de.theidler.create_mobile_packages.toast.types.PackageToast;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
+import de.theidler.create_mobile_packages.toast.types.PackageToast;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,6 +22,7 @@ import static de.theidler.create_mobile_packages.CMPHelper.doesAddressMatchPlaye
 
 public class PlayerTarget implements RoboTarget {
     private final Player player;
+    private int eta;
 
     public PlayerTarget(Player player) {
         this.player = player;
@@ -48,8 +49,7 @@ public class PlayerTarget implements RoboTarget {
         return player != null && player.isAlive();
     }
 
-    @Override
-    public void setETA(VirtualRobo robo, int eta) {
+    public void updateEtaToast(VirtualRobo robo) {
         ItemStack packageItem = robo.getItemStack();
         ItemStackHandler itemHandler = packageItem.isEmpty() ? new ItemStackHandler(9) : PackageItem.getContents(packageItem);
         List<ItemStack> items = new ArrayList<>();
@@ -60,11 +60,21 @@ public class PlayerTarget implements RoboTarget {
         PackageToast toast = new PackageToast(
                 robo.getId(),
                 Component.translatable("create_mobile_packages.toast.robo_bee_on_the_way"),
-                Component.translatable("create_mobile_packages.toast.eta", eta),
+                Component.translatable("create_mobile_packages.toast.eta", getETA()),
                 CMPItems.ROBO_BEE.asStack(),
                 items
         );
         if (player instanceof ServerPlayer serverPlayer)
             CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(()-> serverPlayer), new ShowToastOnClientPacket(toast));
+    }
+
+    @Override
+    public int getETA() {
+        return eta;
+    }
+
+    @Override
+    public void setETA(int eta) {
+        this.eta = eta;
     }
 }
