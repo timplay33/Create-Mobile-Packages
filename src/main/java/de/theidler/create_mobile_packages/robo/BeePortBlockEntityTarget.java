@@ -1,29 +1,37 @@
 package de.theidler.create_mobile_packages.robo;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 
 public class BeePortBlockEntityTarget implements RoboTarget {
-    private final BeePortBlockEntity be;
+    private final BlockPos pos;
+    private final ServerLevel level;
     private int eta;
 
     public BeePortBlockEntityTarget(BeePortBlockEntity be) {
-        this.be = be;
+        this.pos = be.getBlockPos();
+        this.level = be.getLevel() instanceof ServerLevel ? (ServerLevel) be.getLevel() : null;
     }
 
     @Override
     public Vec3 getTargetPos() {
-        return Vec3.atCenterOf(be.getBlockPos());
+        return Vec3.atCenterOf(pos);
     }
 
     @Override
     public BeePortBlockEntity asBeePortBlockEntity() {
-        return be;
+        // Lazy lookup to avoid holding onto a removed/invalid instance
+        if (level == null) return null;
+        if (level.getBlockEntity(pos) instanceof BeePortBlockEntity be) return be;
+        return null;
     }
 
     @Override
     public boolean isValid() {
-        return !be.isRemoved() && !be.isFull();
+        BeePortBlockEntity be = asBeePortBlockEntity();
+        return be != null && !be.isRemoved() && !be.isFull();
     }
 
     @Override

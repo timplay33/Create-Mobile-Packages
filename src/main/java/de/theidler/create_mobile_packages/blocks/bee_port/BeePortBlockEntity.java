@@ -143,6 +143,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public static void setOpen(BeePortBlockEntity entity, boolean open) {
         if (entity == null || entity.level == null) return;
 
+        if (entity.isRemoved()) return;
+
         entity.level.setBlockAndUpdate(entity.getBlockPos(), entity.getBlockState().setValue(IS_OPEN_TEXTURE, open));
         entity.level.playSound(null, entity.getBlockPos(), open ? SoundEvents.BARREL_OPEN : SoundEvents.BARREL_CLOSE, SoundSource.BLOCKS);
 
