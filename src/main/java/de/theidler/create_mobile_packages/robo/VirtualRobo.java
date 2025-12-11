@@ -37,8 +37,6 @@ public class VirtualRobo {
     private Vec3 targetVelocity = Vec3.ZERO;
     private ServerLevel serverLevel;
     private float packageHeightScale;
-    private int ticksSinceLastTargetCheck = 0;
-    private boolean targetIsInWrongNetwork = false;
     private RoboRequest request = null;
 
     public VirtualRobo(ServerLevel level, UUID id, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId) {
@@ -104,12 +102,11 @@ public class VirtualRobo {
 
     private void updateTarget() {
         // if the target is still valid and in the correct network, do nothing
-        if (target != null && target.isValid() && !targetIsInWrongNetwork) return;
+        if (target != null && target.isValid()) return;
 
         // try finding a Player first
         target = PlayerTarget.fromAddress(serverLevel, targetAddress);
         if (target.isValid()) {
-            targetIsInWrongNetwork = false;
             return;
         }
 
@@ -117,8 +114,6 @@ public class VirtualRobo {
         BeePortBlockEntity targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
         if (targetBlockEntity != null) {
             target = new BeePortBlockEntityTarget(targetBlockEntity);
-            // Check if the port is in the correct network
-            targetIsInWrongNetwork = !logisticsNetworkId.equals(targetBlockEntity.getLogisticsNetworkId());
         }
     }
 
@@ -147,19 +142,6 @@ public class VirtualRobo {
     public void tick(ServerLevel level) {
         this.serverLevel = level;
         updateEntity();
-
-        // If we're currently flying to a port in the wrong network, periodically check for a port in the correct network
-        ticksSinceLastTargetCheck++;
-        if (targetIsInWrongNetwork && ticksSinceLastTargetCheck >= 40) { // Check every 2 seconds (40 ticks)
-            ticksSinceLastTargetCheck = 0;
-            // Force a target update by temporarily marking current target as needing recheck
-            BeePortBlockEntity currentPort = target != null ? target.asBeePortBlockEntity() : null;
-            if (currentPort != null) {
-                currentPort.trySetEntityOnTravel(this, false);
-            }
-            target = null; // Force target refresh
-        }
-
         updateTarget();
         if (behaviorController != null) behaviorController.tick(this);
         this.move(targetVelocity);

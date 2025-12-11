@@ -53,6 +53,7 @@ import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS
  */
 public class BeePortBlockEntity extends PackagePortBlockEntity {
 
+    private static final int ROBOBEE_INVENTORY_STACK_SIZE = 64;
     private final ContainerData data = new SimpleContainerData(2);
     private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
     private final IItemHandler handler = new IItemHandler() {
@@ -511,8 +512,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         return emptySlots <= slotsToLeaveEmpty;
     }
 
-    public boolean hasFullRoboSlot(int leaveEmpty) {
-        return roboBeeInventory.getStackInSlot(0).getCount() >= roboBeeInventory.getSlotLimit(0) - leaveEmpty;
+    public synchronized boolean hasFullRoboSlot(int leaveEmpty) {
+        return roboBeeInventory.getStackInSlot(0).getCount() >= ROBOBEE_INVENTORY_STACK_SIZE - leaveEmpty;
     }
 
     /**
@@ -535,7 +536,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * @param hasPackage True if the entity carries a package, false otherwise.
      * @return True if the port can accept the entity, false otherwise.
      */
-    public boolean canAcceptEntity(VirtualRobo entity, Boolean hasPackage) {
+    public synchronized boolean canAcceptEntity(VirtualRobo entity, Boolean hasPackage) {
         if (this.isRemoved()) return false;
         if (entity == null) return hasPackage ? !isFull() : !hasFullRoboSlot(0);
         if (hasRoboRequest()) return false;

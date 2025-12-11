@@ -1,7 +1,7 @@
 package de.theidler.create_mobile_packages.robo;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
-import de.theidler.create_mobile_packages.blocks.bee_port.ModCapabilities;
+import de.theidler.create_mobile_packages.blocks.bee_port.DronePortTracker;
 import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -82,13 +82,12 @@ public class RoboManager extends SavedData {
     }
 
     private void tryHandlingRequest(RoboRequest request, ServerLevel level) {
-        level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> {
-            List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAllByNetwork(request.getLogisticsNetworkId()));
-            allBEs.removeIf(BlockEntity::isRemoved);
-            allBEs.removeIf(be -> be.getBlockPos().equals(request.getTargetPos()));
-            allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
-            allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(request.getTargetPos()))).ifPresent(target -> target.handleRequest(request));
-        });
+        DronePortTracker tracker = DronePortTracker.get(level);
+        List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAllByNetwork(request.getLogisticsNetworkId()));
+        allBEs.removeIf(BlockEntity::isRemoved);
+        allBEs.removeIf(be -> be.getBlockPos().equals(request.getTargetPos()));
+        allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
+        allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(request.getTargetPos()))).ifPresent(target -> target.handleRequest(request));
     }
 
     public UUID newRobo(ServerLevel level, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId, float packageHeightScale) {

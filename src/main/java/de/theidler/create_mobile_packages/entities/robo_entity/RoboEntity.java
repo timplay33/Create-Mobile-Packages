@@ -1,6 +1,5 @@
 package de.theidler.create_mobile_packages.entities.robo_entity;
 
-import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
@@ -54,7 +53,6 @@ public class RoboEntity extends Mob {
         setYRot(this.entityData.get(ROT_YAW));
         if (level() instanceof ServerLevel serverLevel) {
             if (RoboManager.get(serverLevel).get(linkedId) == null) {
-                CreateMobilePackages.LOGGER.info("No linked VirtualRobo found for RoboEntity with ID {} at position {}. Discarding entity.", this.linkedId, BlockPos.containing(this.position()));
                 this.discard();
             }
         }
