@@ -53,5 +53,11 @@
     "create_mobile_packages.ponder.port_to_port.text_4": "Коробка отправится от одного порта до другого.",
     "create_mobile_packages.ponder.port_to_port.text_5": "Эта функция может быть выключена в настройках.",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "Если держать коробку не в ведущей руке, она может быть отправлена при помощи пчелодрона.",
-    "tooltip.create_mobile_packages.robo_bee.robo_bee": "Предмет для создания Пчёлодрона. Необходим в Дронопорте для отправки посылок."
+    "tooltip.create_mobile_packages.robo_bee.robo_bee": "Предмет для создания Пчёлодрона. Необходим в Дронопорте для отправки посылок.",
+    "item.create_mobile_packages.mobile_packager": "Mobile Packager",
+    "item.create_mobile_packages.mobile_packager.tooltip.summary": "Package items on the go",
+    "item.create_mobile_packages.mobile_packager.tooltip.condition1": "When used",
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Opens a menu to create Packages",
+    "item.create_mobile_packages.mobile_packager.tooltip.condition2": "When sneak used",
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages"
 }

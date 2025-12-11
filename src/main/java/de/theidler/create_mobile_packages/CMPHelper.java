@@ -78,7 +78,7 @@ public class CMPHelper {
      * @return The ETA in seconds.
      */
     public static int calcETA(Vec3 targetPosition, Vec3 currentPosition) {
-        if (targetPosition == null || currentPosition == null) return Integer.MAX_VALUE;
+        if (targetPosition == null || currentPosition == null) return -1;
         double distance = targetPosition.distanceTo(currentPosition);
         return (int) (distance / CMPConfigs.server().beeSpeed.get()) + 1;
     }

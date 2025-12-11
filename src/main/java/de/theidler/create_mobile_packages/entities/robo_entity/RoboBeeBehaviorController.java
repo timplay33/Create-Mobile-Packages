@@ -2,6 +2,8 @@ package de.theidler.create_mobile_packages.entities.robo_entity;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
+import de.theidler.create_mobile_packages.robo.PlayerTarget;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
@@ -83,14 +85,16 @@ public class RoboBeeBehaviorController {
             return;
         }
         if (robo.getTarget() != null) {
-            robo.getTarget().setETA(robo, calcETA(robo.getTargetPosition(), robo.getCurrentPos()));
+            robo.getTarget().setETA(calcETA(robo.getTargetPosition(), robo.getCurrentPos()));
+            if (robo.getTarget() instanceof PlayerTarget playerTarget)
+                playerTarget.updateEtaToast(robo);
         }
         Vec3 target = getAbove(robo.getTargetPosition(), 2);
         double speed = robo.getSpeed() / 20.0;
         moveTo(robo, target, speed);
         if (isAtTarget(robo, target, speed)) {
             if (robo.getTarget() != null) {
-                robo.getTarget().setETA(robo, 0); // set ETA to 0 as the bee arrived
+                robo.getTarget().setETA(0); // set ETA to 0 as the bee arrived
             }
             setState(RoboBeeState.ALIGN_FOR_DELIVERY);
             robo.setTargetVelocity(Vec3.ZERO);
@@ -143,7 +147,7 @@ public class RoboBeeBehaviorController {
             delivered = BeePortBlockEntity.sendPackageToPlayer(robo.getTarget().asPlayer(), robo.getItemStack());
             if (delivered) {
                 robo.setItemStack(ItemStack.EMPTY);
-                robo.setTarget(null);
+                robo.invalidateTarget();
             }
         }
         // Try to deliver to block entity
@@ -151,7 +155,7 @@ public class RoboBeeBehaviorController {
             delivered = robo.getTarget().asBeePortBlockEntity().addItemStack(robo.getItemStack());
             if (delivered) {
                 robo.setItemStack(ItemStack.EMPTY);
-                robo.setTarget(null);
+                robo.invalidateTarget();
             }
         }
 
@@ -172,6 +176,9 @@ public class RoboBeeBehaviorController {
     private void handleShutdown(VirtualRobo robo) {
         if (robo.getServerLevel().getBlockEntity(BlockPos.containing(robo.getCurrentPos())) instanceof BeePortBlockEntity bpbe)
             bpbe.addBeeToRoboBeeInventory(1);
+        if (robo.getRequest() != null) {
+            robo.getRequest().setStatus(RoboRequest.Status.DONE);
+        }
         robo.setRemoved(robo.getServerLevel());
     }
 

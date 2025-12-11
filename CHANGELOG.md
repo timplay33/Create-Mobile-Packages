@@ -19,6 +19,9 @@ Create: Mobile Packages - v0.6.0 - 1.21.1 - unreleased
 - added Mobile Packager for packaging items on the go
 - Bump create_version to 6.0.8-289
 - added "/cmp robos clear" command to remove all robos (#261)
+- disable dimension travel for robos (nether & end portals) (#250)
+- fix bee port duplication bug (#252)
+- update Translations (#243)
 
 ### Bug Fixes
 - add support for Create 6.0.7 (#241)
