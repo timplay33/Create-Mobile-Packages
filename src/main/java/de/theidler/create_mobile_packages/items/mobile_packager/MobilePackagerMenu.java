@@ -45,15 +45,33 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
     @Override
     public @NotNull ItemStack quickMoveStack(@NotNull Player pPlayer, int index) {
-        Slot clickedSlot = getSlot(index);
-        if (!clickedSlot.hasItem())
-            return ItemStack.EMPTY;
+        ItemStack itemstack = ItemStack.EMPTY;
+        Slot slot = this.slots.get(index);
 
-        ItemStack stack = clickedSlot.getItem();
+        if (slot.hasItem()) {
+            ItemStack itemstack1 = slot.getItem();
+            itemstack = itemstack1.copy();
 
-        boolean success = !moveItemStackTo(stack, 0, slots.size(), false);
+            if (index == 0) {
+                // Custom Slot -> Player Inventory
+                if (!this.moveItemStackTo(itemstack1, 1, this.slots.size(), false)) {
+                    return ItemStack.EMPTY;
+                }
+            } else {
+                // Player Inventory -> Custom Slot (Index 0)
+                if (!this.moveItemStackTo(itemstack1, 0, 1, false)) {
+                    return ItemStack.EMPTY;
+                }
+            }
 
-        return success ? ItemStack.EMPTY : stack;
+            if (itemstack1.isEmpty()) {
+                slot.set(ItemStack.EMPTY);
+            } else {
+                slot.setChanged();
+            }
+        }
+
+        return itemstack;
     }
 
     @Override
