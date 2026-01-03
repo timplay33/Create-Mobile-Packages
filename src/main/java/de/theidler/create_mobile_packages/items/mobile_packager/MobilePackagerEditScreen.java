@@ -11,18 +11,20 @@ import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class MobilePackagerEditScreen extends AbstractSimiContainerScreen<MobilePackagerEditMenu> {
 
-    private EditBox addressBox;
+    private AddressEditBox addressBox;
     private IconButton confirmButton;
+    private final Inventory playerInventory;
 
     public MobilePackagerEditScreen(MobilePackagerEditMenu container, Inventory inv, Component title) {
         super(container, inv, title);
+        this.playerInventory = inv;
     }
 
     @Override
@@ -36,11 +38,11 @@ public class MobilePackagerEditScreen extends AbstractSimiContainerScreen<Mobile
         int y = getGuiTop();
         menu.addSlots();
 
-        if (addressBox == null) {
-            addressBox = new AddressEditBox(this, new NoShadowFontWrapper(font), x + 55, y + 68, 110, 10, false);
-            addressBox.setValue(menu.contentHolder.address);
-            addressBox.setTextColor(0x555555);
-        }
+        String previousAddress = addressBox == null ? menu.contentHolder.address : addressBox.getValue();
+        addressBox = new AddressEditBox(this, new NoShadowFontWrapper(font), x + 55, y + 68, 110,
+                10, true, "@" + playerInventory.player.getName().getString());
+        addressBox.setValue(previousAddress);
+        addressBox.setTextColor(0x555555);
         addRenderableWidget(addressBox);
 
         confirmButton = new IconButton(x + bgWidth - 30, y + bgHeight - 25, AllIcons.I_CONFIRM);
@@ -51,7 +53,55 @@ public class MobilePackagerEditScreen extends AbstractSimiContainerScreen<Mobile
     }
 
     @Override
-    protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
+    protected void containerTick() {
+        super.containerTick();
+        addressBox.tick();
+    }
+
+    @Override
+    public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
+        // Handle addressBox focus and clicks
+        if (addressBox.isFocused()) {
+            // When focused, let addressBox handle clicks in its area (including suggestions dropdown)
+            if (addressBox.mouseClicked(pMouseX, pMouseY, pButton))
+                return true;
+            // Clicked outside - unfocus
+            addressBox.setFocused(false);
+        }
+        return super.mouseClicked(pMouseX, pMouseY, pButton);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        if (addressBox.mouseScrolled(mouseX, mouseY, delta))
+            return true;
+        return super.mouseScrolled(mouseX, mouseY, delta);
+    }
+
+    @Override
+    public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
+        if (addressBox.isFocused() && addressBox.keyPressed(pKeyCode, pScanCode, pModifiers))
+            return true;
+        return addressBox.isFocused() && pKeyCode != 256 || super.keyPressed(pKeyCode, pScanCode, pModifiers);
+    }
+
+    @Override
+    public boolean charTyped(char pCodePoint, int pModifiers) {
+        if (addressBox.isFocused() && addressBox.charTyped(pCodePoint, pModifiers))
+            return true;
+        return super.charTyped(pCodePoint, pModifiers);
+    }
+
+    @Override
+    protected boolean isHovering(int x, int y, int width, int height, double mouseX, double mouseY) {
+        // Prevent slot hover highlighting when addressBox suggestions dropdown is showing
+        if (addressBox.isFocused())
+            return false;
+        return super.isHovering(x, y, width, height, mouseX, mouseY);
+    }
+
+    @Override
+    protected void renderBg(@NotNull GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
         int x = getGuiLeft();
         int y = getGuiTop();
         AllGuiTextures.REDSTONE_REQUESTER.render(pGuiGraphics, x + 3, y);
