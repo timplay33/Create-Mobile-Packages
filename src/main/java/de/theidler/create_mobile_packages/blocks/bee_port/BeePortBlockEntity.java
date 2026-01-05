@@ -266,7 +266,10 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             for (int i = 0; i < inventory.getSlots(); i++) {
                 ItemStack itemStack = inventory.getStackInSlot(i);
                 if (!itemStack.isEmpty() && PackageItem.isPackage(itemStack)) {
-                    addItemStack(inventory.extractItem(i, 1, false));
+                    ItemStack extractSim = inventory.extractItem(i, 1, true);
+                    if (!extractSim.isEmpty() && addItemStack(extractSim, true)) {
+                        addItemStack(inventory.extractItem(i, 1, false), false);
+                    }
                 }
             }
         });
@@ -397,12 +400,15 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
      * Adds a Create Mod package to the inventory if there is space.
      *
      * @param itemStack The Create Mod package to add.
+     * @param simulate  Whether to simulate the addition.
      * @return True if the package was added, false otherwise.
      */
-    public boolean addItemStack(ItemStack itemStack) {
+    public boolean addItemStack(ItemStack itemStack, boolean simulate) {
         for (int i = 0; i < inventory.getSlots(); i++) {
             if (inventory.getStackInSlot(i).isEmpty()) {
-                inventory.insertItem(i, itemStack, false);
+                if (!simulate) {
+                    inventory.insertItem(i, itemStack, false);
+                }
                 return true;
             }
         }
