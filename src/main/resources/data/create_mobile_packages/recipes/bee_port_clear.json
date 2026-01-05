@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "create_mobile_packages:bee_port"
+    }
+  ],
+  "result": {
+    "item": "create_mobile_packages:bee_port"
+  }
+}

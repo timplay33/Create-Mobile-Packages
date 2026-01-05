@@ -26,6 +26,7 @@ Create: Mobile Packages - v0.6.0 - unreleased
 ### Bug Fixes
 - add support for Create 6.0.7 (#241)
 - fix duping in Mobile Packager (#270)
+- fix missing robo bee clear recipe (#276)
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.5 - 13.07.2025
