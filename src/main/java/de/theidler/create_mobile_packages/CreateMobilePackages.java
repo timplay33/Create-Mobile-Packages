@@ -22,6 +22,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
+import java.util.Set;
+import java.util.UUID;
+
 @Mod(CreateMobilePackages.MODID)
 public class CreateMobilePackages
 {
@@ -73,5 +76,11 @@ public class CreateMobilePackages
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         CMPCommands.register(event.getDispatcher());
+    }
+
+    public interface IExtendedLogisticsNetwork {
+
+        Set<UUID> create_mobile_packages$getPlayers();
+        void create_mobile_packages$addPlayer(UUID player);
     }
 }
