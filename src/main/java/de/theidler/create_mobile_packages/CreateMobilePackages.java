@@ -77,10 +77,4 @@ public class CreateMobilePackages
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         CMPCommands.register(event.getDispatcher());
     }
-
-    public interface IExtendedLogisticsNetwork {
-
-        Set<UUID> create_mobile_packages$getPlayers();
-        void create_mobile_packages$addPlayer(UUID player);
-    }
 }

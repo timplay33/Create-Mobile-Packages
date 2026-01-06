@@ -1,7 +1,7 @@
 package de.theidler.create_mobile_packages.mixin;
 
 import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
-import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -17,14 +17,17 @@ import java.util.Set;
 import java.util.UUID;
 
 @Mixin(value = LogisticsNetwork.class, remap = false)
-public class LogisticsNetworkMixin implements CreateMobilePackages.IExtendedLogisticsNetwork {
+public class LogisticsNetworkMixin implements IExtendedLogisticsNetwork {
 
     @Unique
     private Set<UUID> create_mobile_packages$players;
+    @Unique
+    private String create_mobile_packages$name;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void create_mobile_packages$init(UUID id, CallbackInfo ci) {
         this.create_mobile_packages$players = new HashSet<>();
+        this.create_mobile_packages$name = "Logistics Network " + id.toString().substring(0, 4);
     }
 
     @Inject(method = "write", at = @At("TAIL"))
@@ -41,6 +44,7 @@ public class LogisticsNetworkMixin implements CreateMobilePackages.IExtendedLogi
                         }
                 )
         );
+        tag.putString("name", create_mobile_packages$name);
     }
 
     @Inject(method = "read", at = @At("RETURN"))
@@ -49,13 +53,17 @@ public class LogisticsNetworkMixin implements CreateMobilePackages.IExtendedLogi
             CallbackInfoReturnable<LogisticsNetwork> cir
     ) {
         LogisticsNetwork network = cir.getReturnValue();
-        CreateMobilePackages.IExtendedLogisticsNetwork ext = (CreateMobilePackages.IExtendedLogisticsNetwork) network;
+        IExtendedLogisticsNetwork ext = (IExtendedLogisticsNetwork) network;
 
         if (tag.contains("CMP_Players", Tag.TAG_LIST)) {
             NBTHelper.iterateCompoundList(
                     tag.getList("CMP_Players", Tag.TAG_COMPOUND),
                     nbt -> ext.create_mobile_packages$addPlayer(nbt.getUUID("UUID"))
             );
+        }
+
+        if (tag.contains("name", Tag.TAG_STRING)) {
+            ext.create_mobile_packages$setName(tag.getString("name"));
         }
     }
 
@@ -67,5 +75,15 @@ public class LogisticsNetworkMixin implements CreateMobilePackages.IExtendedLogi
     @Override
     public void create_mobile_packages$addPlayer(UUID player) {
         create_mobile_packages$players.add(player);
+    }
+
+    @Override
+    public String create_mobile_packages$getName() {
+        return create_mobile_packages$name;
+    }
+
+    @Override
+    public void create_mobile_packages$setName(String name) {
+        create_mobile_packages$name = name;
     }
 }

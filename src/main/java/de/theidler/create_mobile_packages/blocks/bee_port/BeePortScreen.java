@@ -7,6 +7,7 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -30,7 +31,7 @@ public class BeePortScreen extends PackagePortScreen {
             if (menu.contentHolder instanceof BeePortBlockEntity beePortBlockEntity) {
                 LogisticsNetwork network = Create.LOGISTICS.logisticsNetworks.get(beePortBlockEntity.getLogisticsNetworkId());
                 if (network == null) return;
-                CreateMobilePackages.IExtendedLogisticsNetwork ext = (CreateMobilePackages.IExtendedLogisticsNetwork) network;
+                IExtendedLogisticsNetwork ext = (IExtendedLogisticsNetwork) network;
                 ext.create_mobile_packages$addPlayer(playerUUID);
             }
         });
@@ -54,8 +55,8 @@ public class BeePortScreen extends PackagePortScreen {
             if (menu.contentHolder instanceof BeePortBlockEntity beePortBlockEntity) {
                 LogisticsNetwork network = Create.LOGISTICS.logisticsNetworks.get(beePortBlockEntity.getLogisticsNetworkId());
                 if (network == null) return;
-                CreateMobilePackages.IExtendedLogisticsNetwork ext = (CreateMobilePackages.IExtendedLogisticsNetwork) network;
-                out = String.valueOf(ext.create_mobile_packages$getPlayers().size());
+                IExtendedLogisticsNetwork ext = (IExtendedLogisticsNetwork) network;
+                out = ext.create_mobile_packages$getPlayers().size() + " " + ext.create_mobile_packages$getName();
             }
             graphics.drawString(font, out, getGuiLeft()-10, getGuiTop()+64, 0xFFFFFF, false);
         }
