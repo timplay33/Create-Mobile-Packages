@@ -7,6 +7,7 @@ import de.theidler.create_mobile_packages.items.mobile_packager.OpenEditMenuPack
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
+import de.theidler.create_mobile_packages.network_settings.SetNetworkNamePackage;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.RemoveToastOnClientPacket;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
@@ -34,6 +35,9 @@ public enum CMPPackets {
     OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker::new, PLAY_TO_SERVER),
     OPEN_EDIT_MENU(OpenEditMenuPacket.class, OpenEditMenuPacket::new, PLAY_TO_SERVER),
     CONFIRM_EDIT_MENU(ConfirmEditMenuPacket.class, ConfirmEditMenuPacket::new, PLAY_TO_SERVER),
+    SET_NETWORK_NAME(SetNetworkNamePackage.class, SetNetworkNamePackage::new, PLAY_TO_SERVER),
+    ADD_PLAYER_TO_NETWORK(AddPlayerToNetworkPackage.class, AddPlayerToNetworkPackage::new, PLAY_TO_SERVER),
+    REMOVE_PLAYER_FROM_NETWORK(RemovePlayerFromNetworkPackage.class, RemovePlayerFromNetworkPackage::new, PLAY_TO_SERVER),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT),

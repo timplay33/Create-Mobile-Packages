@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.mixin;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import net.createmod.catnip.nbt.NBTHelper;
@@ -27,11 +28,13 @@ public class LogisticsNetworkMixin implements IExtendedLogisticsNetwork {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void create_mobile_packages$init(UUID id, CallbackInfo ci) {
         this.create_mobile_packages$players = new HashSet<>();
-        this.create_mobile_packages$name = "Logistics Network " + id.toString().substring(0, 4);
+        if (this.create_mobile_packages$name == null) {
+            this.create_mobile_packages$name = "Logistics Network " + id.toString().substring(0, 4);
+        }
     }
 
     @Inject(method = "write", at = @At("TAIL"))
-    private void create_mobile_packages$writePlayers(CallbackInfoReturnable<CompoundTag> cir) {
+    private void create_mobile_packages$write(CallbackInfoReturnable<CompoundTag> cir) {
         CompoundTag tag = cir.getReturnValue();
         tag.put(
                 "CMP_Players",
@@ -48,7 +51,7 @@ public class LogisticsNetworkMixin implements IExtendedLogisticsNetwork {
     }
 
     @Inject(method = "read", at = @At("RETURN"))
-    private static void create_mobile_packages$readPlayers(
+    private static void create_mobile_packages$read(
             CompoundTag tag,
             CallbackInfoReturnable<LogisticsNetwork> cir
     ) {
@@ -85,5 +88,6 @@ public class LogisticsNetworkMixin implements IExtendedLogisticsNetwork {
     @Override
     public void create_mobile_packages$setName(String name) {
         create_mobile_packages$name = name;
+        Create.LOGISTICS.markDirty();
     }
 }
