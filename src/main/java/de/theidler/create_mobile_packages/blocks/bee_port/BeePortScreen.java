@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.blocks.bee_port;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.packagePort.PackagePortMenu;
 import com.simibubi.create.content.logistics.packagePort.PackagePortScreen;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
@@ -13,6 +14,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.util.UUID;
+
+import static de.theidler.create_mobile_packages.network_settings.NetworkSettingsHelper.createNetworkSettingsButton;
 
 public class BeePortScreen extends PackagePortScreen {
     private final UUID playerUUID;
@@ -36,6 +39,9 @@ public class BeePortScreen extends PackagePortScreen {
             }
         });
         addRenderableWidget(addPlayerButton);
+        LogisticallyLinkedBehaviour lo = (LogisticallyLinkedBehaviour) menu.contentHolder.getAllBehaviours().stream().filter(b -> b instanceof LogisticallyLinkedBehaviour).findFirst().orElse(null);
+        if (lo == null) return;
+        addRenderableWidget(createNetworkSettingsButton(getGuiLeft() + 180, getGuiTop() - 12, lo.freqId));
     }
 
     @Override
