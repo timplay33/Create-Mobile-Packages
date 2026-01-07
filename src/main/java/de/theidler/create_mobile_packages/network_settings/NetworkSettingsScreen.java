@@ -42,8 +42,41 @@ public class NetworkSettingsScreen extends Screen {
 
         network = Create.LOGISTICS.logisticsNetworks.get(networkId);
         extendedNetwork = (IExtendedLogisticsNetwork) network;
+
         createNameBox();
+        createPlayerList();
+        createAddPlayerButton();
     }
+
+    private void createPlayerList() {
+        int startY = 144;
+        List<UUID> players = extendedNetwork.create_mobile_packages$getPlayers().stream().toList();
+        for (int i = 0; i < players.size(); i++) {
+            UUID pId = players.get(i);
+            int rowY = startY + (i * 20);
+
+            IconButton removeBtn = new IconButton(width - 10 - 18, rowY, AllIcons.I_MTD_CLOSE);
+            removeBtn.withCallback(() -> {
+                CMPPackets.getChannel().sendToServer(new RemovePlayerFromNetworkPackage(pId, networkId));
+                extendedNetwork.create_mobile_packages$removePlayer(pId); // update UI local
+                this.init(minecraft, width, height); // redraw UI
+            });
+            addRenderableWidget(removeBtn);
+        }
+    }
+
+    private void createAddPlayerButton() {
+        addPlayerButton = new IconButton(width - 10 - 18, 124, AllIcons.I_ADD);
+        addPlayerButton.withCallback(() -> {
+            Player player = Minecraft.getInstance().player;
+            if (player == null) return;
+            CMPPackets.getChannel().sendToServer(new AddPlayerToNetworkPackage(player.getUUID(), networkId));
+            extendedNetwork.create_mobile_packages$addPlayer(player.getUUID()); // update UI local
+            this.init(minecraft, width, height); // redraw UI
+        });
+        addRenderableWidget(addPlayerButton);
+    }
+
     private void createNameBox() {
         Consumer<String> onTextChanged = s -> nameBox.setX(nameBoxX(s, nameBox));
         nameBox = new EditBox(new NoShadowFontWrapper(font), 23, 20, width -20, 10, Component.empty());
@@ -86,9 +119,10 @@ public class NetworkSettingsScreen extends Screen {
 
         guiGraphics.drawString(font, "Locked: " + network.locked, 10, 104, 0xFFFFFF, false);
 
+        guiGraphics.drawString(font, "Players:", 10, 124, 0xFFFFFF, false);
         List<UUID> players = extendedNetwork.create_mobile_packages$getPlayers().stream().toList();
         for (int i = 0; i < players.size(); i++) {
-            guiGraphics.drawString(font, getPlayerName(players.get(i)), 10, 124 + 20*i, 0xFFFFFF, false);
+            guiGraphics.drawString(font, getPlayerName(players.get(i)), 10, 144 + 20 * i, 0xAAAAAA, false);
         }
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }

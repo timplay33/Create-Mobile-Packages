@@ -7,6 +7,8 @@ import de.theidler.create_mobile_packages.items.mobile_packager.OpenEditMenuPack
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
+import de.theidler.create_mobile_packages.network_settings.AddPlayerToNetworkPackage;
+import de.theidler.create_mobile_packages.network_settings.RemovePlayerFromNetworkPackage;
 import de.theidler.create_mobile_packages.network_settings.SetNetworkNamePackage;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.RemoveToastOnClientPacket;

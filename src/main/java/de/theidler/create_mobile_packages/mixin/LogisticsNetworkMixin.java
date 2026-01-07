@@ -78,6 +78,13 @@ public class LogisticsNetworkMixin implements IExtendedLogisticsNetwork {
     @Override
     public void create_mobile_packages$addPlayer(UUID player) {
         create_mobile_packages$players.add(player);
+        Create.LOGISTICS.markDirty();
+    }
+
+    @Override
+    public void create_mobile_packages$removePlayer(UUID player) {
+        create_mobile_packages$players.remove(player);
+        Create.LOGISTICS.markDirty();
     }
 
     @Override
