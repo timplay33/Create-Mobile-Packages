@@ -28,6 +28,7 @@ public class NetworkSettingsScreen extends Screen {
     private IExtendedLogisticsNetwork extendedNetwork;
     private EditBox nameBox;
     private IconButton addPlayerButton;
+    private IconButton networkLockButton;
 
     protected NetworkSettingsScreen(@Nullable Screen parent, UUID networkId) {
         super(Component.literal(networkId.toString()));
@@ -44,8 +45,19 @@ public class NetworkSettingsScreen extends Screen {
         extendedNetwork = (IExtendedLogisticsNetwork) network;
 
         createNameBox();
+        createLockButton();
         createPlayerList();
         createAddPlayerButton();
+    }
+
+    private void createLockButton() {
+        networkLockButton = new IconButton(width - 10 - 18, 104, network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
+        networkLockButton.withCallback(() -> {
+            CMPPackets.getChannel().sendToServer(new ModifyNetworkLockStatePackage(!network.locked, networkId));
+            network.locked = !network.locked; // do on the client side for immediate feedback
+            networkLockButton.setIcon(network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
+        });
+        addRenderableWidget(networkLockButton);
     }
 
     private void createPlayerList() {

@@ -8,6 +8,7 @@ import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestSto
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
 import de.theidler.create_mobile_packages.network_settings.AddPlayerToNetworkPackage;
+import de.theidler.create_mobile_packages.network_settings.ModifyNetworkLockStatePackage;
 import de.theidler.create_mobile_packages.network_settings.RemovePlayerFromNetworkPackage;
 import de.theidler.create_mobile_packages.network_settings.SetNetworkNamePackage;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
@@ -40,6 +41,7 @@ public enum CMPPackets {
     SET_NETWORK_NAME(SetNetworkNamePackage.class, SetNetworkNamePackage::new, PLAY_TO_SERVER),
     ADD_PLAYER_TO_NETWORK(AddPlayerToNetworkPackage.class, AddPlayerToNetworkPackage::new, PLAY_TO_SERVER),
     REMOVE_PLAYER_FROM_NETWORK(RemovePlayerFromNetworkPackage.class, RemovePlayerFromNetworkPackage::new, PLAY_TO_SERVER),
+    MODIFY_NETWORK_LOCK_STATE(ModifyNetworkLockStatePackage.class, ModifyNetworkLockStatePackage::new, PLAY_TO_SERVER),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT),
