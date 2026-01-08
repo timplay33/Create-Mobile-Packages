@@ -21,7 +21,7 @@ public class BeePortScreen extends PackagePortScreen {
         super.init();
         LogisticallyLinkedBehaviour lo = (LogisticallyLinkedBehaviour) menu.contentHolder.getAllBehaviours().stream().filter(b -> b instanceof LogisticallyLinkedBehaviour).findFirst().orElse(null);
         if (lo == null) return;
-        addRenderableWidget(createNetworkSettingsButton(getGuiLeft() + 180, getGuiTop() - 12, lo.freqId));
+        addRenderableWidget(createNetworkSettingsButton(getGuiLeft() - 22, getGuiTop() - 10, lo.freqId));
     }
 
     @Override
