@@ -3,32 +3,44 @@ package de.theidler.create_mobile_packages.network_settings;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
+import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 public class NetworkSettingsScreen extends Screen {
 
-    private final UUID  networkId;
+    private final UUID networkId;
     private final Screen parent;
     private LogisticsNetwork network;
     private IExtendedLogisticsNetwork extendedNetwork;
     private EditBox nameBox;
     private IconButton addPlayerButton;
     private IconButton networkLockButton;
+    private List<IconButton> playerButtons = new ArrayList<>();
+    private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
+    private boolean scrollHandleActive;
+
+    private int guiLeft;
+    private int guiTop;
+    private int windowWidth = 226;
+    private int windowHeight = 176;
 
     protected NetworkSettingsScreen(@Nullable Screen parent, UUID networkId) {
         super(Component.literal(networkId.toString()));
@@ -39,10 +51,18 @@ public class NetworkSettingsScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        this.clearWidgets();
+        this.guiLeft = (width - windowWidth) / 2;
+        this.guiTop = (height - windowHeight) / 2;
 
         network = Create.LOGISTICS.logisticsNetworks.get(networkId);
         extendedNetwork = (IExtendedLogisticsNetwork) network;
+
+        refreshUI();
+    }
+
+    private void refreshUI() {
+        this.clearWidgets();
+        this.playerButtons.clear();
 
         createNameBox();
         createLockButton();
@@ -50,63 +70,135 @@ public class NetworkSettingsScreen extends Screen {
         createAddPlayerButton();
     }
 
+
     private void createLockButton() {
-        networkLockButton = new IconButton(width - 10 - 18, 104, network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
+        networkLockButton = new IconButton(guiLeft + windowWidth - 30, guiTop + 35, network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
+        networkLockButton.setToolTip(Component.literal(network.locked ? "Unlock Network" : "Lock Network"));
         networkLockButton.withCallback(() -> {
             CMPPackets.getChannel().sendToServer(new ModifyNetworkLockStatePackage(!network.locked, networkId));
             network.locked = !network.locked; // do on the client side for immediate feedback
             networkLockButton.setIcon(network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
+            networkLockButton.setToolTip(Component.literal(network.locked ? "Unlock Network" : "Lock Network"));
         });
         addRenderableWidget(networkLockButton);
     }
 
     private void createPlayerList() {
-        int startY = 144;
         List<UUID> players = extendedNetwork.create_mobile_packages$getPlayers().stream().toList();
         for (int i = 0; i < players.size(); i++) {
             UUID pId = players.get(i);
-            int rowY = startY + (i * 20);
 
-            IconButton removeBtn = new IconButton(width - 10 - 18, rowY, AllIcons.I_MTD_CLOSE);
+            IconButton removeBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
+            removeBtn.setToolTip(Component.literal("Remove Player"));
             removeBtn.withCallback(() -> {
                 CMPPackets.getChannel().sendToServer(new RemovePlayerFromNetworkPackage(pId, networkId));
                 extendedNetwork.create_mobile_packages$removePlayer(pId); // update UI local
-                this.init(minecraft, width, height); // redraw UI
+                this.refreshUI(); // redraw UI
             });
             addRenderableWidget(removeBtn);
+            playerButtons.add(removeBtn);
         }
     }
 
     private void createAddPlayerButton() {
-        addPlayerButton = new IconButton(width - 10 - 18, 124, AllIcons.I_ADD);
+        addPlayerButton = new IconButton(guiLeft + windowWidth - 50, guiTop + 35, AllIcons.I_ADD);
+        addPlayerButton.setToolTip(Component.literal("Add Yourself"));
         addPlayerButton.withCallback(() -> {
             Player player = Minecraft.getInstance().player;
             if (player == null) return;
             CMPPackets.getChannel().sendToServer(new AddPlayerToNetworkPackage(player.getUUID(), networkId));
             extendedNetwork.create_mobile_packages$addPlayer(player.getUUID()); // update UI local
-            this.init(minecraft, width, height); // redraw UI
+            this.refreshUI(); // redraw UI
         });
         addRenderableWidget(addPlayerButton);
     }
 
     private void createNameBox() {
         Consumer<String> onTextChanged = s -> nameBox.setX(nameBoxX(s, nameBox));
-        nameBox = new EditBox(new NoShadowFontWrapper(font), 23, 20, width -20, 10, Component.empty());
+        nameBox = new EditBox(new NoShadowFontWrapper(font), guiLeft + 25, guiTop + 13, windowWidth - 50, 10, Component.empty());
         nameBox.setMaxLength(25);
         nameBox.setBordered(false);
         nameBox.setValue(extendedNetwork.create_mobile_packages$getName());
         nameBox.setResponder(onTextChanged);
         nameBox.setX(nameBoxX(nameBox.getValue(), nameBox));
+        nameBox.setTextColor(0x4A2D31);
         addRenderableWidget(nameBox);
     }
 
     private int nameBoxX(String s, EditBox nameBox) {
-        return width / 2 - (Math.min(font.width(s), nameBox.getWidth()) + 10) / 2;
+        return guiLeft + windowWidth / 2 - (Math.min(font.width(s), nameBox.getWidth())) / 2;
     }
 
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        scroll.tickChaser();
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        float maxScroll = getMaxScroll();
+        if (maxScroll <= 0) return false;
+        float newTarget = Mth.clamp(scroll.getChaseTarget() - (float) delta, 0, maxScroll);
+        scroll.chase(newTarget, 0.5f, LerpedFloat.Chaser.EXP);
+        return true;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!nameBox.isFocused()) {
+            int headerX = nameBoxX(nameBox.getValue(), nameBox);
+            int headerY = guiTop - 15;
+            int headerWidth = font.width(nameBox.getValue()) + 20;
+            if (mouseX >= headerX && mouseX <= headerX + headerWidth && mouseY >= headerY && mouseY <= headerY + 15) {
+                nameBox.setFocused(true);
+                nameBox.setCursorPosition(nameBox.getValue().length());
+                nameBox.setHighlightPos(0);
+                return true;
+            }
+        }
+        int maxScroll = getMaxScroll();
+        if (maxScroll > 0 && button == 0) {
+            int barX = guiLeft + windowWidth - 10;
+            int barY = guiTop + 35;
+            int barWidth = 6;
+            int barHeight = windowHeight - 45;
+            if (mouseX >= barX && mouseX <= barX + barWidth && mouseY >= barY && mouseY <= barY + barHeight) {
+                scrollHandleActive = true;
+                return true;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0) {
+            scrollHandleActive = false;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (scrollHandleActive && button == 0) {
+            int maxScroll = getMaxScroll();
+            int barHeight = windowHeight - 45;
+            double relativeY = mouseY - (guiTop + 35);
+            float target = (float) (relativeY / barHeight * maxScroll);
+            scroll.chase(Mth.clamp(target, 0, maxScroll), 0.5f, LerpedFloat.Chaser.EXP);
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    private int getMaxScroll() {
+        return Math.max(0, extendedNetwork.create_mobile_packages$getPlayers().size() - 4);
     }
 
     @Override
@@ -121,22 +213,90 @@ public class NetworkSettingsScreen extends Screen {
         }
     }
 
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        int x = guiLeft;
+        int y = guiTop;
+
+        AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER.render(graphics, x - 15, y);
+        y += AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER.getHeight();
+        for (int i = 0; i < (windowHeight - AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER.getHeight() - AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER.getHeight()) / AllGuiTextures.STOCK_KEEPER_REQUEST_BODY.getHeight(); i++) {
+            AllGuiTextures.STOCK_KEEPER_REQUEST_BODY.render(graphics, x - 15, y);
+            y += AllGuiTextures.STOCK_KEEPER_REQUEST_BODY.getHeight();
+        }
+        AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER.render(graphics, x - 15, y);
+
+        String text = nameBox.getValue();
+        nameBox.visible = nameBox.isFocused();
+        if (!nameBox.isFocused()) {
+            graphics.drawString(font, text, nameBoxX(text, nameBox), guiTop + 13, 0x4A2D31, false);
+            AllGuiTextures.FROGPORT_EDIT_NAME.render(graphics, nameBoxX(text, nameBox) + font.width(text) + 5, guiTop + 10);
+        }
+    }
+
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(guiGraphics);
 
-        guiGraphics.drawString(font, "Network ID: " + networkId.toString(), 10, 64, 0xFFFFFF, false);
+        renderBg(guiGraphics, partialTick, mouseX, mouseY);
 
-        guiGraphics.drawString(font, "Owner ID: " + getPlayerName(network.owner), 10, 84, 0xFFFFFF, false);
+        guiGraphics.drawString(font, "Owner: " + getPlayerName(network.owner), guiLeft + 20, guiTop + 45, 0x3D3C48, false);
 
-        guiGraphics.drawString(font, "Locked: " + network.locked, 10, 104, 0xFFFFFF, false);
+        guiGraphics.drawString(font, "Players:", guiLeft + 20, guiTop + 60, 0x3D3C48, false);
 
-        guiGraphics.drawString(font, "Players:", 10, 124, 0xFFFFFF, false);
+        float scrollOffset = scroll.getValue(partialTick);
+        int listTop = guiTop + 70;
+        int listBottom = guiTop + windowHeight - 10;
+
+        guiGraphics.enableScissor(guiLeft, listTop, guiLeft + windowWidth, listBottom);
+
         List<UUID> players = extendedNetwork.create_mobile_packages$getPlayers().stream().toList();
         for (int i = 0; i < players.size(); i++) {
-            guiGraphics.drawString(font, getPlayerName(players.get(i)), 10, 144 + 20 * i, 0xAAAAAA, false);
+            float rowY = listTop + 5 + (i - scrollOffset) * 20;
+
+            if (rowY + 15 < listTop || rowY > listBottom) {
+                if (i < playerButtons.size()) {
+                    playerButtons.get(i).visible = false;
+                }
+                continue;
+            }
+
+            guiGraphics.drawString(font, getPlayerName(players.get(i)), guiLeft + 30, (int) rowY, 0x555555, false);
+
+            if (i < playerButtons.size()) {
+                IconButton removeBtn = playerButtons.get(i);
+                removeBtn.setX(guiLeft + windowWidth - 30);
+                removeBtn.setY((int) rowY - 5);
+                removeBtn.visible = true;
+            }
         }
+
+        guiGraphics.disableScissor();
+
+        renderScrollbar(guiGraphics);
+
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    private void renderScrollbar(GuiGraphics guiGraphics) {
+        int maxScroll = getMaxScroll();
+        if (maxScroll <= 0) return;
+
+        int barX = guiLeft + windowWidth - 10;
+        int barY = guiTop + 35;
+        int barHeight = windowHeight - 45;
+
+        float scrollOffset = scroll.getValue();
+        int barSize = Math.max(10, (int) (barHeight * (4f / (extendedNetwork.create_mobile_packages$getPlayers().size()))));
+        int scrollBarY = barY + (int) ((barHeight - barSize) * (scrollOffset / maxScroll));
+
+        AllGuiTextures pad = AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_PAD;
+        guiGraphics.blit(pad.location, barX, barY, pad.getWidth(), barHeight, pad.getStartX(), pad.getStartY(),
+                pad.getWidth(), pad.getHeight(), 256, 256);
+
+        AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_TOP.render(guiGraphics, barX, scrollBarY);
+        if (barSize > 16)
+            AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_MID.render(guiGraphics, barX, scrollBarY + barSize / 2 - 4);
+        AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_BOT.render(guiGraphics, barX, scrollBarY + barSize - 5);
     }
 
     public String getPlayerName(UUID uuid) {
