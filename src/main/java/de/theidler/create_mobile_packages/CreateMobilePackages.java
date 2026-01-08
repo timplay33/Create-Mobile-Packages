@@ -22,9 +22,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
-import java.util.Set;
-import java.util.UUID;
-
 @Mod(CreateMobilePackages.MODID)
 public class CreateMobilePackages
 {

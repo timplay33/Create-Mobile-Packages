@@ -94,6 +94,7 @@ repositories {
     maven { url = "https://maven.blamejared.com/" } // JEI
     maven { url = "https://dl.zznty.ru/maven" } // Create Factory Abstractions, Create Factory Logistics
     maven { url = "https://maven.theillusivec4.top/" } // Curios
+    maven { url = "https://api.modrinth.com/maven" }
     mavenCentral()
     mavenLocal()
     flatDir {
@@ -119,7 +120,7 @@ dependencies {
     modRuntimeOnly("tschipp.carryon:carryon-forge-1.20.1:2.1.2.7")
     compileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
     modRuntimeOnly("top.theillusivec4.curios:curios-forge:${curios_version}")
-
+    modImplementation("maven.modrinth:jade:${jade_version}")
     // Prevent Mixin annotation processor from getting into IntelliJ's annotation processor settings
     // This allows 'Settings > Build, Execution, and Deployment > Build Tools > Gradle > Build and run using' set to IntelliJ to work correctly
     if (!Boolean.getBoolean("idea.sync.active")) {
