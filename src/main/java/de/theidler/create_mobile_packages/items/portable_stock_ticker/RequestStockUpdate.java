@@ -12,7 +12,8 @@ import static de.theidler.create_mobile_packages.items.portable_stock_ticker.Sto
 
 public class RequestStockUpdate implements ServerboundPacketPayload {
     public static final RequestStockUpdate INSTANCE = new RequestStockUpdate();
-    public static final StreamCodec<RegistryFriendlyByteBuf, RequestStockUpdate> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+    public static final StreamCodec<RegistryFriendlyByteBuf, RequestStockUpdate> STREAM_CODEC = StreamCodec
+            .unit(INSTANCE);
 
     public RequestStockUpdate() {
     }
@@ -21,10 +22,20 @@ public class RequestStockUpdate implements ServerboundPacketPayload {
     public void handle(ServerPlayer player) {
         if (player != null) {
             ItemStack stack = PortableStockTicker.find(player.getInventory());
-            if (stack == null || stack.isEmpty()) return;
+            if (stack == null || stack.isEmpty())
+                return;
 
-            GenericStackListPacket responsePacket = new GenericStackListPacket(getAccurateSummary(stack).get());
-            CatnipServices.NETWORK.sendToClient(player, responsePacket);
+            java.util.List<ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack> allStacks = getAccurateSummary(
+                    stack).get();
+            int chunkSize = 500;
+            for (int i = 0; i < allStacks.size(); i += chunkSize) {
+                int end = Math.min(i + chunkSize, allStacks.size());
+                boolean last = end == allStacks.size();
+                java.util.List<ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack> chunk = allStacks
+                        .subList(i, end);
+                GenericStackListPacket responsePacket = new GenericStackListPacket(chunk, last);
+                CatnipServices.NETWORK.sendToClient(player, responsePacket);
+            }
         }
     }
 
