@@ -119,6 +119,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     @Override
     protected void containerTick() {
         super.containerTick();
+        orderForStackCallCount.set(0);
         addressBox.tick();
         ClientScreenStorage.tick();
 
@@ -150,7 +151,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         if (!Objects.equals(ClientScreenStorage.stacks, lastSeenStacks)) {
             lastSeenStacks = ClientScreenStorage.stacks == null
-                    ? null
+                    ? new ArrayList<>()
                     : new ArrayList<>(ClientScreenStorage.stacks);
             sortAndCategorize(lastSeenStacks);
             refreshSearchResults(false);
@@ -697,16 +698,16 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         return playerInventory.player.level();
     }
 
-    private int orderForStackCallCount = 0;
-    
+    private final ThreadLocal<Integer> orderForStackCallCount = ThreadLocal.withInitial(() -> 0);
+
 
     @Nullable
     @Override
     public BigGenericStack orderForStack(GenericStack stack) {
-        if (orderForStackCallCount > 5000) {
+        if (orderForStackCallCount.get() > 5000) {
             return null;
         }
-        orderForStackCallCount++;
+        orderForStackCallCount.set(orderForStackCallCount.get() + 1);
 
         for (BigGenericStack entry : itemsToOrder)
             if (entry.get().canStack(stack))
@@ -719,16 +720,18 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (cachedSummary != null)
             return cachedSummary;
 
-        orderForStackCallCount = 0;
+        orderForStackCallCount.set(0);
 
         cachedSummary = GenericInventorySummary.empty();
-        ClientScreenStorage.stacks.forEach(stack -> {
-            if (stack.amount() > MAX_REPORTED_STACK_AMOUNT) {
-                cachedSummary.add(stack.withAmount(MAX_REPORTED_STACK_AMOUNT));
-            } else {
-                cachedSummary.add(stack);
-            }
-        });
+        if (ClientScreenStorage.stacks != null) {
+            ClientScreenStorage.stacks.forEach(stack -> {
+                if (stack.amount() > MAX_REPORTED_STACK_AMOUNT) {
+                    cachedSummary.add(stack.withAmount(MAX_REPORTED_STACK_AMOUNT));
+                } else {
+                    cachedSummary.add(stack);
+                }
+            });
+        }
         return cachedSummary;
     }
 
@@ -869,7 +872,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     }
 
     public void requestCraftable(CraftableGenericStack cbis, int requestedDifference) {
-        orderForStackCallCount = 0;
+        orderForStackCallCount.set(0);
         RecipeRequestHelper.requestCraftable(this, cbis, requestedDifference);
     }
 

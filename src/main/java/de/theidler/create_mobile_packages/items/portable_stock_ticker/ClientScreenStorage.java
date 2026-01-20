@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientScreenStorage {
+    public static final int TICKS_BETWEEN_UPDATES = 100;
     public static List<GenericStack> stacks = new ArrayList<>();
     private static List<GenericStack> collectionBuffer = new ArrayList<>();
 
     private static int ticks = 0;
 
     public static void tick() {
-        if (ticks++ > 100) {
+        if (ticks++ > TICKS_BETWEEN_UPDATES) {
             update();
             ticks = 0;
         }

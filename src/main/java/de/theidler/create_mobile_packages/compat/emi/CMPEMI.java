@@ -2,10 +2,12 @@ package de.theidler.create_mobile_packages.compat.emi;
 
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerScreen;
 import dev.emi.emi.api.EmiApi;
+import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
 import net.minecraft.client.renderer.Rect2i;
 
+@EmiEntrypoint
 public class CMPEMI implements EmiPlugin {
 
     /**
