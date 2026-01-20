@@ -7,7 +7,6 @@ import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
 import net.minecraft.client.renderer.Rect2i;
 
-@EmiEntrypoint
 public class CMPEMI implements EmiPlugin {
 
     /**
