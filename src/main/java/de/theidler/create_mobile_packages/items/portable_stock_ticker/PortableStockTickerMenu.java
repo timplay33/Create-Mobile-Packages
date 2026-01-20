@@ -30,6 +30,10 @@ public class PortableStockTickerMenu extends AbstractContainerMenu {
             this.portableStockTicker = pst;
         }
         this.player = playerInventory.player;
+        // Add the player inventory slots far off-screen on purpose.
+        // This keeps the logical player inventory attached to this menu (for shift-click
+        // behavior and integration with recipe viewers like EMI/JEI) while ensuring that
+        // the slots are not rendered by the corresponding screen.
         addPlayerSlots(-1000, 0);
     }
 

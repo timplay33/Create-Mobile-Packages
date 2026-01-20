@@ -7,6 +7,9 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+
+import java.util.List;
 
 import static de.theidler.create_mobile_packages.items.portable_stock_ticker.StockCheckingItem.getAccurateSummary;
 
@@ -14,6 +17,7 @@ public class RequestStockUpdate implements ServerboundPacketPayload {
     public static final RequestStockUpdate INSTANCE = new RequestStockUpdate();
     public static final StreamCodec<RegistryFriendlyByteBuf, RequestStockUpdate> STREAM_CODEC = StreamCodec
             .unit(INSTANCE);
+    public static final int MAX_ITEMS_PER_PACKET = 500;
 
     public RequestStockUpdate() {
     }
@@ -25,14 +29,11 @@ public class RequestStockUpdate implements ServerboundPacketPayload {
             if (stack == null || stack.isEmpty())
                 return;
 
-            java.util.List<ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack> allStacks = getAccurateSummary(
-                    stack).get();
-            int chunkSize = 500;
-            for (int i = 0; i < allStacks.size(); i += chunkSize) {
-                int end = Math.min(i + chunkSize, allStacks.size());
+            List<GenericStack> allStacks = getAccurateSummary(stack).get();
+            for (int i = 0; i < allStacks.size(); i += MAX_ITEMS_PER_PACKET) {
+                int end = Math.min(i + MAX_ITEMS_PER_PACKET, allStacks.size());
                 boolean last = end == allStacks.size();
-                java.util.List<ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack> chunk = allStacks
-                        .subList(i, end);
+                List<GenericStack> chunk = allStacks.subList(i, end);
                 GenericStackListPacket responsePacket = new GenericStackListPacket(chunk, last);
                 CatnipServices.NETWORK.sendToClient(player, responsePacket);
             }

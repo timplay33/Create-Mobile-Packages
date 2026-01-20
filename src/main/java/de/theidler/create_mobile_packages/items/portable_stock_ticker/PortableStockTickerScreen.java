@@ -16,6 +16,7 @@ import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
 import net.createmod.catnip.animation.LerpedFloat;
@@ -64,6 +65,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private static final AllGuiTextures HEADER = AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER;
     private static final AllGuiTextures BODY = AllGuiTextures.STOCK_KEEPER_REQUEST_BODY;
     private static final AllGuiTextures FOOTER = AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER;
+    public static final int MAX_REPORTED_STACK_AMOUNT = 1000;
 
     public LerpedFloat itemScroll;
 
@@ -146,8 +148,10 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        if (ClientScreenStorage.stacks != lastSeenStacks) {
-            lastSeenStacks = ClientScreenStorage.stacks;
+        if (!Objects.equals(ClientScreenStorage.stacks, lastSeenStacks)) {
+            lastSeenStacks = ClientScreenStorage.stacks == null
+                    ? null
+                    : new ArrayList<>(ClientScreenStorage.stacks);
             sortAndCategorize(lastSeenStacks);
             refreshSearchResults(false);
             // revalidateOrders();
@@ -259,7 +263,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         ClientScreenStorage.manualUpdate();
 
         extraAreas = new ArrayList<>();
-        // Removed problematic extraAreas that might be hiding JEI/EMI panels
 
         if (initial) {
             playUiSound(SoundEvents.WOOD_HIT, 0.5f, 1.5f);
@@ -322,12 +325,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         return noneHovered;
     }
-
-    @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
-    }
-
+    
     @Override
     protected void renderBg(@NotNull GuiGraphics pGuiGraphics, float partialTicks, int mouseX, int mouseY) {
         if (minecraft != null && this != minecraft.screen)
@@ -597,7 +595,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 continue;
             totalRows += (int) Math.ceil(list.size() / (float) cols);
         }
-        return (int) Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
+        return Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
     }
 
     private void renderItemEntry(GuiGraphics graphics, float scale, BigGenericStack entry, boolean isStackHovered,
@@ -686,13 +684,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     @Override
     public List<BigGenericStack> itemsToOrder() {
-        // System.out.println("itemsToOrder() called");
         return itemsToOrder;
     }
 
     @Override
     public List<CraftableGenericStack> recipesToOrder() {
-        // System.out.println("recipesToOrder() called");
         return recipesToOrder;
     }
 
@@ -702,22 +698,16 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     }
 
     private int orderForStackCallCount = 0;
-    private boolean stackTraceLogged = false;
+    
 
     @Nullable
     @Override
     public BigGenericStack orderForStack(GenericStack stack) {
         if (orderForStackCallCount > 5000) {
-            System.err.println("ABORTING orderForStack - too many calls (" + orderForStackCallCount + ")");
             return null;
         }
-        if (orderForStackCallCount > 500 && !stackTraceLogged) {
-            System.err.println("High call count in orderForStack: " + orderForStackCallCount);
-            new Exception("Loop stack trace").printStackTrace();
-            stackTraceLogged = true;
-        }
         orderForStackCallCount++;
-        // System.out.println("orderForStack() called for " + stack);
+
         for (BigGenericStack entry : itemsToOrder)
             if (entry.get().canStack(stack))
                 return entry;
@@ -733,8 +723,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         cachedSummary = GenericInventorySummary.empty();
         ClientScreenStorage.stacks.forEach(stack -> {
-            if (stack.amount() > 1000) {
-                cachedSummary.add(stack.withAmount(1000));
+            if (stack.amount() > MAX_REPORTED_STACK_AMOUNT) {
+                cachedSummary.add(stack.withAmount(MAX_REPORTED_STACK_AMOUNT));
             } else {
                 cachedSummary.add(stack);
             }
@@ -881,10 +871,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     public void requestCraftable(CraftableGenericStack cbis, int requestedDifference) {
         orderForStackCallCount = 0;
         RecipeRequestHelper.requestCraftable(this, cbis, requestedDifference);
-    }
-
-    private void updateCraftableAmounts() {
-        // RecipeRequestHelper.updateCraftableAmounts(this);
     }
 
     @Override
@@ -1130,6 +1116,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 CMPJEI.runtime.getIngredientFilter().setFilterText(text);
             } catch (Throwable t) {
                 // JEI sync failed
+                CreateMobilePackages.LOGGER.debug("JEI search sync failed", t);
             }
         }
 
@@ -1139,6 +1126,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 de.theidler.create_mobile_packages.compat.emi.CMPEMI.setSearchText(text);
             } catch (Throwable t) {
                 // EMI sync failed
+                CreateMobilePackages.LOGGER.debug("EMI search sync failed", t);
             }
         }
     }
