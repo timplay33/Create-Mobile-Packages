@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientScreenStorage {
+    public static final int TICKS_BETWEEN_UPDATES = 100;
     public static List<GenericStack> stacks = new ArrayList<>();
+    private static List<GenericStack> collectionBuffer = new ArrayList<>();
 
     private static int ticks = 0;
 
     public static void tick() {
-        if (ticks++ > 20) {
+        if (ticks++ > TICKS_BETWEEN_UPDATES) {
             update();
             ticks = 0;
         }
@@ -24,5 +26,13 @@ public class ClientScreenStorage {
 
     public static void manualUpdate() {
         update();
+    }
+
+    public static void receiveChunk(List<GenericStack> chunks, boolean last) {
+        collectionBuffer.addAll(chunks);
+        if (last) {
+            stacks = collectionBuffer;
+            collectionBuffer = new ArrayList<>();
+        }
     }
 }
