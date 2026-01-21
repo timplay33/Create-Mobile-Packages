@@ -54,10 +54,17 @@
     "create_mobile_packages.ponder.port_to_port.text_5": "Denna funktion kan stängas av i konfigurationsfilerna.",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "När man håller ett packet i sin sekundära han kommer den skickas med Robot Biet.",
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Föremål att skapa ett Robot Bi. Används i Robot Bi Portar att skicka paket.",
+    "tooltip.create_mobile_packages.bee_port.jade.network": "Network: %1$s",
+    "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "You are part of this network",
+    "tooltip.create_mobile_packages.network.remove_player": "Remove Player",
+    "tooltip.create_mobile_packages.network.add_yourself": "Add Yourself",
+    "tooltip.create_mobile_packages.network.leave": "Leave Network",
+    "tooltip.create_mobile_packages.network.settings": "Network Settings",
     "item.create_mobile_packages.mobile_packager": "Mobile Packager",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Package items on the go",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "When used",
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Opens a menu to create Packages",
     "item.create_mobile_packages.mobile_packager.tooltip.condition2": "When sneak used",
-    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages"
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages",
+    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info"
 }
