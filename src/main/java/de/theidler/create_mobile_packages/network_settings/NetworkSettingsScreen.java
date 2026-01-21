@@ -72,7 +72,6 @@ public class NetworkSettingsScreen extends Screen {
         createAddPlayerButton();
 
         doneBtn = new IconButton(guiLeft + windowWidth - 25, guiTop + windowHeight - 43, AllIcons.I_CONFIRM);
-        doneBtn.setToolTip(Component.literal("Done"));
         doneBtn.withCallback(() -> {
             minecraft.setScreen(parent);
         });
@@ -82,12 +81,12 @@ public class NetworkSettingsScreen extends Screen {
 
     private void createLockButton() {
         networkLockButton = new IconButton(guiLeft + windowWidth - 30, guiTop + 25, network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
-        networkLockButton.setToolTip(Component.literal(network.locked ? "Unlock Network" : "Lock Network"));
+        networkLockButton.setToolTip(Component.translatable(network.locked ? "create.gui.stock_keeper.network_locked" : "create.gui.stock_keeper.network_open"));
         networkLockButton.withCallback(() -> {
             CMPPackets.getChannel().sendToServer(new ModifyNetworkLockStatePackage(!network.locked, networkId));
             network.locked = !network.locked; // do on the client side for immediate feedback
             networkLockButton.setIcon(network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
-            networkLockButton.setToolTip(Component.literal(network.locked ? "Unlock Network" : "Lock Network"));
+            networkLockButton.setToolTip(Component.translatable(network.locked ? "create.gui.stock_keeper.network_locked" : "create.gui.stock_keeper.network_open"));
         });
         addRenderableWidget(networkLockButton);
     }
@@ -98,7 +97,7 @@ public class NetworkSettingsScreen extends Screen {
             UUID pId = players.get(i);
 
             IconButton removeBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
-            removeBtn.setToolTip(Component.literal("Remove Player"));
+            removeBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.remove_player"));
             removeBtn.withCallback(() -> {
                 CMPPackets.getChannel().sendToServer(new RemovePlayerFromNetworkPackage(pId, networkId));
                 extendedNetwork.create_mobile_packages$removePlayer(pId); // update UI local
@@ -111,7 +110,7 @@ public class NetworkSettingsScreen extends Screen {
 
     private void createAddPlayerButton() {
         addPlayerButton = new IconButton(guiLeft + windowWidth - 50, guiTop + 25, AllIcons.I_ADD);
-        addPlayerButton.setToolTip(Component.literal("Add Yourself"));
+        addPlayerButton.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.add_yourself"));
         addPlayerButton.withCallback(() -> {
             Player player = Minecraft.getInstance().player;
             if (player == null) return;

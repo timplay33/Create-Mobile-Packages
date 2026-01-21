@@ -20,10 +20,10 @@ public enum BeePortComponentProvider implements IBlockComponentProvider, IServer
     @Override
     public void appendTooltip(ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
         if (blockAccessor.getServerData().contains("Network")) {
-            iTooltip.add(Component.literal("Network: " + blockAccessor.getServerData().getString("Network")));
+            iTooltip.add(Component.translatable("tooltip.create_mobile_packages.bee_port.jade.network", blockAccessor.getServerData().getString("Network"))); //"Network: " + ));
         }
         if (blockAccessor.getServerData().contains("IsPart")) {
-            iTooltip.add(Component.literal("You are part of this network"));
+            iTooltip.add(Component.translatable("tooltip.create_mobile_packages.bee_port.jade.part_of_network"));
         }
     }
 

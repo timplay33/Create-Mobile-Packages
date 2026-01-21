@@ -53,7 +53,6 @@ public class PlayerNetworksScreen extends Screen {
         refreshNetworks();
 
         doneBtn = new IconButton(guiLeft + windowWidth - 25, guiTop + windowHeight - 24, AllIcons.I_CONFIRM);
-        doneBtn.setToolTip(Component.literal("Done"));
         doneBtn.withCallback(() -> minecraft.setScreen(null));
     }
 
@@ -66,7 +65,7 @@ public class PlayerNetworksScreen extends Screen {
             if (!(network instanceof LogisticsNetwork ln)) continue;
 
             IconButton leaveBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
-            leaveBtn.setToolTip(Component.literal("Leave Network"));
+            leaveBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.leave"));
 
             leaveBtn.withCallback(() -> {
                 CMPPackets.getChannel().sendToServer(new RemovePlayerFromNetworkPackage(getPlayer().getUUID(), ln.id));
@@ -79,7 +78,7 @@ public class PlayerNetworksScreen extends Screen {
 
             // Add settings button
             IconButton settingsBtn = new IconButton(0, 0, AllIcons.I_CONFIG_OPEN);
-            settingsBtn.setToolTip(Component.literal("Network Settings"));
+            settingsBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.settings"));
             settingsBtn.withCallback(() -> minecraft.setScreen(new NetworkSettingsScreen(this, ln.id)));
             addRenderableWidget(settingsBtn);
             networkButtons.add(settingsBtn);
