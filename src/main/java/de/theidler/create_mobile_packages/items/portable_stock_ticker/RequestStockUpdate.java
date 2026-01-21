@@ -7,10 +7,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+
+import java.util.List;
 
 import static de.theidler.create_mobile_packages.items.portable_stock_ticker.StockCheckingItem.getAccurateSummary;
 
 public class RequestStockUpdate extends SimplePacketBase {
+
+    public static final int MAX_ITEMS_PER_PACKET = 500;
 
     public RequestStockUpdate() {
     }
@@ -29,9 +34,16 @@ public class RequestStockUpdate extends SimplePacketBase {
             if (player != null) {
                 ItemStack stack = PortableStockTicker.find(player.getInventory());
                 if (stack == null || stack.isEmpty()) return;
-                GenericStackListPacket responsePacket = new GenericStackListPacket(
-                        getAccurateSummary(stack).get());
-                CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), responsePacket);
+
+                List<GenericStack> allStacks = getAccurateSummary(stack).get();
+
+                for (int i = 0; i < allStacks.size(); i += MAX_ITEMS_PER_PACKET) {
+                    int end = Math.min(i + MAX_ITEMS_PER_PACKET, allStacks.size());
+                    boolean isLast = end == allStacks.size();
+                    List<GenericStack> chunk = allStacks.subList(i, end);
+                    GenericStackListPacket responsePacket = new GenericStackListPacket(chunk, isLast);
+                    CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), responsePacket);
+                }
             }
         });
         return true;

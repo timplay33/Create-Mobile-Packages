@@ -86,6 +86,7 @@ repositories {
     maven { url = "https://maven.tterrag.com" } // Registrate
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven { url = "https://maven.blamejared.com/" } // JEI
+    maven { url = "https://maven.terraformersmc.com/releases/" } // EMI
     maven { url = "https://dl.zznty.ru/maven" } // Create Factory Abstractions, Create Factory Logistics
     maven { url = "https://maven.theillusivec4.top/" } // Curios
     mavenCentral()
@@ -105,6 +106,8 @@ dependencies {
     implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
     modImplementation("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    compileOnly("dev.emi:emi-forge:${emi_version}:api")
+    modRuntimeOnly("dev.emi:emi-forge:${emi_version}")
     modImplementation(jarJar("ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
     modRuntimeOnly("ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
     compileOnly("org.jetbrains:annotations:24.0.1")

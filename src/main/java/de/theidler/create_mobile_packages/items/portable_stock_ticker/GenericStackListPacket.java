@@ -11,22 +11,15 @@ import ru.zznty.create_factory_abstractions.generic.stack.GenericStackSerializer
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("UnstableApiUsage")
 public class GenericStackListPacket extends SimplePacketBase {
 
     private final List<GenericStack> stacks;
+    private final boolean isLast;
 
     // Standard constructor
-    public GenericStackListPacket(List<GenericStack> stacks) {
+    public GenericStackListPacket(List<GenericStack> stacks, boolean isLast) {
         this.stacks = stacks;
-    }
-
-    @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeInt(stacks.size());
-        for (GenericStack stack : stacks) {
-            GenericStackSerializer.write(stack, buffer);
-        }
+        this.isLast = isLast;
     }
 
     public static GenericStackListPacket read(FriendlyByteBuf buffer) {
@@ -35,7 +28,17 @@ public class GenericStackListPacket extends SimplePacketBase {
         for (int i = 0; i < size; i++) {
             list.add(GenericStackSerializer.read(buffer));
         }
-        return new GenericStackListPacket(list);
+        boolean isLast = buffer.readBoolean();
+        return new GenericStackListPacket(list, isLast);
+    }
+
+    @Override
+    public void write(FriendlyByteBuf buffer) {
+        buffer.writeInt(stacks.size());
+        for (GenericStack stack : stacks) {
+            GenericStackSerializer.write(stack, buffer);
+        }
+        buffer.writeBoolean(isLast);
     }
 
     @Override
@@ -47,7 +50,7 @@ public class GenericStackListPacket extends SimplePacketBase {
 
     @OnlyIn(Dist.CLIENT)
     public void handleClient() {
-        ClientScreenStorage.stacks = stacks;
+        ClientScreenStorage.receiveChunk(stacks, isLast);
     }
 
 }
