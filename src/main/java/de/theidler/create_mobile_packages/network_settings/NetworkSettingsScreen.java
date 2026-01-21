@@ -7,6 +7,7 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
+import de.theidler.create_mobile_packages.index.CMPGuiTextures;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.client.Minecraft;
@@ -33,14 +34,15 @@ public class NetworkSettingsScreen extends Screen {
     private EditBox nameBox;
     private IconButton addPlayerButton;
     private IconButton networkLockButton;
-    private List<IconButton> playerButtons = new ArrayList<>();
-    private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
+    private final List<IconButton> playerButtons = new ArrayList<>();
+    private final LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
     private boolean scrollHandleActive;
+    private final int windowWidth = 210;
 
     private int guiLeft;
     private int guiTop;
-    private int windowWidth = 226;
-    private int windowHeight = 176;
+    private final int windowHeight = 176;
+    private IconButton doneBtn;
 
     protected NetworkSettingsScreen(@Nullable Screen parent, UUID networkId) {
         super(Component.literal(networkId.toString()));
@@ -68,11 +70,18 @@ public class NetworkSettingsScreen extends Screen {
         createLockButton();
         createPlayerList();
         createAddPlayerButton();
+
+        doneBtn = new IconButton(guiLeft + windowWidth - 25, guiTop + windowHeight - 43, AllIcons.I_CONFIRM);
+        doneBtn.setToolTip(Component.literal("Done"));
+        doneBtn.withCallback(() -> {
+            minecraft.setScreen(parent);
+        });
+        addRenderableWidget(doneBtn);
     }
 
 
     private void createLockButton() {
-        networkLockButton = new IconButton(guiLeft + windowWidth - 30, guiTop + 35, network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
+        networkLockButton = new IconButton(guiLeft + windowWidth - 30, guiTop + 25, network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
         networkLockButton.setToolTip(Component.literal(network.locked ? "Unlock Network" : "Lock Network"));
         networkLockButton.withCallback(() -> {
             CMPPackets.getChannel().sendToServer(new ModifyNetworkLockStatePackage(!network.locked, networkId));
@@ -101,7 +110,7 @@ public class NetworkSettingsScreen extends Screen {
     }
 
     private void createAddPlayerButton() {
-        addPlayerButton = new IconButton(guiLeft + windowWidth - 50, guiTop + 35, AllIcons.I_ADD);
+        addPlayerButton = new IconButton(guiLeft + windowWidth - 50, guiTop + 25, AllIcons.I_ADD);
         addPlayerButton.setToolTip(Component.literal("Add Yourself"));
         addPlayerButton.withCallback(() -> {
             Player player = Minecraft.getInstance().player;
@@ -115,7 +124,7 @@ public class NetworkSettingsScreen extends Screen {
 
     private void createNameBox() {
         Consumer<String> onTextChanged = s -> nameBox.setX(nameBoxX(s, nameBox));
-        nameBox = new EditBox(new NoShadowFontWrapper(font), guiLeft + 25, guiTop + 13, windowWidth - 50, 10, Component.empty());
+        nameBox = new EditBox(new NoShadowFontWrapper(font), guiLeft + 25, guiTop + 4, windowWidth - 50, 10, Component.empty());
         nameBox.setMaxLength(25);
         nameBox.setBordered(false);
         nameBox.setValue(extendedNetwork.create_mobile_packages$getName());
@@ -151,29 +160,37 @@ public class NetworkSettingsScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (doneBtn.isMouseOver(mouseX, mouseY)) {
+            doneBtn.onClick(mouseX, mouseY);
+            return true;
+        }
         if (!nameBox.isFocused()) {
-            int headerX = nameBoxX(nameBox.getValue(), nameBox);
-            int headerY = guiTop - 15;
-            int headerWidth = font.width(nameBox.getValue()) + 20;
-            if (mouseX >= headerX && mouseX <= headerX + headerWidth && mouseY >= headerY && mouseY <= headerY + 15) {
+            String text = nameBox.getValue();
+            int iconX = nameBoxX(text, nameBox) + font.width(text) + 5;
+            int iconY = guiTop + 1;
+            if (mouseX >= iconX && mouseX <= iconX + 13 && mouseY >= iconY && mouseY <= iconY + 13) {
                 nameBox.setFocused(true);
+                setFocused(nameBox);
                 nameBox.setCursorPosition(nameBox.getValue().length());
-                nameBox.setHighlightPos(0);
                 return true;
             }
         }
         int maxScroll = getMaxScroll();
         if (maxScroll > 0 && button == 0) {
             int barX = guiLeft + windowWidth - 10;
-            int barY = guiTop + 35;
+            int barY = guiTop + 25;
             int barWidth = 6;
-            int barHeight = windowHeight - 45;
+            int barHeight = 106;
             if (mouseX >= barX && mouseX <= barX + barWidth && mouseY >= barY && mouseY <= barY + barHeight) {
                 scrollHandleActive = true;
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        boolean result = super.mouseClicked(mouseX, mouseY, button);
+        if (!result && nameBox.isFocused()) {
+            nameBox.setFocused(false);
+        }
+        return result;
     }
 
     @Override
@@ -188,8 +205,8 @@ public class NetworkSettingsScreen extends Screen {
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (scrollHandleActive && button == 0) {
             int maxScroll = getMaxScroll();
-            int barHeight = windowHeight - 45;
-            double relativeY = mouseY - (guiTop + 35);
+            int barHeight = 106;
+            double relativeY = mouseY - (guiTop + 25);
             float target = (float) (relativeY / barHeight * maxScroll);
             scroll.chase(Mth.clamp(target, 0, maxScroll), 0.5f, LerpedFloat.Chaser.EXP);
             return true;
@@ -217,19 +234,19 @@ public class NetworkSettingsScreen extends Screen {
         int x = guiLeft;
         int y = guiTop;
 
-        AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER.render(graphics, x - 15, y);
-        y += AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER.getHeight();
-        for (int i = 0; i < (windowHeight - AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER.getHeight() - AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER.getHeight()) / AllGuiTextures.STOCK_KEEPER_REQUEST_BODY.getHeight(); i++) {
-            AllGuiTextures.STOCK_KEEPER_REQUEST_BODY.render(graphics, x - 15, y);
-            y += AllGuiTextures.STOCK_KEEPER_REQUEST_BODY.getHeight();
+        CMPGuiTextures.PLAYER_NETWORKS_HEADER.render(graphics, x, y);
+        y += CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight();
+        for (int i = 0; i < (windowHeight - CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight() - CMPGuiTextures.PLAYER_NETWORKS_FOOTER.getHeight()) / CMPGuiTextures.PLAYER_NETWORKS_BG.getHeight(); i++) {
+            CMPGuiTextures.PLAYER_NETWORKS_BG.render(graphics, x, y);
+            y += CMPGuiTextures.PLAYER_NETWORKS_BG.getHeight();
         }
-        AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER.render(graphics, x - 15, y);
+        CMPGuiTextures.PLAYER_NETWORKS_FOOTER.render(graphics, x, y);
 
         String text = nameBox.getValue();
         nameBox.visible = nameBox.isFocused();
         if (!nameBox.isFocused()) {
-            graphics.drawString(font, text, nameBoxX(text, nameBox), guiTop + 13, 0x4A2D31, false);
-            AllGuiTextures.FROGPORT_EDIT_NAME.render(graphics, nameBoxX(text, nameBox) + font.width(text) + 5, guiTop + 10);
+            graphics.drawString(font, text, nameBoxX(text, nameBox), guiTop + 4, 0x4A2D31, false);
+            CMPGuiTextures.PLAYER_NETWORKS_EDIT_NAME.render(graphics, nameBoxX(text, nameBox) + font.width(text) + 5, guiTop + 1);
         }
     }
 
@@ -239,12 +256,12 @@ public class NetworkSettingsScreen extends Screen {
 
         renderBg(guiGraphics, partialTick, mouseX, mouseY);
 
-        guiGraphics.drawString(font, "Owner: " + getPlayerName(network.owner), guiLeft + 20, guiTop + 45, 0x3D3C48, false);
+        guiGraphics.drawString(font, "Owner: " + getPlayerName(network.owner), guiLeft + 20, guiTop + 30, 0x3D3C48, false);
 
-        guiGraphics.drawString(font, "Players:", guiLeft + 20, guiTop + 60, 0x3D3C48, false);
+        guiGraphics.drawString(font, "Players:", guiLeft + 20, guiTop + 50, 0x3D3C48, false);
 
         float scrollOffset = scroll.getValue(partialTick);
-        int listTop = guiTop + 70;
+        int listTop = guiTop + 60;
         int listBottom = guiTop + windowHeight - 10;
 
         guiGraphics.enableScissor(guiLeft, listTop, guiLeft + windowWidth, listBottom);
@@ -282,8 +299,8 @@ public class NetworkSettingsScreen extends Screen {
         if (maxScroll <= 0) return;
 
         int barX = guiLeft + windowWidth - 10;
-        int barY = guiTop + 35;
-        int barHeight = windowHeight - 45;
+        int barY = guiTop + 25;
+        int barHeight = 106;
 
         float scrollOffset = scroll.getValue();
         int barSize = Math.max(10, (int) (barHeight * (4f / (extendedNetwork.create_mobile_packages$getPlayers().size()))));
@@ -312,4 +329,3 @@ public class NetworkSettingsScreen extends Screen {
         super.renderBackground(guiGraphics);
     }
 }
-

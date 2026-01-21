@@ -26,9 +26,10 @@ public class PlayerNetworksScreen extends Screen {
     private int guiTop;
     private int windowWidth;
     private int windowHeight;
-    private LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
+    private final LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
     private boolean scrollHandleActive;
-    private List<IconButton> networkButtons = new ArrayList<>();
+    private final List<IconButton> networkButtons = new ArrayList<>();
+    private IconButton doneBtn;
 
     public PlayerNetworksScreen(Component title) {
         super(title);
@@ -50,6 +51,10 @@ public class PlayerNetworksScreen extends Screen {
         this.guiLeft = (width - windowWidth) / 2;
         this.guiTop = (height - windowHeight) / 2;
         refreshNetworks();
+
+        doneBtn = new IconButton(guiLeft + windowWidth - 25, guiTop + windowHeight - 24, AllIcons.I_CONFIRM);
+        doneBtn.setToolTip(Component.literal("Done"));
+        doneBtn.withCallback(() -> minecraft.setScreen(null));
     }
 
     private void refreshNetworks() {
@@ -57,8 +62,7 @@ public class PlayerNetworksScreen extends Screen {
         this.networkButtons.clear();
 
         List<IExtendedLogisticsNetwork> networks = getNetworks();
-        for (int i = 0; i < networks.size(); i++) {
-            IExtendedLogisticsNetwork network = networks.get(i);
+        for (IExtendedLogisticsNetwork network : networks) {
             if (!(network instanceof LogisticsNetwork ln)) continue;
 
             IconButton leaveBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
@@ -76,9 +80,7 @@ public class PlayerNetworksScreen extends Screen {
             // Add settings button
             IconButton settingsBtn = new IconButton(0, 0, AllIcons.I_CONFIG_OPEN);
             settingsBtn.setToolTip(Component.literal("Network Settings"));
-            settingsBtn.withCallback(() -> {
-                minecraft.setScreen(new NetworkSettingsScreen(this, ln.id));
-            });
+            settingsBtn.withCallback(() -> minecraft.setScreen(new NetworkSettingsScreen(this, ln.id)));
             addRenderableWidget(settingsBtn);
             networkButtons.add(settingsBtn);
         }
@@ -101,6 +103,10 @@ public class PlayerNetworksScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (doneBtn.isMouseOver(mouseX, mouseY)) {
+            doneBtn.onClick(mouseX, mouseY);
+            return true;
+        }
         int maxScroll = getMaxScroll();
         if (maxScroll > 0 && button == 0) {
             int barX = guiLeft + windowWidth - 8;
@@ -201,6 +207,9 @@ public class PlayerNetworksScreen extends Screen {
         // Render header and footer again to be above buttons
         CMPGuiTextures.PLAYER_NETWORKS_HEADER.render(guiGraphics, guiLeft, guiTop);
         CMPGuiTextures.PLAYER_NETWORKS_FOOTER.render(guiGraphics, guiLeft, guiTop + windowHeight - CMPGuiTextures.PLAYER_NETWORKS_FOOTER.getHeight());
+
+        // render done button after footer to show on top
+        doneBtn.doRender(guiGraphics, mouseX, mouseY, partialTick);
 
         String text = getTitle().getString();
         guiGraphics.drawString(font, text, guiLeft + windowWidth / 2 - font.width(text) / 2, guiTop + 4, 0x4A2D31, false);
