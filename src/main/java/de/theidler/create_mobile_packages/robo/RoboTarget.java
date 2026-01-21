@@ -24,6 +24,8 @@ public interface RoboTarget {
         return true;
     }
 
-    void setETA(VirtualRobo robo, int eta);
+    void setETA(int eta);
+
+    int getETA();
 }
 

@@ -16,11 +16,13 @@ import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
+import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.theme.Color;
@@ -28,6 +30,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
@@ -61,6 +64,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private static final AllGuiTextures BODY = AllGuiTextures.STOCK_KEEPER_REQUEST_BODY;
     private static final AllGuiTextures FOOTER = AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER;
 
+    public static final int MAX_REPORTED_STACK_AMOUNT = 1000;
+
     public LerpedFloat itemScroll;
 
     final int cols = 9;
@@ -91,6 +96,9 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     public boolean refreshSearchNextTick;
     public boolean moveToTopNextTick;
+    private final ThreadLocal<Integer> orderForStackCallCount = ThreadLocal.withInitial(() -> 0);
+    private List<Rect2i> extraAreas = Collections.emptyList();
+    private List<GenericStack> lastSeenStacks = null;
 
     public PortableStockTickerScreen(PortableStockTickerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -107,9 +115,12 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 menu.portableStockTicker.hiddenCategoriesByPlayer.getOrDefault(menu.player.getUUID(), List.of()));
     }
 
+    private GenericInventorySummary cachedSummary = null;
+
     @Override
     protected void containerTick() {
         super.containerTick();
+        orderForStackCallCount.set(0);
         addressBox.tick();
         ClientScreenStorage.tick();
 
@@ -139,10 +150,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        List<List<BigGenericStack>> clientStockSnapshot = convertToCategoryList(
-                sortByCount(ClientScreenStorage.stacks));
-        if (clientStockSnapshot != currentItemSource) {
-            currentItemSource = clientStockSnapshot;
+        if (!Objects.equals(ClientScreenStorage.stacks, lastSeenStacks)) {
+            lastSeenStacks = ClientScreenStorage.stacks == null
+                    ? new ArrayList<>()
+                    : new ArrayList<>(ClientScreenStorage.stacks);
+            sortAndCategorize(lastSeenStacks);
             refreshSearchResults(false);
             //revalidateOrders();
         }
@@ -158,33 +170,45 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             itemScroll.setValue(itemScroll.getChaseTarget());
     }
 
-    private List<GenericStack> sortByCount(List<GenericStack> stacks) {
+    private void sortAndCategorize(List<GenericStack> stacks) {
+        // Sort first (O(N log N))
         stacks.sort(Comparator.comparingInt((GenericStack bigStack) -> -bigStack.amount()));
-        return stacks;
+
+        // Categorize in one pass (O(N))
+        currentItemSource = convertToCategoryList(stacks);
+        cachedSummary = null;
     }
 
     private List<List<BigGenericStack>> convertToCategoryList(List<GenericStack> stacks) {
-        List<GenericStack> stacksCopy = new ArrayList<>(stacks); // Copy to avoid side effects
         List<List<BigGenericStack>> output = new ArrayList<>();
+        List<FilterItemStack> filters = new ArrayList<>();
         for (ItemStack filter : menu.portableStockTicker.categories) {
-            List<BigGenericStack> inCategory = new ArrayList<>();
-            if (!filter.isEmpty()) {
-                FilterItemStack filterItemStack = FilterItemStack.of(filter);
-                for (Iterator<GenericStack> iterator = stacksCopy.iterator(); iterator.hasNext(); ) {
-                    BigGenericStack bigStack = BigGenericStack.of(iterator.next());
-                    if (!filterItemStack.test(playerInventory.player.level(), bigStack.asStack().stack))
-                        continue;
-                    inCategory.add(bigStack);
-                    iterator.remove();
+            output.add(new ArrayList<>());
+            filters.add(filter.isEmpty() ? null : FilterItemStack.of(filter));
+        }
+
+        List<BigGenericStack> unsorted = new ArrayList<>();
+        output.add(unsorted);
+
+        Level level = playerInventory.player.level();
+        for (GenericStack stack : stacks) {
+            BigGenericStack bigStack = BigGenericStack.of(stack);
+            ItemStack itemStack = bigStack.asStack().stack;
+            boolean matched = false;
+
+            for (int i = 0; i < filters.size(); i++) {
+                FilterItemStack filter = filters.get(i);
+                if (filter != null && filter.test(level, itemStack)) {
+                    output.get(i).add(bigStack);
+                    matched = true;
+                    break;
                 }
             }
-            output.add(inCategory);
+            if (!matched) {
+                unsorted.add(bigStack);
+            }
         }
-        List<BigGenericStack> unsorted = new ArrayList<>(stacksCopy.size());
-        for (GenericStack stack : stacksCopy) {
-            unsorted.add(BigGenericStack.of(stack));
-        }
-        output.add(unsorted);
+
         return output;
     }
 
@@ -197,51 +221,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         categories = result.categories();
         displayedItems = result.displayedItems();
 
-        updateCraftableAmounts();
-    }
-
-    @Override
-    protected void init() {
-        int appropriateHeight = Minecraft.getInstance()
-                .getWindow()
-                .getGuiScaledHeight() - 10;
-        appropriateHeight -=
-                Mth.positiveModulo(appropriateHeight - HEADER.getHeight() - FOOTER.getHeight(), BODY.getHeight());
-        appropriateHeight =
-                Math.min(appropriateHeight, HEADER.getHeight() + FOOTER.getHeight() + BODY.getHeight() * 17);
-
-        setWindowSize(windowWidth = 226, windowHeight = appropriateHeight);
-        super.init();
-        clearWidgets();
-
-        int x = getGuiLeft();
-        int y = getGuiTop();
-
-        itemsX = x + (windowWidth - cols * colWidth) / 2 + 1;
-        itemsY = y + 33;
-        orderY = y + windowHeight - 72;
-
-        MutableComponent searchLabel = CreateLang.translateDirect("gui.stock_keeper.search_items");
-        searchBox = new EditBox(new NoShadowFontWrapper(font), x + 71, y + 22, 100, 9, searchLabel);
-        searchBox.setMaxLength(50);
-        searchBox.setBordered(false);
-        searchBox.setTextColor(0x4A2D31);
-        addWidget(searchBox);
-
-        boolean initial = addressBox == null;
-        String previouslyUsedAddress = initial ? menu.portableStockTicker.previouslyUsedAddress : addressBox.getValue();
-        addressBox =
-                new AddressEditBox(this, new NoShadowFontWrapper(font), x + 27, y + windowHeight - 36, 92, 10, true, "@" + this.playerInventory.player.getName().getString());
-        addressBox.setTextColor(0x714A40);
-        addressBox.setValue(previouslyUsedAddress);
-        addRenderableWidget(addressBox);
-        ClientScreenStorage.manualUpdate();
-
-        if (initial) {
-            playUiSound(SoundEvents.WOOD_HIT, 0.5f, 1.5f);
-            playUiSound(SoundEvents.BOOK_PAGE_TURN, 1, 1);
-            syncJEI();
-        }
+        //updateCraftableAmounts();
     }
 
     private Couple<Integer> getHoveredSlot(int x, int y) {
@@ -300,11 +280,176 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     }
 
     @Override
+    protected void init() {
+        int appropriateHeight = Minecraft.getInstance()
+                .getWindow()
+                .getGuiScaledHeight() - 10;
+        appropriateHeight -=
+                Mth.positiveModulo(appropriateHeight - HEADER.getHeight() - FOOTER.getHeight(), BODY.getHeight());
+        appropriateHeight =
+                Math.min(appropriateHeight, HEADER.getHeight() + FOOTER.getHeight() + BODY.getHeight() * 17);
+
+        setWindowSize(windowWidth = 226, windowHeight = appropriateHeight);
+        this.imageWidth = windowWidth;
+        this.imageHeight = windowHeight;
+        super.init();
+        clearWidgets();
+
+        int x = getGuiLeft();
+        int y = getGuiTop();
+
+        itemsX = x + (windowWidth - cols * colWidth) / 2 + 1;
+        itemsY = y + 33;
+        orderY = y + windowHeight - 72;
+
+        MutableComponent searchLabel = CreateLang.translateDirect("gui.stock_keeper.search_items");
+        searchBox = new EditBox(new NoShadowFontWrapper(font), x + 71, y + 22, 100, 9, searchLabel);
+        searchBox.setMaxLength(50);
+        searchBox.setBordered(false);
+        searchBox.setTextColor(0x4A2D31);
+        addWidget(searchBox);
+
+        boolean initial = addressBox == null;
+        String previouslyUsedAddress = initial ? menu.portableStockTicker.previouslyUsedAddress : addressBox.getValue();
+        addressBox =
+                new AddressEditBox(this, new NoShadowFontWrapper(font), x + 27, y + windowHeight - 36, 92, 10, true, "@" + this.playerInventory.player.getName().getString());
+        addressBox.setTextColor(0x714A40);
+        addressBox.setValue(previouslyUsedAddress);
+        addRenderableWidget(addressBox);
+        ClientScreenStorage.manualUpdate();
+
+        extraAreas = new ArrayList<>();
+
+        if (initial) {
+            playUiSound(SoundEvents.WOOD_HIT, 0.5f, 1.5f);
+            playUiSound(SoundEvents.BOOK_PAGE_TURN, 1, 1);
+            syncRecipeViewers();
+        }
+    }
+
+    private int getMaxScroll() {
+        int visibleHeight = windowHeight - 84;
+        int totalRows = 2;
+        for (int i = 0; i < displayedItems.size(); i++) {
+            List<BigGenericStack> list = displayedItems.get(i);
+            if (list.isEmpty())
+                continue;
+            totalRows++;
+            if (categories.size() > i && categories.get(i).hidden().isTrue())
+                continue;
+            totalRows += (int) Math.ceil(list.size() / (float) cols);
+        }
+        return Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
+    }
+
+    private void renderItemEntry(GuiGraphics graphics, float scale, BigGenericStack entry, boolean isStackHovered,
+                                 boolean isRenderingOrders) {
+
+        int customCount = entry.get().amount();
+
+        if (!isRenderingOrders) {
+            BigGenericStack order = orderForStack(entry.get());
+            if (entry.get().amount() < BigItemStack.INF) {
+                int forcedCount = forcedEntries.getCountOf(entry.get().key());
+                if (forcedCount != 0)
+                    customCount = Math.min(customCount, -forcedCount - 1);
+                if (order != null)
+                    customCount -= order.get().amount();
+                customCount = Math.max(0, customCount);
+            }
+            AllGuiTextures.STOCK_KEEPER_REQUEST_SLOT.render(graphics, 0, 0);
+        }
+
+        boolean craftable = entry instanceof CraftableBigItemStack;
+        PoseStack ms = graphics.pose();
+        ms.pushPose();
+
+        float scaleFromHover = 1;
+        if (isStackHovered)
+            scaleFromHover += .075f;
+
+        ms.translate((colWidth - 18) / 2.0, (rowHeight - 18) / 2.0, 0);
+        ms.translate(18 / 2.0, 18 / 2.0, 0);
+        ms.scale(scale, scale, scale);
+        ms.scale(scaleFromHover, scaleFromHover, scaleFromHover);
+        ms.translate(-18 / 2.0, -18 / 2.0, 0);
+        if (customCount != 0 || craftable)
+            GenericContentExtender.registrationOf(entry.get().key())
+                    .clientProvider().guiHandler()
+                    .renderSlot(graphics, entry.get().key(), 0, 0);
+        ms.popPose();
+
+        ms.pushPose();
+        ms.translate(0, 0, 200);
+        if (customCount != 0 || craftable)
+            GenericContentExtender.registrationOf(entry.get().key())
+                    .clientProvider().guiHandler()
+                    .renderDecorations(graphics, entry.get().key(), customCount, 1, 1);
+        ms.popPose();
+    }
+
+    @Override
+    protected void renderForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.renderForeground(graphics, mouseX, mouseY, partialTicks);
+        Couple<Integer> hoveredSlot = getHoveredSlot(mouseX, mouseY);
+
+        // Render tooltip of hovered item
+        if (hoveredSlot != noneHovered) {
+            int slot = hoveredSlot.getSecond();
+            boolean recipeHovered = hoveredSlot.getFirst() == -2;
+            boolean orderHovered = hoveredSlot.getFirst() == -1;
+            BigGenericStack entry = recipeHovered ? recipesToOrder.get(slot)
+                    : orderHovered ? itemsToOrder.get(slot)
+                    : displayedItems.get(hoveredSlot.getFirst())
+                    .get(slot);
+
+            ArrayList<Component> lines =
+                    new ArrayList<>(GenericContentExtender.registrationOf(entry.get().key())
+                            .clientProvider().guiHandler()
+                            .tooltipBuilder(entry.get().key(), entry.get().amount()));
+            if (recipeHovered && !lines.isEmpty())
+                lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.get(0)
+                        .copy()));
+            graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+        }
+
+        // Render tooltip of address input
+        if (addressBox.getValue()
+                .isBlank() && !addressBox.isFocused() && addressBox.isHovered()) {
+            graphics.renderComponentTooltip(font, List.of(CreateLang.translate("gui.factory_panel.restocker_address")
+                                    .color(ScrollInput.HEADER_RGB)
+                                    .component(),
+                            CreateLang.translate("gui.schedule.lmb_edit")
+                                    .style(ChatFormatting.DARK_GRAY)
+                                    .style(ChatFormatting.ITALIC)
+                                    .component()),
+                    mouseX, mouseY);
+        }
+    }
+
+    @Override
+    public List<BigGenericStack> itemsToOrder() {
+        return itemsToOrder;
+    }
+
+    @Override
+    public List<CraftableGenericStack> recipesToOrder() {
+        return recipesToOrder;
+    }
+
+    @Override
+    public Level world() {
+        return playerInventory.player.level();
+    }
+
+    @Override
     protected void renderBg(@NotNull GuiGraphics pGuiGraphics, float partialTicks, int mouseX, int mouseY) {
         if (minecraft != null && this != minecraft.screen)
             return; // stencil buffer does not cooperate with ponders gui fade out
 
         PoseStack ms = pGuiGraphics.pose();
+        ms.pushPose();
+
         float currentScroll = itemScroll.getValue(partialTicks);
         Couple<Integer> hoveredSlot = getHoveredSlot(mouseX, mouseY);
 
@@ -550,126 +695,20 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
             ms.popPose();
         }
-    }
 
-    private int getMaxScroll() {
-        int visibleHeight = windowHeight - 84;
-        int totalRows = 2;
-        for (int i = 0; i < displayedItems.size(); i++) {
-            List<BigGenericStack> list = displayedItems.get(i);
-            if (list.isEmpty())
-                continue;
-            totalRows++;
-            if (categories.size() > i && categories.get(i).hidden().isTrue())
-                continue;
-            totalRows += (int) Math.ceil(list.size() / (float) cols);
-        }
-        return Math.max(0, (totalRows * rowHeight - visibleHeight + 50) / rowHeight);
-    }
-
-    private void renderItemEntry(GuiGraphics graphics, float scale, BigGenericStack entry, boolean isStackHovered,
-                                 boolean isRenderingOrders) {
-
-        int customCount = entry.get().amount();
-
-        if (!isRenderingOrders) {
-            BigGenericStack order = orderForStack(entry.get());
-            if (entry.get().amount() < BigItemStack.INF) {
-                int forcedCount = forcedEntries.getCountOf(entry.get().key());
-                if (forcedCount != 0)
-                    customCount = Math.min(customCount, -forcedCount - 1);
-                if (order != null)
-                    customCount -= order.get().amount();
-                customCount = Math.max(0, customCount);
-            }
-            AllGuiTextures.STOCK_KEEPER_REQUEST_SLOT.render(graphics, 0, 0);
-        }
-
-        boolean craftable = entry instanceof CraftableBigItemStack;
-        PoseStack ms = graphics.pose();
-        ms.pushPose();
-
-        float scaleFromHover = 1;
-        if (isStackHovered)
-            scaleFromHover += .075f;
-
-        ms.translate((colWidth - 18) / 2.0, (rowHeight - 18) / 2.0, 0);
-        ms.translate(18 / 2.0, 18 / 2.0, 0);
-        ms.scale(scale, scale, scale);
-        ms.scale(scaleFromHover, scaleFromHover, scaleFromHover);
-        ms.translate(-18 / 2.0, -18 / 2.0, 0);
-        if (customCount != 0 || craftable)
-            GenericContentExtender.registrationOf(entry.get().key())
-                    .clientProvider().guiHandler()
-                    .renderSlot(graphics, entry.get().key(), 0, 0);
         ms.popPose();
-
-        ms.pushPose();
-        ms.translate(0, 0, 200);
-        if (customCount != 0 || craftable)
-            GenericContentExtender.registrationOf(entry.get().key())
-                    .clientProvider().guiHandler()
-                    .renderDecorations(graphics, entry.get().key(), customCount, 1, 1);
-        ms.popPose();
-    }
-
-    @Override
-    protected void renderForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.renderForeground(graphics, mouseX, mouseY, partialTicks);
-        Couple<Integer> hoveredSlot = getHoveredSlot(mouseX, mouseY);
-
-        // Render tooltip of hovered item
-        if (hoveredSlot != noneHovered) {
-            int slot = hoveredSlot.getSecond();
-            boolean recipeHovered = hoveredSlot.getFirst() == -2;
-            boolean orderHovered = hoveredSlot.getFirst() == -1;
-            BigGenericStack entry = recipeHovered ? recipesToOrder.get(slot)
-                                                  : orderHovered ? itemsToOrder.get(slot)
-                                                                 : displayedItems.get(hoveredSlot.getFirst())
-                                                            .get(slot);
-
-            ArrayList<Component> lines =
-                    new ArrayList<>(GenericContentExtender.registrationOf(entry.get().key())
-                                            .clientProvider().guiHandler()
-                                            .tooltipBuilder(entry.get().key(), entry.get().amount()));
-            if (recipeHovered && !lines.isEmpty())
-                lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.get(0)
-                        .copy()));
-            graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
-        }
-
-        // Render tooltip of address input
-        if (addressBox.getValue()
-                .isBlank() && !addressBox.isFocused() && addressBox.isHovered()) {
-            graphics.renderComponentTooltip(font, List.of(CreateLang.translate("gui.factory_panel.restocker_address")
-                                                                  .color(ScrollInput.HEADER_RGB)
-                                                                  .component(),
-                                                          CreateLang.translate("gui.schedule.lmb_edit")
-                                                                  .style(ChatFormatting.DARK_GRAY)
-                                                                  .style(ChatFormatting.ITALIC)
-                                                                  .component()),
-                                            mouseX, mouseY);
-        }
-    }
-
-    @Override
-    public List<BigGenericStack> itemsToOrder() {
-        return itemsToOrder;
-    }
-
-    @Override
-    public List<CraftableGenericStack> recipesToOrder() {
-        return recipesToOrder;
-    }
-
-    @Override
-    public Level world() {
-        return playerInventory.player.level();
     }
 
     @Nullable
     @Override
     public BigGenericStack orderForStack(GenericStack stack) {
+        if (orderForStackCallCount.get() > 5000) {
+            // Prevent infinite recursion
+            return null;
+        }
+
+        orderForStackCallCount.set(orderForStackCallCount.get() + 1);
+
         for (BigGenericStack entry : itemsToOrder)
             if (entry.get().canStack(stack))
                 return entry;
@@ -678,9 +717,23 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     @Override
     public GenericInventorySummary stockSnapshot() {
-        GenericInventorySummary summary = GenericInventorySummary.empty();
-        ClientScreenStorage.stacks.forEach(summary::add);
-        return summary;
+        if (cachedSummary != null)
+            return cachedSummary;
+
+        orderForStackCallCount.set(0);
+
+        cachedSummary = GenericInventorySummary.empty();
+        if (ClientScreenStorage.stacks != null) {
+            ClientScreenStorage.stacks.forEach(stack -> {
+                if (stack.amount() > MAX_REPORTED_STACK_AMOUNT) {
+                    cachedSummary.add(stack.withAmount(MAX_REPORTED_STACK_AMOUNT));
+                } else {
+                    cachedSummary.add(stack);
+                }
+            });
+        }
+
+        return cachedSummary;
     }
 
     private boolean isConfirmHovered(int mouseX, int mouseY) {
@@ -705,7 +758,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             refreshSearchNextTick = true;
             moveToTopNextTick = true;
             searchBox.setFocused(true);
-            syncJEI();
+            syncRecipeViewers();
             return true;
         }
 
@@ -820,11 +873,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     }
 
     public void requestCraftable(CraftableGenericStack cbis, int requestedDifference) {
+        orderForStackCallCount.set(0);
         RecipeRequestHelper.requestCraftable(this, cbis, requestedDifference);
-    }
-
-    private void updateCraftableAmounts() {
-        RecipeRequestHelper.updateCraftableAmounts(this);
     }
 
     @Override
@@ -862,6 +912,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
             boolean remove = delta < 0;
             int transfer = Mth.ceil(Math.abs(delta)) * (hasControlDown() ? 10 : 1);
+
+            if (recipeClicked && entry instanceof CraftableGenericStack cbis) {
+                requestCraftable(cbis, remove ? -transfer : transfer);
+                return true;
+            }
 
             BigGenericStack existingOrder = orderClicked ? entry : orderForStack(entry.get());
             if (existingOrder == null) {
@@ -949,7 +1004,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (!Objects.equals(s, searchBox.getValue())) {
             refreshSearchNextTick = true;
             moveToTopNextTick = true;
-            syncJEI();
+            syncRecipeViewers();
         }
         return true;
     }
@@ -977,7 +1032,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (!Objects.equals(s, searchBox.getValue())) {
             refreshSearchNextTick = true;
             moveToTopNextTick = true;
-            syncJEI();
+            syncRecipeViewers();
         }
         return true;
     }
@@ -1045,9 +1100,35 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                 .component();
     }
 
-    private void syncJEI() {
-        if (Mods.JEI.isLoaded() && AllConfigs.client().syncJeiSearch.get())
-            CMPJEI.runtime.getIngredientFilter().setFilterText(searchBox.getValue());
+    private void syncRecipeViewers() {
+        if (searchBox == null)
+            return;
+
+        boolean syncEnabled = AllConfigs.client().syncJeiSearch.get();
+        if (!syncEnabled)
+            return;
+
+        String text = searchBox.getValue();
+
+        // Sync with JEI if loaded
+        if (Mods.JEI.isLoaded() && CMPJEI.runtime != null) {
+            try {
+                CMPJEI.runtime.getIngredientFilter().setFilterText(text);
+            } catch (Throwable t) {
+                // JEI sync failed
+                CreateMobilePackages.LOGGER.debug("JEI search sync failed", t);
+            }
+        }
+
+        // Sync with EMI if loaded
+        if (Mods.EMI.isLoaded()) {
+            try {
+                de.theidler.create_mobile_packages.compat.emi.CMPEMI.setSearchText(text);
+            } catch (Throwable t) {
+                // EMI sync failed
+                CreateMobilePackages.LOGGER.debug("EMI search sync failed", t);
+            }
+        }
     }
 
     @Override
@@ -1071,5 +1152,45 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     @Override
     public List<List<BigGenericStack>> currentItemSource() {
         return currentItemSource;
+    }
+
+    @Override
+    public List<Rect2i> getExtraAreas() {
+        return extraAreas;
+    }
+
+    public Optional<Pair<ItemStack, Rect2i>> getHoveredIngredient(int mouseX, int mouseY) {
+        Couple<Integer> hoveredSlot = getHoveredSlot(mouseX, mouseY);
+
+        if (hoveredSlot != noneHovered) {
+            int index = hoveredSlot.getSecond();
+            boolean recipeHovered = hoveredSlot.getFirst() == -2;
+            boolean orderHovered = hoveredSlot.getFirst() == -1;
+
+            int x, y;
+            BigGenericStack entry;
+            if (recipeHovered) {
+                int jeiX = getGuiLeft() + (windowWidth - colWidth * recipesToOrder.size()) / 2 + 1;
+                int jeiY = orderY - 31;
+                x = jeiX + (index * colWidth);
+                y = jeiY;
+                entry = recipesToOrder.get(index);
+            } else if (orderHovered) {
+                x = itemsX + index * colWidth;
+                y = orderY;
+                entry = itemsToOrder.get(index);
+            } else {
+                int categoryIndex = hoveredSlot.getFirst();
+                int categoryY = categories.isEmpty() ? 0 : categories.get(categoryIndex).y().intValue();
+                x = itemsX + (index % cols) * colWidth;
+                y = itemsY + categoryY + (categories.isEmpty() ? 4 : rowHeight) + (index / cols) * rowHeight;
+                entry = displayedItems.get(categoryIndex).get(index);
+            }
+
+            Rect2i bounds = new Rect2i(x, y, 18, 18);
+            return Optional.of(Pair.of(entry.asStack().stack.copy(), bounds));
+        }
+
+        return Optional.empty();
     }
 }

@@ -119,10 +119,10 @@ public class BeePortMenu extends PackagePortMenu {
         if (data != null) {
             return data.get(0);
         }
-        return Integer.MAX_VALUE;
+        return -1;
     }
     public boolean isBeeOnTravel() {
-        if (data != null) {
+        if (data != null && data.get(0) != -1) {
             return data.get(1) == 1;
         }
         return false;

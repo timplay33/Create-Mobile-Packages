@@ -5,6 +5,8 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.compat.curios.Curios;
 import de.theidler.create_mobile_packages.index.*;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.createmod.catnip.lang.FontHelper;
@@ -54,10 +56,13 @@ public class CreateMobilePackages
         CMPConfigs.register(modLoadingContext);
         CMPEntities.register();
         CMPDisplaySources.register();
+        CMPToasts.registerAll();
 
         forgeEventBus.register(CreateMobilePackages.class);
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> CreateMobilePackagesClient.onCtorClient(modEventBus, forgeEventBus));
+
+        Mods.CURIOS.executeIfInstalled(() -> () -> Curios.init(modEventBus));
 
     }
 

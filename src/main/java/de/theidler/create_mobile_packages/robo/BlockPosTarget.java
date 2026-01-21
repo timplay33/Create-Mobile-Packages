@@ -5,6 +5,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class BlockPosTarget implements RoboTarget {
     private final BlockPos pos;
+    private int eta;
 
     public BlockPosTarget(BlockPos pos) {
         this.pos = pos;
@@ -21,7 +22,12 @@ public class BlockPosTarget implements RoboTarget {
     }
 
     @Override
-    public void setETA(VirtualRobo robo, int eta) {
+    public int getETA() {
+        return eta;
+    }
 
+    @Override
+    public void setETA(int eta) {
+        this.eta = eta;
     }
 }

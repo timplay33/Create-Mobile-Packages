@@ -3,12 +3,14 @@ package de.theidler.create_mobile_packages.index;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import de.theidler.create_mobile_packages.toast.CustomToast;
+import de.theidler.create_mobile_packages.robo.RoboManager;
+import de.theidler.create_mobile_packages.toast.types.SimpleToast;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.PacketDistributor;
 
@@ -37,7 +39,25 @@ public class CMPCommands {
                                                        )
                                         )
                         )
+                        .then(
+                                Commands.literal("robos")
+                                        .requires(cs -> cs.hasPermission(2)) // admin only
+                                        .then(
+                                                Commands.literal("clear")
+                                                        .executes(CMPCommands::clearRobos)
+                                        )
+                        )
         );
+    }
+
+    private static int clearRobos(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerLevel level = source.getLevel();
+        RoboManager manager = RoboManager.get(level);
+        int roboCount = manager.robos.size();
+        manager.robos.clear();
+        source.sendSuccess(() -> Component.literal("Cleared " + roboCount + " robos"), true);
+        return 1;
     }
 
     private static int createToast(CommandContext<CommandSourceStack> context, String message) {
@@ -45,7 +65,7 @@ public class CMPCommands {
         if (!source.isPlayer()) return 0;
         ServerPlayer player = source.getPlayer();
         if (player == null) return 0;
-        CustomToast toast = new CustomToast(UUID.randomUUID(), Component.literal(message), Component.literal(""), CMPItems.ROBO_BEE.asStack());
+        SimpleToast toast = new SimpleToast(UUID.randomUUID(), Component.literal(message), Component.literal(""), CMPItems.ROBO_BEE.asStack());
         CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), new ShowToastOnClientPacket(toast));
         return 1;
     }

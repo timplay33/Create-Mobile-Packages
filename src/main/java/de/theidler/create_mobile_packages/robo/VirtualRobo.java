@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.robo;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboBeeBehaviorController;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
@@ -18,8 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-import static de.theidler.create_mobile_packages.CMPHelper.readVec3FromTag;
-import static de.theidler.create_mobile_packages.CMPHelper.writeVec3ToTag;
+import static de.theidler.create_mobile_packages.CMPHelper.*;
 
 
 public class VirtualRobo {
@@ -37,6 +37,7 @@ public class VirtualRobo {
     private Vec3 targetVelocity = Vec3.ZERO;
     private ServerLevel serverLevel;
     private float packageHeightScale;
+    private RoboRequest request = null;
 
     public VirtualRobo(ServerLevel level, UUID id, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId) {
         this.id = id;
@@ -88,7 +89,7 @@ public class VirtualRobo {
         return targetPos != null ? Math.atan2(targetPos.z - this.currentPos.z, targetPos.x - this.currentPos.x()) : 0;
     }
 
-    public Vec3 getTargetPosition() {
+    public @Nullable Vec3 getTargetPosition() {
         updateTarget();
         return target.getTargetPos();
     }
@@ -102,11 +103,6 @@ public class VirtualRobo {
         // if the target is still valid, do nothing
         if (target != null && target.isValid()) return;
 
-        // check if the old target was a BeePortBlockEntity if so, then remove the reference
-        if (target != null && target.asBeePortBlockEntity() != null) {
-            target.asBeePortBlockEntity().trySetEntityOnTravel(this, false );
-        }
-
         // try finding a Player first
         target = PlayerTarget.fromAddress(serverLevel, targetAddress);
         if (target.isValid()) {return;}
@@ -115,10 +111,6 @@ public class VirtualRobo {
         BeePortBlockEntity targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
         if (targetBlockEntity != null) {
             target = new BeePortBlockEntityTarget(targetBlockEntity);
-        }
-        if (target.isValid() && target.asBeePortBlockEntity() != null) {
-            target.asBeePortBlockEntity().trySetEntityOnTravel(this, true );
-            return;
         }
     }
 
@@ -150,7 +142,7 @@ public class VirtualRobo {
         updateTarget();
         if (behaviorController != null) behaviorController.tick(this);
         this.move(targetVelocity);
-        //updateNametag(); -> client side only
+        updateEta();
 
         // Spawn / despawn RoboEntity if needed
         BlockPos pos = BlockPos.containing(currentPos);
@@ -160,6 +152,14 @@ public class VirtualRobo {
             }
         } else if (entityId != null) {
             despawnEntity();
+        }
+    }
+
+    private void updateEta() {
+        if (request != null) {
+            request.setEta(calcETA(getTargetPosition(), getCurrentPos()));
+        } else if (target != null) {
+            target.setETA(calcETA(getTargetPosition(), getCurrentPos()));
         }
     }
 
@@ -259,7 +259,7 @@ public class VirtualRobo {
         return rotateToAngle((float) getSnapAngle(getAngleToTarget()) + 90);
     }
 
-    public BeePortBlockEntity getStartBeePortBlockEntity() {
+    public @Nullable BeePortBlockEntity getStartBeePortBlockEntity() {
         if (serverLevel.getBlockEntity(BlockPos.containing(currentPos)) instanceof BeePortBlockEntity bpbe) {
             return bpbe;
         } else if (serverLevel.getBlockEntity(BlockPos.containing(currentPos.subtract(0,1,0))) instanceof BeePortBlockEntity bpbe) {
@@ -272,7 +272,9 @@ public class VirtualRobo {
 
     public void setRemoved(ServerLevel level) {
         RoboManager.get(level).remove(this.getId());
-        target.asBeePortBlockEntity().trySetEntityOnTravel(null, false );
+        if (request != null && request.getStatus() == RoboRequest.Status.IN_PROGRESS) {
+            request.setStatus(RoboRequest.Status.PENDING);
+        }
         despawnEntity();
     }
 
@@ -306,5 +308,20 @@ public class VirtualRobo {
 
     public void setPitch(float pitch) {
         this.pitch = pitch;
+    }
+
+    public void invalidateTarget() {
+        this.targetVelocity = Vec3.ZERO;
+        this.target = null;
+    }
+
+    public RoboRequest getRequest() {
+        return request;
+    }
+
+    public void setRequest(RoboRequest request) {
+        this.request = request;
+        this.request.setStatus(RoboRequest.Status.IN_PROGRESS);
+        this.target = new BeePortBlockEntityTarget((BeePortBlockEntity) serverLevel.getBlockEntity(request.getTargetPos()));
     }
 }
