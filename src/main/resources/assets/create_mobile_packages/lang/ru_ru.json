@@ -54,10 +54,17 @@
     "create_mobile_packages.ponder.port_to_port.text_5": "Эта функция может быть выключена в настройках.",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "Если держать коробку не в ведущей руке, она может быть отправлена при помощи пчелодрона.",
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Предмет для создания Пчёлодрона. Необходим в Дронопорте для отправки посылок.",
+    "tooltip.create_mobile_packages.bee_port.jade.network": "Network: %1$s",
+    "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "You are part of this network",
+    "tooltip.create_mobile_packages.network.remove_player": "Remove Player",
+    "tooltip.create_mobile_packages.network.add_yourself": "Add Yourself",
+    "tooltip.create_mobile_packages.network.leave": "Leave Network",
+    "tooltip.create_mobile_packages.network.settings": "Network Settings",
     "item.create_mobile_packages.mobile_packager": "Портативный упаковщик",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Package items on the go",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "When used",
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Opens a menu to create Packages",
     "item.create_mobile_packages.mobile_packager.tooltip.condition2": "When sneak used",
-    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages"
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages",
+    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info"
 }
