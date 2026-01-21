@@ -54,10 +54,17 @@
     "create_mobile_packages.ponder.port_to_port.text_5": "Este recurso pode ser desabilitado nos arquivos de configuração.",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "Ao segurar um pacote na mão secundária, ele será enviado com a Abelha Robô.",
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Item para gerar uma Abelha Robô. Necessário nos Portos da Abelha Robô para enviar pacotes.",
+    "tooltip.create_mobile_packages.bee_port.jade.network": "Network: %1$s",
+    "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "You are part of this network",
+    "tooltip.create_mobile_packages.network.remove_player": "Remove Player",
+    "tooltip.create_mobile_packages.network.add_yourself": "Add Yourself",
+    "tooltip.create_mobile_packages.network.leave": "Leave Network",
+    "tooltip.create_mobile_packages.network.settings": "Network Settings",
     "item.create_mobile_packages.mobile_packager": "Embalador Móvel",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Embalar itens em movimento",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "Quando usado",
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Abre um menu para criar Pacotes",
     "item.create_mobile_packages.mobile_packager.tooltip.condition2": "Quando a furtividade é usada",
-    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Abre um menu para modificar Pacotes"
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Abre um menu para modificar Pacotes",
+    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info"
 }
