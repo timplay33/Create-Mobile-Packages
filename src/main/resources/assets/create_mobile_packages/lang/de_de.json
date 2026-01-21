@@ -54,10 +54,17 @@
     "create_mobile_packages.ponder.port_to_port.text_5": "Diese Funktion kann in den Konfigurationsdateien deaktiviert werden.",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "Wenn man ein Paket in der Zweithand hält, wird es mit der Robo-Biene versendet.",
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Platziere, das Item, um eine Robo-Biene zu erzeugen. Wird gebraucht in Robo-Bienen Ports um Pakete zu versenden.",
+    "tooltip.create_mobile_packages.bee_port.jade.network": "Network: %1$s",
+    "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "You are part of this network",
+    "tooltip.create_mobile_packages.network.remove_player": "Remove Player",
+    "tooltip.create_mobile_packages.network.add_yourself": "Add Yourself",
+    "tooltip.create_mobile_packages.network.leave": "Leave Network",
+    "tooltip.create_mobile_packages.network.settings": "Network Settings",
     "item.create_mobile_packages.mobile_packager": "Mobiler Verpacker",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Verpackt Gegenstände unterwegs",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "Wenn benutzt",
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Öffnet ein Menü, um Päckchen zu erstellen",
     "item.create_mobile_packages.mobile_packager.tooltip.condition2": "Wenn schleichen verwendet wird",
-    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Öffnet ein Menü zum Verändern von Päckchen"
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Öffnet ein Menü zum Verändern von Päckchen",
+    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info"
 }
