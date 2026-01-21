@@ -324,4 +324,8 @@ public class VirtualRobo {
         this.request.setStatus(RoboRequest.Status.IN_PROGRESS);
         this.target = new BeePortBlockEntityTarget((BeePortBlockEntity) serverLevel.getBlockEntity(request.getTargetPos()));
     }
+
+    public UUID getLogisticsNetworkId() {
+        return logisticsNetworkId;
+    }
 }
