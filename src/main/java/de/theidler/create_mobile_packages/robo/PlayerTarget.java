@@ -1,6 +1,8 @@
 package de.theidler.create_mobile_packages.robo;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.box.PackageItem;
+import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
@@ -17,20 +19,24 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.CMPHelper.doesAddressMatchPlayer;
 
 public class PlayerTarget implements RoboTarget {
     private final Player player;
     private int eta;
+    private final IExtendedLogisticsNetwork network;
 
-    public PlayerTarget(Player player) {
+    public PlayerTarget(Player player, UUID networkId) {
         this.player = player;
+        this.network = (IExtendedLogisticsNetwork) Create.LOGISTICS.logisticsNetworks.get(networkId);
     }
 
-    public static PlayerTarget fromAddress(ServerLevel level, String address) {
-        ServerPlayer player = level.getPlayers((p) -> doesAddressMatchPlayer(p, address)).stream().findFirst().orElse(null);
-        return new PlayerTarget(player);
+    public static PlayerTarget fromAddress(ServerLevel level, String address, UUID networkId) {
+        IExtendedLogisticsNetwork network = (IExtendedLogisticsNetwork) Create.LOGISTICS.logisticsNetworks.get(networkId);
+        ServerPlayer player = level.getPlayers((p) -> doesAddressMatchPlayer(p, address)).stream().filter(p -> network.create_mobile_packages$getPlayers().contains(p.getUUID())).findFirst().orElse(null);
+        return new PlayerTarget(player, networkId);
     }
 
     @Override
@@ -46,7 +52,7 @@ public class PlayerTarget implements RoboTarget {
 
     @Override
     public boolean isValid() {
-        return player != null && player.isAlive();
+        return player != null && player.isAlive() && network.create_mobile_packages$getPlayers().contains(player.getUUID());
     }
 
     public void updateEtaToast(VirtualRobo robo) {

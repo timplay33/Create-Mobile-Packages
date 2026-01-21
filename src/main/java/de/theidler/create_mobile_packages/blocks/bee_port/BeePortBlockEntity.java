@@ -1,12 +1,15 @@
 package de.theidler.create_mobile_packages.blocks.bee_port;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
+import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
@@ -36,9 +39,11 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
@@ -286,7 +291,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         return inventories;
     }
 
-    private IItemHandler getAdjacentInventory(Direction side) {
+    private @Nullable IItemHandler getAdjacentInventory(Direction side) {
         if (level == null) return null;
         BlockEntity blockEntity = level.getBlockEntity(worldPosition.relative(side));
         if (blockEntity == null || blockEntity instanceof FrogportBlockEntity) return null;
@@ -321,8 +326,15 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         String address = PackageItem.getAddress(itemStack);
         if (address.isBlank()) return; // return if the package has no address
 
+        LogisticsNetwork logisticsNetwork = Create.LOGISTICS.logisticsNetworks.get(getLogisticsNetworkId());
+        IExtendedLogisticsNetwork extendedLogisticsNetwork = (IExtendedLogisticsNetwork) logisticsNetwork;
+        Set<UUID> playerUUIDs = extendedLogisticsNetwork.create_mobile_packages$getPlayers();
+
         // Check if the item can be sent to a player.
         for (Player player : level.players()) {
+            if (!playerUUIDs.contains(player.getUUID())) {
+                continue; // skip players not in the logistics network
+            }
             if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(player.blockPosition(), this.getBlockPos())) {
                 sendToPlayer(player, itemStack, slot);
                 return;

@@ -104,7 +104,7 @@ public class VirtualRobo {
         if (target != null && target.isValid()) return;
 
         // try finding a Player first
-        target = PlayerTarget.fromAddress(serverLevel, targetAddress);
+        target = PlayerTarget.fromAddress(serverLevel, targetAddress, logisticsNetworkId);
         if (target.isValid()) {return;}
 
         // if no player found, try finding a BeePortBlockEntity within the network
