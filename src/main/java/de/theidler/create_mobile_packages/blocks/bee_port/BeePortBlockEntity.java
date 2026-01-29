@@ -9,10 +9,10 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
-import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
+import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
@@ -349,18 +349,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         String address = PackageItem.getAddress(itemStack);
         if (address.isBlank()) return; // return if the package has no address
 
-        LogisticsNetwork logisticsNetwork = Create.LOGISTICS.logisticsNetworks.get(getLogisticsNetworkId());
-        IExtendedLogisticsNetwork extendedLogisticsNetwork = (IExtendedLogisticsNetwork) logisticsNetwork;
-        Set<UUID> playerUUIDs = extendedLogisticsNetwork.create_mobile_packages$getPlayers();
-
-        // Check if the item can be sent to a player.
-        for (Player player : level.players()) {
-            if (!playerUUIDs.contains(player.getUUID())) {
-                continue; // skip players not in the logistics network
-            }
-            if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(player.blockPosition(), this.getBlockPos())) {
-                sendToPlayer(player, itemStack, slot);
-                return;
+        Set<UUID> playerUUIDs = NetworkHelper.getPlayerUUIDs(getLogisticsNetworkId());
+        if (playerUUIDs != null) {
+            // Check if the item can be sent to a player.
+            for (Player player : level.players()) {
+                if (!playerUUIDs.contains(player.getUUID())) {
+                    continue; // skip players not in the logistics network
+                }
+                if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(player.blockPosition(), this.getBlockPos())) {
+                    sendToPlayer(player, itemStack, slot);
+                    return;
+                }
             }
         }
 

@@ -4,6 +4,7 @@ import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,14 +35,14 @@ public enum BeePortComponentProvider implements IBlockComponentProvider, IServer
 
     @Override
     public void appendServerData(CompoundTag compoundTag, BlockAccessor blockAccessor) {
-        BeePortBlockEntity bpbe = (BeePortBlockEntity) blockAccessor.getBlockEntity();
-        LogisticsNetwork network = Create.LOGISTICS.logisticsNetworks.get(bpbe.getLogisticsNetworkId());
-        if (network == null) return;
-        IExtendedLogisticsNetwork extendedNetwork = (IExtendedLogisticsNetwork) network;
-        compoundTag.putString("Network", extendedNetwork.create_mobile_packages$getName());
-        Player player = blockAccessor.getPlayer();
-        if (extendedNetwork.create_mobile_packages$getPlayers().contains(player.getUUID())) {
-            compoundTag.putBoolean("IsPart", true);
+        if (blockAccessor.getBlockEntity() instanceof BeePortBlockEntity beePortBlockEntity) {
+            IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(beePortBlockEntity.getLogisticsNetworkId());
+            if (extendedNetwork == null) return;
+            compoundTag.putString("Network", extendedNetwork.create_mobile_packages$getName());
+            Player player = blockAccessor.getPlayer();
+            if (extendedNetwork.create_mobile_packages$getPlayers().contains(player.getUUID())) {
+                compoundTag.putBoolean("IsPart", true);
+            }
         }
     }
 }

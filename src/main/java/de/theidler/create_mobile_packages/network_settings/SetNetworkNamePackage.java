@@ -33,10 +33,8 @@ public class SetNetworkNamePackage extends SimplePacketBase {
     @Override
     public boolean handle(NetworkEvent.Context context) {
         context.enqueueWork(() -> {
-            LogisticsNetwork network = Create.LOGISTICS.logisticsNetworks.get(networkId);
-            if (network == null) return;
-            IExtendedLogisticsNetwork extendedNetwork = (IExtendedLogisticsNetwork) network;
-
+            IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(networkId);
+            if (extendedNetwork == null) return;
             extendedNetwork.create_mobile_packages$setName(name);
        });
         return true;

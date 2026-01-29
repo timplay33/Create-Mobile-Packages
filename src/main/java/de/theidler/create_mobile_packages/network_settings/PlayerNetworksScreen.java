@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PlayerNetworksScreen extends Screen {
 
@@ -242,8 +243,8 @@ public class PlayerNetworksScreen extends Screen {
 
     private List<IExtendedLogisticsNetwork> getNetworks() {
         return Create.LOGISTICS.logisticsNetworks.values().stream()
-                .filter(network -> network instanceof IExtendedLogisticsNetwork)
-                .map(network -> (IExtendedLogisticsNetwork) network)
+                .map(NetworkHelper::getExtendedLogisticsNetwork)
+                .filter(Objects::nonNull)
                 .filter(network -> network.create_mobile_packages$getPlayers().contains(getPlayer().getUUID()))
                 .toList();
     }

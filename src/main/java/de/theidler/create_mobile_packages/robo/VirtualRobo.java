@@ -105,7 +105,7 @@ public class VirtualRobo {
 
         // try finding a Player first
         target = PlayerTarget.fromAddress(serverLevel, targetAddress, logisticsNetworkId);
-        if (target.isValid()) {return;}
+        if (target != null && target.isValid()) {return;}
 
         // if no player found, try finding a BeePortBlockEntity within the network
         BeePortBlockEntity targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);

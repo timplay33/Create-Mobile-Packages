@@ -57,7 +57,7 @@ public class NetworkSettingsScreen extends Screen {
         this.guiTop = (height - windowHeight) / 2;
 
         network = Create.LOGISTICS.logisticsNetworks.get(networkId);
-        extendedNetwork = (IExtendedLogisticsNetwork) network;
+        extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(network);
 
         refreshUI();
     }

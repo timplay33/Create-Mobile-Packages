@@ -4,6 +4,7 @@ import com.simibubi.create.Create;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
+import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
@@ -119,8 +120,8 @@ public class RoboEntity extends Mob {
                 VirtualRobo virtualRobo = RoboManager.get(serverLevel).get(linkedId);
                 if (virtualRobo != null) {
                     // check if the player is part of the network
-                    IExtendedLogisticsNetwork network = (IExtendedLogisticsNetwork) Create.LOGISTICS.logisticsNetworks.get(virtualRobo.getLogisticsNetworkId());
-                    if (!network.create_mobile_packages$getPlayers().contains(player.getUUID())) {
+                    IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(virtualRobo.getLogisticsNetworkId());
+                    if (network != null && !network.create_mobile_packages$getPlayers().contains(player.getUUID())) {
                         return false; // player is not allowed to pick up the robo
                     }
 
