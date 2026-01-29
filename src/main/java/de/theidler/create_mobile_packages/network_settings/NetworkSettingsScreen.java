@@ -255,9 +255,9 @@ public class NetworkSettingsScreen extends Screen {
 
         renderBg(guiGraphics, partialTick, mouseX, mouseY);
 
-        guiGraphics.drawString(font, "Owner: " + getPlayerName(network.owner), guiLeft + 20, guiTop + 30, 0x3D3C48, false);
+        guiGraphics.drawString(font, Component.translatable("create_mobile_packages.network.owner", getPlayerName(network.owner)), guiLeft + 20, guiTop + 30, 0x3D3C48, false);
 
-        guiGraphics.drawString(font, "Players:", guiLeft + 20, guiTop + 50, 0x3D3C48, false);
+        guiGraphics.drawString(font, Component.translatable("create_mobile_packages.network.players"), guiLeft + 20, guiTop + 50, 0x3D3C48, false);
 
         float scrollOffset = scroll.getValue(partialTick);
         int listTop = guiTop + 60;
