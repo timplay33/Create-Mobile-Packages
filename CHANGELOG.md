@@ -16,17 +16,22 @@ Create: Mobile Packages - v0.6.0 - unreleased
 - simplify Robo behavior state system
 - add nametag 'No valid target' to Robos
 - added Abstractions for the target
-- added Mobile Packager for packaging items on the go
 - Bump create_version to 6.0.8-289
-- added "/cmp robos clear" command to remove all robos (#261)
 - disable dimension travel for robos (nether & end portals) (#250)
-- fix bee port duplication bug (#252)
 - update Translations (#243)
 
 ### Bug Fixes
 - add support for Create 6.0.7 (#241)
 - fix duping in Mobile Packager (#270)
 - fix missing robo bee clear recipe (#276)
+- fix Recipe Freezes (#279)
+- fix bee port duplication bug (#252)
+
+### Additions
+
+- added support for EMI (#279)
+- added "/cmp robos clear" command to remove all robos (#261)
+- added Mobile Packager for packaging items on the go
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.5 - 13.07.2025
