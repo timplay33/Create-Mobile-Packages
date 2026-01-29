@@ -54,6 +54,8 @@ import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS
  */
 public class BeePortBlockEntity extends PackagePortBlockEntity {
 
+    private UUID placerUUID;
+
     private final ContainerData data = new SimpleContainerData(2);
     private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
     private final IItemHandler handler = new IItemHandler() {
@@ -190,18 +192,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             RoboManager.get(serverLevel).requestRobo(this.getBlockPos(), this.getLogisticsNetworkId());
         }
     }
+    private boolean hasRunNetworkCheck = false;
 
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.put("RoboBeeInventory", roboBeeInventory.serializeNBT());
-    }
-
-    @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
-        if (tag.contains("RoboBeeInventory")) {
-            roboBeeInventory.deserializeNBT(tag.getCompound("RoboBeeInventory"));
+        if (placerUUID != null) {
+            tag.putUUID("PlacerUUID", placerUUID);
         }
     }
 
@@ -232,6 +230,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        if (tag.contains("RoboBeeInventory")) {
+            roboBeeInventory.deserializeNBT(tag.getCompound("RoboBeeInventory"));
+        }
+        if (tag.hasUUID("PlacerUUID")) {
+            placerUUID = tag.getUUID("PlacerUUID");
+        }
+    }
+
+    @Override
     public void lazyTick() {
         super.lazyTick();
         if (level == null || level.isClientSide()) return;
@@ -240,7 +249,21 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         } else {
             tryPullingFromAdjacentInventories();
         }
+        checkNetwork();
 
+    }
+
+    private void checkNetwork() {
+        if (!level.isClientSide && !hasRunNetworkCheck) {
+            LogisticsNetwork logisticsNetwork = Create.LOGISTICS.logisticsNetworks.get(getLogisticsNetworkId());
+            if (logisticsNetwork == null) return;
+
+            hasRunNetworkCheck = true;
+            if (logisticsNetwork.owner == null && placerUUID != null) {
+                logisticsNetwork.owner = placerUUID;
+            }
+
+        }
     }
 
     private void tryPushingToAdjacentInventories() {
@@ -561,6 +584,10 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     public ContainerData getData() {
         return data;
+    }
+
+    public void setPlacerUUID(UUID uuid) {
+        this.placerUUID = uuid;
     }
 
     public UUID getLogisticsNetworkId() {
