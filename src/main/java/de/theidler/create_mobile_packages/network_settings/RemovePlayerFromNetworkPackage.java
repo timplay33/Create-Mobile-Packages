@@ -1,7 +1,5 @@
 package de.theidler.create_mobile_packages.network_settings;
 
-import com.simibubi.create.Create;
-import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,8 +9,8 @@ import java.util.UUID;
 
 public class RemovePlayerFromNetworkPackage extends SimplePacketBase {
 
-    UUID playerId;
-    UUID networkId;
+    private final UUID playerId;
+    private final UUID networkId;
 
     public RemovePlayerFromNetworkPackage(UUID playerId, UUID networkId) {
         this.playerId = playerId;

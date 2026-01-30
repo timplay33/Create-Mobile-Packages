@@ -1,7 +1,5 @@
 package de.theidler.create_mobile_packages.compat.jade;
 
-import com.simibubi.create.Create;
-import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
@@ -21,7 +19,7 @@ public enum BeePortComponentProvider implements IBlockComponentProvider, IServer
     @Override
     public void appendTooltip(ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
         if (blockAccessor.getServerData().contains("Network")) {
-            iTooltip.add(Component.translatable("tooltip.create_mobile_packages.bee_port.jade.network", blockAccessor.getServerData().getString("Network"))); //"Network: " + ));
+            iTooltip.add(Component.translatable("tooltip.create_mobile_packages.bee_port.jade.network", blockAccessor.getServerData().getString("Network")));
         }
         if (blockAccessor.getServerData().contains("IsPart")) {
             iTooltip.add(Component.translatable("tooltip.create_mobile_packages.bee_port.jade.part_of_network"));

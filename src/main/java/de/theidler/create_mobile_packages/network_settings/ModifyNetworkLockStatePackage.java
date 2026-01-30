@@ -10,8 +10,8 @@ import java.util.UUID;
 
 public class ModifyNetworkLockStatePackage extends SimplePacketBase {
 
-    boolean locked;
-    UUID networkId;
+    private final boolean locked;
+    private final UUID networkId;
 
     public ModifyNetworkLockStatePackage(boolean locked, UUID networkId) {
         this.locked = locked;
