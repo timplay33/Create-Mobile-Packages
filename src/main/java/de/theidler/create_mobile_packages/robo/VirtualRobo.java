@@ -38,6 +38,7 @@ public class VirtualRobo {
     private ServerLevel serverLevel;
     private float packageHeightScale;
     private RoboRequest request = null;
+    private @Nullable BlockPos homePortPos;
 
     public VirtualRobo(ServerLevel level, UUID id, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId) {
         this.id = id;
@@ -91,6 +92,7 @@ public class VirtualRobo {
 
     public @Nullable Vec3 getTargetPosition() {
         updateTarget();
+        if (target == null) return null;
         return target.getTargetPos();
     }
 
@@ -111,6 +113,24 @@ public class VirtualRobo {
         BeePortBlockEntity targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
         if (targetBlockEntity != null) {
             target = new BeePortBlockEntityTarget(targetBlockEntity);
+        }
+        if (target != null && target.isValid()) {
+            return;
+        }
+
+        // if no BeePortBlockEntity found, check HomePort
+        BeePortBlockEntity homePort = CMPHelper.getPortAtPos(serverLevel, homePortPos);
+        if (homePort != null) {
+            target = new BeePortBlockEntityTarget(homePort);
+        }
+        if (target != null && target.isValid()) {
+            return;
+        }
+
+        // if no valid HomePort found, check other ports on the network
+        BeePortBlockEntity otherPort = CMPHelper.getClosestBeePort(serverLevel, null, BlockPos.containing(currentPos), this, logisticsNetworkId);
+        if (otherPort != null) {
+            target = new BeePortBlockEntityTarget(otherPort);
         }
     }
 
@@ -327,5 +347,10 @@ public class VirtualRobo {
 
     public UUID getLogisticsNetworkId() {
         return logisticsNetworkId;
+    }
+
+    public void setHomePortPos(@Nullable BlockPos homePort) {
+        if (homePort == null) return;
+        this.homePortPos = homePort;
     }
 }

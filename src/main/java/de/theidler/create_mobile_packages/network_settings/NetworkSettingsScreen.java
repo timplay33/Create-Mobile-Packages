@@ -66,6 +66,11 @@ public class NetworkSettingsScreen extends Screen {
         this.clearWidgets();
         this.playerButtons.clear();
 
+        if (network == null || extendedNetwork == null) {
+            minecraft.setScreen(parent);
+            return;
+        }
+
         createNameBox();
         createLockButton();
         createPlayerList();
@@ -126,7 +131,9 @@ public class NetworkSettingsScreen extends Screen {
         nameBox = new EditBox(new NoShadowFontWrapper(font), guiLeft + 25, guiTop + 4, windowWidth - 50, 10, Component.empty());
         nameBox.setMaxLength(25);
         nameBox.setBordered(false);
-        nameBox.setValue(extendedNetwork.create_mobile_packages$getName());
+        if (extendedNetwork != null) {
+            nameBox.setValue(extendedNetwork.create_mobile_packages$getName());
+        }
         nameBox.setResponder(onTextChanged);
         nameBox.setX(nameBoxX(nameBox.getValue(), nameBox));
         nameBox.setTextColor(0x4A2D31);

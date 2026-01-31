@@ -201,6 +201,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (placerUUID != null) {
             tag.putUUID("PlacerUUID", placerUUID);
         }
+        if (hasRunNetworkCheck) {
+            tag.putBoolean("hasRunNetworkCheck", true);
+        }
     }
 
     /**
@@ -238,6 +241,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (tag.hasUUID("PlacerUUID")) {
             placerUUID = tag.getUUID("PlacerUUID");
         }
+        if (tag.contains("hasRunNetworkCheck")) {
+            hasRunNetworkCheck = tag.getBoolean("hasRunNetworkCheck");
+        }
     }
 
     @Override
@@ -254,16 +260,20 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     private void checkNetwork() {
-        if (!level.isClientSide && !hasRunNetworkCheck) {
-            LogisticsNetwork logisticsNetwork = Create.LOGISTICS.logisticsNetworks.get(getLogisticsNetworkId());
-            if (logisticsNetwork == null) return;
 
-            hasRunNetworkCheck = true;
-            if (logisticsNetwork.owner == null && placerUUID != null) {
-                logisticsNetwork.owner = placerUUID;
-            }
-
+        if (level == null || level.isClientSide || hasRunNetworkCheck) {
+            return;
         }
+
+        LogisticsNetwork logisticsNetwork = Create.LOGISTICS.logisticsNetworks.get(getLogisticsNetworkId());
+        if (logisticsNetwork == null) return;
+
+        hasRunNetworkCheck = true;
+        if (logisticsNetwork.owner == null && placerUUID != null) {
+            logisticsNetwork.owner = placerUUID;
+        }
+
+
     }
 
     private void tryPushingToAdjacentInventories() {
@@ -415,7 +425,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
         roboSendCooldown = 2;
         if (level instanceof ServerLevel serverLevel) {
-            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId(), 0);
+            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId(), 0, this.getBlockPos());
         }
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
