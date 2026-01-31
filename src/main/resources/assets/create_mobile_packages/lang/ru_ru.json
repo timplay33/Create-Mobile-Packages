@@ -66,5 +66,7 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Opens a menu to create Packages",
     "item.create_mobile_packages.mobile_packager.tooltip.condition2": "When sneak used",
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages",
-    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info"
+    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
+    "create_mobile_packages.network.players": "Players in Network:",
+    "create_mobile_packages.network.owner": "Owner: %1$s"
 }
