@@ -66,5 +66,7 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "小包を作成するメニューを開きます",
     "item.create_mobile_packages.mobile_packager.tooltip.condition2": "スニークして使ったとき",
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "小包を編集するメニューを開きます",
-    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info"
+    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
+    "create_mobile_packages.network.players": "Players in Network:",
+    "create_mobile_packages.network.owner": "Owner: %1$s"
 }
