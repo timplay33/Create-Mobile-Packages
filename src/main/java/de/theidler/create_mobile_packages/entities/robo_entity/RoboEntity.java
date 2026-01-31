@@ -1,6 +1,10 @@
 package de.theidler.create_mobile_packages.entities.robo_entity;
 
+import com.simibubi.create.Create;
+import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
+import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
+import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
@@ -13,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -109,6 +114,30 @@ public class RoboEntity extends Mob {
 
     @Override
     public boolean hurt(@NotNull DamageSource pSource, float pAmount) {
+        // if hit by a player, pick it up
+        if (pSource.getEntity() instanceof Player player) {
+            if (level() instanceof ServerLevel serverLevel) {
+                VirtualRobo virtualRobo = RoboManager.get(serverLevel).get(linkedId);
+                if (virtualRobo != null) {
+                    // check if the player is part of the network
+                    IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(virtualRobo.getLogisticsNetworkId());
+                    if (network != null && !network.create_mobile_packages$getPlayers().contains(player.getUUID())) {
+                        return false; // player is not allowed to pick up the robo
+                    }
+
+                    ItemStack stack = virtualRobo.getItemStack();
+                    if (!player.getInventory().add(stack)) {
+                        player.drop(stack, false);
+                    }
+                    if (!player.getInventory().add(CMPItems.ROBO_BEE.asStack())) {
+                        player.drop(CMPItems.ROBO_BEE.asStack(), false);
+                    }
+                    RoboManager.get(serverLevel).remove(linkedId);
+                    this.discard();
+                }
+            }
+            return true;
+        }
         return false; // RoboEntity cannot be damaged.
     }
 

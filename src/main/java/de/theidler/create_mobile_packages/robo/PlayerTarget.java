@@ -1,8 +1,10 @@
 package de.theidler.create_mobile_packages.robo;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
+import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPPackets;
+import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
 import de.theidler.create_mobile_packages.toast.types.PackageToast;
 import net.minecraft.network.chat.Component;
@@ -17,20 +19,26 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.CMPHelper.doesAddressMatchPlayer;
 
 public class PlayerTarget implements RoboTarget {
     private final Player player;
     private int eta;
+    private final IExtendedLogisticsNetwork network;
 
-    public PlayerTarget(Player player) {
+    public PlayerTarget(Player player, UUID networkId) {
         this.player = player;
+        this.network = NetworkHelper.getExtendedLogisticsNetwork(networkId);
     }
 
-    public static PlayerTarget fromAddress(ServerLevel level, String address) {
-        ServerPlayer player = level.getPlayers((p) -> doesAddressMatchPlayer(p, address)).stream().findFirst().orElse(null);
-        return new PlayerTarget(player);
+    public static @Nullable PlayerTarget fromAddress(ServerLevel level, String address, UUID networkId) {
+        IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(networkId);
+        if (network == null) return null;
+        ServerPlayer player = level.getPlayers((p) -> doesAddressMatchPlayer(p, address)).stream().filter(p -> network.create_mobile_packages$getPlayers().contains(p.getUUID())).findFirst().orElse(null);
+        if (player == null) return null;
+        return new PlayerTarget(player, networkId);
     }
 
     @Override
@@ -46,7 +54,7 @@ public class PlayerTarget implements RoboTarget {
 
     @Override
     public boolean isValid() {
-        return player != null && player.isAlive();
+        return player != null && player.isAlive() && network != null && network.create_mobile_packages$getPlayers().contains(player.getUUID());
     }
 
     public void updateEtaToast(VirtualRobo robo) {

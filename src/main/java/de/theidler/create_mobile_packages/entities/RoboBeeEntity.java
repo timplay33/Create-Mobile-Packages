@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -29,9 +30,12 @@ public class RoboBeeEntity extends RoboEntity {
     protected void registerGoals() {
     }
 
-    @Override
-    public boolean canCollideWith(Entity entity) {
-        return false;
+    public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
+        UUID linkedId = null;
+        if (level instanceof ServerLevel serverLevel) {
+            linkedId = RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, BlockPos.ZERO, UUID.randomUUID(), 0, null);
+        }
+        return new RoboBeeEntity(type, level, linkedId);
     }
 
     @Override
@@ -40,11 +44,12 @@ public class RoboBeeEntity extends RoboEntity {
     }
 
     @Override
-    public void push(Entity entity) {
+    public boolean canCollideWith(@NotNull Entity entity) {
+        return false;
     }
 
     @Override
-    protected void doPush(Entity entity) {
+    public void push(@NotNull Entity entity) {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -53,11 +58,7 @@ public class RoboBeeEntity extends RoboEntity {
                 .add(Attributes.MOVEMENT_SPEED, 0.0D);
     }
 
-    public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
-        UUID linkedId = null;
-        if (level instanceof ServerLevel serverLevel) {
-            linkedId = RoboManager.get(serverLevel).newRobo(serverLevel, ItemStack.EMPTY, BlockPos.ZERO, UUID.randomUUID(), 0);
-        }
-        return new RoboBeeEntity(type, level, linkedId);
+    @Override
+    protected void doPush(@NotNull Entity entity) {
     }
 }

@@ -36,3 +36,6 @@ license="${mod_license}"
     mandatory = false
     versionRange = "[15.19.0,)"
     ordering = "NONE"
+
+[[mixins]]
+config="create_mobile_packages.mixins.json"
