@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.network_settings;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,18 +21,20 @@ public class NetworkHelper {
         if (logisticsNetworkId == null) return null;
 
         LogisticsNetwork logisticsNetwork = Create.LOGISTICS.logisticsNetworks.get(logisticsNetworkId);
-        if (logisticsNetwork == null) return null;
-
-        if (logisticsNetwork instanceof IExtendedLogisticsNetwork extendedLogisticsNetwork) {
-            return extendedLogisticsNetwork;
-        }
-        return null;
+        return getExtendedLogisticsNetwork(logisticsNetwork);
     }
 
     public static @Nullable IExtendedLogisticsNetwork getExtendedLogisticsNetwork(@Nullable LogisticsNetwork logisticsNetwork) {
+        if (logisticsNetwork == null) return null;
+
+        // Debugging to console
+        CreateMobilePackages.LOGGER.debug("Checking network: " + logisticsNetwork.getClass().getName());
+
         if (logisticsNetwork instanceof IExtendedLogisticsNetwork extendedLogisticsNetwork) {
             return extendedLogisticsNetwork;
         }
+
+        CreateMobilePackages.LOGGER.debug("FAILED: Network does not implement IExtendedLogisticsNetwork!");
         return null;
     }
 }

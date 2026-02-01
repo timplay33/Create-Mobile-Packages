@@ -5,7 +5,6 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
-import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
@@ -17,6 +16,7 @@ import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -192,7 +192,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             RoboManager.get(serverLevel).requestRobo(this.getBlockPos(), this.getLogisticsNetworkId());
         }
     }
-    private boolean hasRunNetworkCheck = false;
 
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
@@ -249,25 +248,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         } else {
             tryPullingFromAdjacentInventories();
         }
-        checkNetwork();
-
-    }
-
-    private void checkNetwork() {
-
-        if (level == null || level.isClientSide || hasRunNetworkCheck) {
-            return;
-        }
-
-        LogisticsNetwork logisticsNetwork = Create.LOGISTICS.logisticsNetworks.get(getLogisticsNetworkId());
-        if (logisticsNetwork == null) return;
-
-        hasRunNetworkCheck = true;
-        if (logisticsNetwork.owner == null && placerUUID != null) {
-            logisticsNetwork.owner = placerUUID;
-        }
-
-
     }
 
     private void tryPushingToAdjacentInventories() {
@@ -476,6 +456,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (level != null && !level.isClientSide) {
             level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
         }
+        // update network data
+        if (level != null)
+            Create.LOGISTICS.linkAdded(behaviour.freqId, GlobalPos.of(level.dimension(), getBlockPos()), placerUUID);
     }
 
     /**
@@ -591,6 +574,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     public void setPlacerUUID(UUID uuid) {
         this.placerUUID = uuid;
+        if (level != null)
+            Create.LOGISTICS.linkAdded(behaviour.freqId, GlobalPos.of(level.dimension(), getBlockPos()), placerUUID);
     }
 
     public UUID getLogisticsNetworkId() {

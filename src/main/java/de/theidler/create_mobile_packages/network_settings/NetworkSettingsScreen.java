@@ -1,12 +1,9 @@
 package de.theidler.create_mobile_packages.network_settings;
 
-import com.simibubi.create.Create;
-import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPGuiTextures;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
@@ -29,8 +26,6 @@ public class NetworkSettingsScreen extends Screen {
 
     private final UUID networkId;
     private final Screen parent;
-    private LogisticsNetwork network;
-    private IExtendedLogisticsNetwork extendedNetwork;
     private EditBox nameBox;
     private IconButton addPlayerButton;
     private IconButton networkLockButton;
@@ -50,54 +45,80 @@ public class NetworkSettingsScreen extends Screen {
         this.networkId = networkId;
     }
 
+    private int loadTicks = 0;
+    private int lastKnownPlayerCount = -1;
+    private String lastKnownNetworkName = null;
+
     @Override
     protected void init() {
         super.init();
         this.guiLeft = (width - windowWidth) / 2;
         this.guiTop = (height - windowHeight) / 2;
 
-        network = Create.LOGISTICS.logisticsNetworks.get(networkId);
-        extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(network);
+        // Request network data from server
+        CMPPackets.getChannel().sendToServer(new RequestNetworkDataPacket(networkId));
 
-        refreshUI();
+        // Also try to load from server-side data as fallback
+        loadFromServerIfNeeded();
     }
 
     private void refreshUI() {
         this.clearWidgets();
         this.playerButtons.clear();
 
-        if (network == null || extendedNetwork == null) {
-            minecraft.setScreen(parent);
+        ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
+        if (networkData == null) {
+            // Data not yet received from server, wait
             return;
         }
 
-        createNameBox();
-        createLockButton();
-        createPlayerList();
+        // Update tracking variables
+        lastKnownPlayerCount = networkData.players.size();
+        lastKnownNetworkName = networkData.name;
+
+        createNameBox(networkData);
+        createLockButton(networkData);
+        createPlayerList(networkData);
         createAddPlayerButton();
 
         doneBtn = new IconButton(guiLeft + windowWidth - 25, guiTop + windowHeight - 43, AllIcons.I_CONFIRM);
-        doneBtn.withCallback(() -> {
-            minecraft.setScreen(parent);
-        });
+        doneBtn.withCallback(() -> minecraft.setScreen(parent));
         addRenderableWidget(doneBtn);
     }
 
+    private void loadFromServerIfNeeded() {
+        // Check for errors first
+        if (ClientNetworkDataStorage.hasError(networkId)) {
+            // Error was received, no more retries needed
+            loadTicks = -1;
+            return;
+        }
 
-    private void createLockButton() {
-        networkLockButton = new IconButton(guiLeft + windowWidth - 30, guiTop + 25, network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
-        networkLockButton.setToolTip(Component.translatable(network.locked ? "create.gui.stock_keeper.network_locked" : "create.gui.stock_keeper.network_open"));
+        // Try loading from server data if client cache is empty
+        if (ClientNetworkDataStorage.getNetworkData(networkId) == null) {
+            loadTicks++;
+            if (loadTicks == 1 || loadTicks == 40 || loadTicks == 100) {
+                // Request immediately, after 2 seconds, and after 5 seconds
+                CMPPackets.getChannel().sendToServer(new RequestNetworkDataPacket(networkId));
+            }
+        } else {
+            loadTicks = 0;
+        }
+    }
+
+
+    private void createLockButton(ClientNetworkDataStorage.NetworkData networkData) {
+        networkLockButton = new IconButton(guiLeft + windowWidth - 30, guiTop + 25, networkData.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
+        networkLockButton.setToolTip(Component.translatable(networkData.locked ? "create.gui.stock_keeper.network_locked" : "create.gui.stock_keeper.network_open"));
         networkLockButton.withCallback(() -> {
-            CMPPackets.getChannel().sendToServer(new ModifyNetworkLockStatePackage(!network.locked, networkId));
-            network.locked = !network.locked; // do on the client side for immediate feedback
-            networkLockButton.setIcon(network.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
-            networkLockButton.setToolTip(Component.translatable(network.locked ? "create.gui.stock_keeper.network_locked" : "create.gui.stock_keeper.network_open"));
+            CMPPackets.getChannel().sendToServer(new ModifyNetworkLockStatePackage(!networkData.locked, networkId));
+            // Server will send back updated data - no need to update locally
         });
         addRenderableWidget(networkLockButton);
     }
 
-    private void createPlayerList() {
-        List<UUID> players = extendedNetwork.create_mobile_packages$getPlayers().stream().toList();
+    private void createPlayerList(ClientNetworkDataStorage.NetworkData networkData) {
+        List<UUID> players = networkData.players;
         for (int i = 0; i < players.size(); i++) {
             UUID pId = players.get(i);
 
@@ -105,8 +126,7 @@ public class NetworkSettingsScreen extends Screen {
             removeBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.remove_player"));
             removeBtn.withCallback(() -> {
                 CMPPackets.getChannel().sendToServer(new RemovePlayerFromNetworkPackage(pId, networkId));
-                extendedNetwork.create_mobile_packages$removePlayer(pId); // update UI local
-                this.refreshUI(); // redraw UI
+                // Server will send back updated data - no need to update locally
             });
             addRenderableWidget(removeBtn);
             playerButtons.add(removeBtn);
@@ -120,24 +140,22 @@ public class NetworkSettingsScreen extends Screen {
             Player player = Minecraft.getInstance().player;
             if (player == null) return;
             CMPPackets.getChannel().sendToServer(new AddPlayerToNetworkPackage(player.getUUID(), networkId));
-            extendedNetwork.create_mobile_packages$addPlayer(player.getUUID()); // update UI local
-            this.refreshUI(); // redraw UI
+            // Server will send back updated data - no need to update locally
         });
         addRenderableWidget(addPlayerButton);
     }
 
-    private void createNameBox() {
+    private void createNameBox(ClientNetworkDataStorage.NetworkData networkData) {
         Consumer<String> onTextChanged = s -> {
             nameBox.setX(nameBoxX(s, nameBox));
             //save network name
             CMPPackets.getChannel().sendToServer(new SetNetworkNamePackage(nameBox.getValue(), networkId));
+            networkData.name = nameBox.getValue();
         };
         nameBox = new EditBox(new NoShadowFontWrapper(font), guiLeft + 25, guiTop + 4, windowWidth - 50, 10, Component.empty());
         nameBox.setMaxLength(25);
         nameBox.setBordered(false);
-        if (extendedNetwork != null) {
-            nameBox.setValue(extendedNetwork.create_mobile_packages$getName());
-        }
+        nameBox.setValue(networkData.name);
         nameBox.setResponder(onTextChanged);
         nameBox.setX(nameBoxX(nameBox.getValue(), nameBox));
         nameBox.setTextColor(0x4A2D31);
@@ -157,6 +175,24 @@ public class NetworkSettingsScreen extends Screen {
     public void tick() {
         super.tick();
         scroll.tickChaser();
+        loadFromServerIfNeeded();
+
+        // Check if network data changed and refresh UI if needed
+        ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
+        if (networkData != null && nameBox != null) { // Only check if UI is initialized
+            boolean dataChanged = lastKnownPlayerCount != networkData.players.size();
+
+            // Check if player count changed
+
+            // Check if name changed (excluding our own edits)
+            if (lastKnownNetworkName != null && !lastKnownNetworkName.equals(networkData.name) && !nameBox.isFocused()) {
+                dataChanged = true;
+            }
+
+            if (dataChanged) {
+                refreshUI();
+            }
+        }
     }
 
     @Override
@@ -170,11 +206,17 @@ public class NetworkSettingsScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (doneBtn.isMouseOver(mouseX, mouseY)) {
+        // If error is shown, close on click
+        if (ClientNetworkDataStorage.hasError(networkId)) {
+            minecraft.setScreen(parent);
+            return true;
+        }
+
+        if (doneBtn != null && doneBtn.isMouseOver(mouseX, mouseY)) {
             doneBtn.onClick(mouseX, mouseY);
             return true;
         }
-        if (!nameBox.isFocused()) {
+        if (nameBox != null && !nameBox.isFocused()) {
             String text = nameBox.getValue();
             int iconX = nameBoxX(text, nameBox) + font.width(text) + 5;
             int iconY = guiTop + 1;
@@ -197,7 +239,7 @@ public class NetworkSettingsScreen extends Screen {
             }
         }
         boolean result = super.mouseClicked(mouseX, mouseY, button);
-        if (!result && nameBox.isFocused()) {
+        if (!result && nameBox != null && nameBox.isFocused()) {
             nameBox.setFocused(false);
         }
         return result;
@@ -225,7 +267,9 @@ public class NetworkSettingsScreen extends Screen {
     }
 
     private int getMaxScroll() {
-        return Math.max(0, extendedNetwork.create_mobile_packages$getPlayers().size() - 4);
+        ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
+        if (networkData == null) return 0;
+        return Math.max(0, networkData.players.size() - 4);
     }
 
     @Override
@@ -249,11 +293,13 @@ public class NetworkSettingsScreen extends Screen {
         }
         CMPGuiTextures.PLAYER_NETWORKS_FOOTER.render(graphics, x, y);
 
-        String text = nameBox.getValue();
-        nameBox.visible = nameBox.isFocused();
-        if (!nameBox.isFocused()) {
-            graphics.drawString(font, text, nameBoxX(text, nameBox), guiTop + 4, 0x4A2D31, false);
-            CMPGuiTextures.PLAYER_NETWORKS_EDIT_NAME.render(graphics, nameBoxX(text, nameBox) + font.width(text) + 5, guiTop + 1);
+        if (nameBox != null) {
+            String text = nameBox.getValue();
+            nameBox.visible = nameBox.isFocused();
+            if (!nameBox.isFocused()) {
+                graphics.drawString(font, text, nameBoxX(text, nameBox), guiTop + 4, 0x4A2D31, false);
+                CMPGuiTextures.PLAYER_NETWORKS_EDIT_NAME.render(graphics, nameBoxX(text, nameBox) + font.width(text) + 5, guiTop + 1);
+            }
         }
     }
 
@@ -263,7 +309,31 @@ public class NetworkSettingsScreen extends Screen {
 
         renderBg(guiGraphics, partialTick, mouseX, mouseY);
 
-        guiGraphics.drawString(font, Component.translatable("create_mobile_packages.network.owner", getPlayerName(network.owner)), guiLeft + 20, guiTop + 30, 0x3D3C48, false);
+        // Check for errors first
+        if (ClientNetworkDataStorage.hasError(networkId)) {
+            String errorMsg = ClientNetworkDataStorage.getErrorMessage(networkId);
+            guiGraphics.drawCenteredString(font, Component.literal(errorMsg), guiLeft + windowWidth / 2, guiTop + windowHeight / 2 - 20, 0xFF5555);
+            guiGraphics.drawCenteredString(font, Component.literal("Click to close"), guiLeft + windowWidth / 2, guiTop + windowHeight / 2 + 10, 0xFFFFFF);
+            super.render(guiGraphics, mouseX, mouseY, partialTick);
+            return;
+        }
+
+        ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
+        if (networkData == null) {
+            // Data not loaded yet - display loading message or wait
+            if (nameBox == null) {
+                guiGraphics.drawCenteredString(font, Component.literal("Loading..."), guiLeft + windowWidth / 2, guiTop + windowHeight / 2, 0xFFFFFF);
+            }
+            super.render(guiGraphics, mouseX, mouseY, partialTick);
+            return;
+        }
+
+        // If data just arrived and UI hasn't been initialized, do it now
+        if (nameBox == null) {
+            refreshUI();
+        }
+
+        guiGraphics.drawString(font, Component.translatable("create_mobile_packages.network.owner", getPlayerName(networkData.owner)), guiLeft + 20, guiTop + 30, 0x3D3C48, false);
 
         guiGraphics.drawString(font, Component.translatable("create_mobile_packages.network.players"), guiLeft + 20, guiTop + 50, 0x3D3C48, false);
 
@@ -273,7 +343,7 @@ public class NetworkSettingsScreen extends Screen {
 
         guiGraphics.enableScissor(guiLeft, listTop, guiLeft + windowWidth, listBottom);
 
-        List<UUID> players = extendedNetwork.create_mobile_packages$getPlayers().stream().toList();
+        List<UUID> players = networkData.players;
         for (int i = 0; i < players.size(); i++) {
             float rowY = listTop + 5 + (i - scrollOffset) * 20;
 
@@ -305,12 +375,15 @@ public class NetworkSettingsScreen extends Screen {
         int maxScroll = getMaxScroll();
         if (maxScroll <= 0) return;
 
+        ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
+        if (networkData == null) return;
+
         int barX = guiLeft + windowWidth - 10;
         int barY = guiTop + 25;
         int barHeight = 106;
 
         float scrollOffset = scroll.getValue();
-        int barSize = Math.max(10, (int) (barHeight * (4f / (extendedNetwork.create_mobile_packages$getPlayers().size()))));
+        int barSize = Math.max(10, (int) (barHeight * (4f / (networkData.players.size()))));
         int scrollBarY = barY + (int) ((barHeight - barSize) * (scrollOffset / maxScroll));
 
         AllGuiTextures pad = AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_PAD;

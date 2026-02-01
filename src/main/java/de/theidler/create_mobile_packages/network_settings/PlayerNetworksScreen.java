@@ -1,11 +1,8 @@
 package de.theidler.create_mobile_packages.network_settings;
 
-import com.simibubi.create.Create;
-import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPGuiTextures;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
@@ -19,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.UUID;
 
 public class PlayerNetworksScreen extends Screen {
 
@@ -31,6 +28,8 @@ public class PlayerNetworksScreen extends Screen {
     private boolean scrollHandleActive;
     private final List<IconButton> networkButtons = new ArrayList<>();
     private IconButton doneBtn;
+    private List<UUID> cachedNetworkIds = new ArrayList<>();
+    private int lastKnownUpdateCount = -1;
 
     public PlayerNetworksScreen(Component title) {
         super(title);
@@ -51,26 +50,33 @@ public class PlayerNetworksScreen extends Screen {
         super.init();
         this.guiLeft = (width - windowWidth) / 2;
         this.guiTop = (height - windowHeight) / 2;
-        refreshNetworks();
 
         doneBtn = new IconButton(guiLeft + windowWidth - 25, guiTop + windowHeight - 24, AllIcons.I_CONFIRM);
         doneBtn.withCallback(() -> minecraft.setScreen(null));
+
+        CMPPackets.getChannel().sendToServer(new RequestPlayerNetworksPacket());
+        lastKnownUpdateCount = ClientNetworkDataStorage.getUpdateCount();
+
+        refreshNetworks();
     }
 
     private void refreshNetworks() {
         this.clearWidgets();
         this.networkButtons.clear();
+        this.cachedNetworkIds = getNetworks();
 
-        List<IExtendedLogisticsNetwork> networks = getNetworks();
-        for (IExtendedLogisticsNetwork network : networks) {
-            if (!(network instanceof LogisticsNetwork ln)) continue;
+        addRenderableWidget(doneBtn);
 
+        for (UUID networkId : cachedNetworkIds) {
             IconButton leaveBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
             leaveBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.leave"));
 
             leaveBtn.withCallback(() -> {
-                CMPPackets.getChannel().sendToServer(new RemovePlayerFromNetworkPackage(getPlayer().getUUID(), ln.id));
-                network.create_mobile_packages$removePlayer(getPlayer().getUUID());
+                CMPPackets.getChannel().sendToServer(new RemovePlayerFromNetworkPackage(getPlayer().getUUID(), networkId));
+                // Clear cache and refetch networks from server
+                ClientNetworkDataStorage.clear();
+                CMPPackets.getChannel().sendToServer(new RequestPlayerNetworksPacket());
+                lastKnownUpdateCount = ClientNetworkDataStorage.getUpdateCount();
                 this.refreshNetworks();
             });
 
@@ -80,7 +86,7 @@ public class PlayerNetworksScreen extends Screen {
             // Add settings button
             IconButton settingsBtn = new IconButton(0, 0, AllIcons.I_CONFIG_OPEN);
             settingsBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.settings"));
-            settingsBtn.withCallback(() -> minecraft.setScreen(new NetworkSettingsScreen(this, ln.id)));
+            settingsBtn.withCallback(() -> minecraft.setScreen(new NetworkSettingsScreen(this, networkId)));
             addRenderableWidget(settingsBtn);
             networkButtons.add(settingsBtn);
         }
@@ -90,6 +96,12 @@ public class PlayerNetworksScreen extends Screen {
     public void tick() {
         super.tick();
         scroll.tickChaser();
+
+        int currentUpdateCount = ClientNetworkDataStorage.getUpdateCount();
+        if (currentUpdateCount != lastKnownUpdateCount) {
+            lastKnownUpdateCount = currentUpdateCount;
+            refreshNetworks();
+        }
     }
 
     @Override
@@ -103,10 +115,6 @@ public class PlayerNetworksScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (doneBtn.isMouseOver(mouseX, mouseY)) {
-            doneBtn.onClick(mouseX, mouseY);
-            return true;
-        }
         int maxScroll = getMaxScroll();
         if (maxScroll > 0 && button == 0) {
             int barX = guiLeft + windowWidth - 8;
@@ -143,21 +151,22 @@ public class PlayerNetworksScreen extends Screen {
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
+    private int getVisibleRows() {
+        return (windowHeight - 30) / 20;
+    }
+
     private int getMaxScroll() {
-        return Math.max(0, getNetworks().size() + 1 - 5);
+        return Math.max(0, cachedNetworkIds.size() + 1 - getVisibleRows());
     }
 
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = guiLeft;
-        int y = guiTop;
+        int y = guiTop + CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight();
 
-        CMPGuiTextures.PLAYER_NETWORKS_HEADER.render(graphics, x, y);
-        y += CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight();
         for (int i = 0; i < (windowHeight - CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight() - CMPGuiTextures.PLAYER_NETWORKS_FOOTER.getHeight()) / CMPGuiTextures.PLAYER_NETWORKS_BG.getHeight(); i++) {
             CMPGuiTextures.PLAYER_NETWORKS_BG.render(graphics, x, y);
             y += CMPGuiTextures.PLAYER_NETWORKS_BG.getHeight();
         }
-        CMPGuiTextures.PLAYER_NETWORKS_FOOTER.render(graphics, x, y);
     }
 
     @Override
@@ -171,9 +180,10 @@ public class PlayerNetworksScreen extends Screen {
 
         guiGraphics.enableScissor(guiLeft, listTop, guiLeft + windowWidth, listBottom);
 
-        List<IExtendedLogisticsNetwork> networks = getNetworks();
-        for (int i = 0; i < networks.size(); i++) {
+        for (int i = 0; i < cachedNetworkIds.size(); i++) {
             float rowY = listTop + (i + 1 - scrollOffset) * 20;
+            UUID networkId = cachedNetworkIds.get(i);
+            ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
 
             if (i * 2 + 1 < networkButtons.size()) {
                 IconButton leaveBtn = networkButtons.get(i * 2);
@@ -195,14 +205,17 @@ public class PlayerNetworksScreen extends Screen {
                 continue;
             }
 
-            guiGraphics.drawString(font, networks.get(i).create_mobile_packages$getName(), guiLeft + 20, (int) rowY, 0x3D3C48, false);
+            String name = networkData != null ? networkData.name : "Loading...";
+            guiGraphics.drawString(font, name, guiLeft + 20, (int) rowY, 0x3D3C48, false);
         }
 
         guiGraphics.disableScissor();
 
         renderScrollbar(guiGraphics);
 
+        doneBtn.visible = false;
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+        doneBtn.visible = true;
 
         // Render header and footer again to be above buttons
         CMPGuiTextures.PLAYER_NETWORKS_HEADER.render(guiGraphics, guiLeft, guiTop);
@@ -224,7 +237,8 @@ public class PlayerNetworksScreen extends Screen {
         int barHeight = windowHeight - 35;
 
         float scrollOffset = scroll.getValue();
-        int barSize = Math.max(10, (int) (barHeight * (5f / (getNetworks().size() + 1))));
+        int visibleRows = getVisibleRows();
+        int barSize = Math.max(10, (int) (barHeight * ((float) visibleRows / (cachedNetworkIds.size() + 1))));
         int scrollBarY = barY + (int) ((barHeight - barSize) * (scrollOffset / maxScroll));
 
         AllGuiTextures pad = AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_PAD;
@@ -241,11 +255,10 @@ public class PlayerNetworksScreen extends Screen {
         return Minecraft.getInstance().player;
     }
 
-    private List<IExtendedLogisticsNetwork> getNetworks() {
-        return Create.LOGISTICS.logisticsNetworks.values().stream()
-                .map(NetworkHelper::getExtendedLogisticsNetwork)
-                .filter(Objects::nonNull)
-                .filter(network -> network.create_mobile_packages$getPlayers().contains(getPlayer().getUUID()))
+    private List<UUID> getNetworks() {
+        return ClientNetworkDataStorage.getNetworks().entrySet().stream()
+                .filter(entry -> entry.getValue().players.contains(getPlayer().getUUID()) || getPlayer().getUUID().equals(entry.getValue().owner))
+                .map(java.util.Map.Entry::getKey)
                 .toList();
     }
 }

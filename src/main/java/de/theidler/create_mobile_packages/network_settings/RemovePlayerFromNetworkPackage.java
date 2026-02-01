@@ -4,10 +4,13 @@ import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
+import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class RemovePlayerFromNetworkPackage extends SimplePacketBase {
@@ -38,15 +41,31 @@ public class RemovePlayerFromNetworkPackage extends SimplePacketBase {
             if (player == null) return;
 
             LogisticsNetwork logisticsNetwork = Create.LOGISTICS.logisticsNetworks.get(networkId);
-            IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(logisticsNetwork);
-            if (logisticsNetwork == null || extendedNetwork == null) return;
+            if (logisticsNetwork == null) return;
 
             // The Owner can remove players from the network
             // Players can only remove themselves from the network
             if (!logisticsNetwork.owner.equals(player.getUUID())
                     && !playerId.equals(player.getUUID())) return;
 
+            // Get the extended network
+            IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(logisticsNetwork);
+            if (extendedNetwork == null) return;
+
             extendedNetwork.create_mobile_packages$removePlayer(playerId);
+
+            // Mark as dirty to persist
+            Create.LOGISTICS.markDirty();
+
+            // Send updated network data back to client
+            NetworkDataPacket responsePacket = new NetworkDataPacket(
+                    networkId,
+                    logisticsNetwork.owner,
+                    logisticsNetwork.locked,
+                    extendedNetwork.create_mobile_packages$getName(),
+                    new ArrayList<>(extendedNetwork.create_mobile_packages$getPlayers())
+            );
+            CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(() -> player), responsePacket);
         });
         return true;
     }
