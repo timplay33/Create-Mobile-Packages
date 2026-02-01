@@ -8,6 +8,7 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBeha
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
@@ -584,7 +585,11 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
     @Override
     public InteractionResult use(Player player) {
-        if (!behaviour.mayInteractMessage(player)) {
+        IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(behaviour.freqId);
+        if (network != null
+                && !network.create_mobile_packages$getPlayers().contains(player.getUUID())
+                && !behaviour.mayInteractMessage(player)
+        ) {
             return InteractionResult.SUCCESS;
         }
         return super.use(player);

@@ -69,8 +69,9 @@ public class NetworkDataPacket extends SimplePacketBase {
         if (isError) {
             ClientNetworkDataStorage.setErrorMessage(networkId, name);
         } else {
-            // Check if the network is locked or owner
-            if (!locked || (Minecraft.getInstance().player != null && Minecraft.getInstance().player.getUUID().equals(owner))) {
+            // Check if the network is locked or owner or part
+            if (!locked || (Minecraft.getInstance().player != null &&
+                    (Minecraft.getInstance().player.getUUID().equals(owner) || players.contains(Minecraft.getInstance().player.getUUID())))) {
                 // Player is in the network, store the data
                 ClientNetworkDataStorage.updateNetworkData(networkId, owner, locked, name, players);
             } else {
