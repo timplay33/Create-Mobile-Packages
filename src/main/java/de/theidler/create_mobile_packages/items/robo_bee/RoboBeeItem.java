@@ -32,7 +32,8 @@ public class RoboBeeItem extends StockCheckingItem {
     public @NotNull InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         if (level.isClientSide) return InteractionResult.SUCCESS;
-        if (super.useOn(context) != InteractionResult.PASS) return InteractionResult.SUCCESS;
+        InteractionResult result = super.useOn(context);
+        if (result != InteractionResult.PASS) return result;
 
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
