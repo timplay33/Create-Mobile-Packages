@@ -3,8 +3,6 @@ package de.theidler.create_mobile_packages.blocks.bee_port;
 import com.simibubi.create.content.logistics.packagePort.PackagePortMenu;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -13,7 +11,10 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 public class BeePortMenu extends PackagePortMenu {
@@ -35,9 +36,10 @@ public class BeePortMenu extends PackagePortMenu {
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
     protected BeePortBlockEntity createOnClient(FriendlyByteBuf extraData) {
         BlockPos readBlockPos = extraData.readBlockPos();
-        ClientLevel world = Minecraft.getInstance().level;
+        Level world = net.minecraft.client.Minecraft.getInstance().level;
         BlockEntity blockEntity = world != null ? world.getBlockEntity(readBlockPos) : null;
         if (blockEntity instanceof BeePortBlockEntity beePortBlockEntity)
             return beePortBlockEntity;
