@@ -35,7 +35,7 @@ public abstract class LogisticsNetworkMixin implements IExtendedLogisticsNetwork
             CallbackInfoReturnable<LogisticsNetwork> cir
     ) {
         LogisticsNetwork network = cir.getReturnValue();
-        if (network == null || !(network instanceof IExtendedLogisticsNetwork ext)) return;
+        if (!(network instanceof IExtendedLogisticsNetwork ext)) return;
 
         // Read players
         if (tag.contains("CMP_Players", Tag.TAG_LIST)) {

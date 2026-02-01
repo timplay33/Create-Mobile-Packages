@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.network_settings;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -68,8 +69,8 @@ public class NetworkDataPacket extends SimplePacketBase {
         if (isError) {
             ClientNetworkDataStorage.setErrorMessage(networkId, name);
         } else {
-            // Check if the network is locked
-            if (locked) {
+            // Check if the network is locked or owner
+            if (!locked || (Minecraft.getInstance().player != null && Minecraft.getInstance().player.getUUID().equals(owner))) {
                 // Player is in the network, store the data
                 ClientNetworkDataStorage.updateNetworkData(networkId, owner, locked, name, players);
             } else {
