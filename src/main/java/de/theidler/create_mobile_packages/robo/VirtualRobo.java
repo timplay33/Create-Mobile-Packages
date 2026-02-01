@@ -4,8 +4,8 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
+import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboBeeBehaviorController;
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
@@ -164,7 +164,7 @@ public class VirtualRobo {
         this.move(targetVelocity);
         updateEta();
 
-        // Spawn / despawn RoboEntity if needed
+        // Spawn / despawn RoboBeeEntity if needed
         BlockPos pos = BlockPos.containing(currentPos);
         if (level.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) {
             if (entityId == null) {
@@ -188,7 +188,7 @@ public class VirtualRobo {
     }
 
     private void updateEntity() {
-        if (this.entityId != null && (serverLevel.getEntity(entityId) instanceof RoboEntity roboEntity)) {
+        if (this.entityId != null && (serverLevel.getEntity(entityId) instanceof RoboBeeEntity roboEntity)) {
             roboEntity.syncFromVirtual(this);
         } else {
             entityId = null;
@@ -205,7 +205,7 @@ public class VirtualRobo {
     }
 
     private void spawnAndRememberEntity() {
-        Entity entity = new RoboEntity(CMPEntities.ROBO_BEE_ENTITY.get(), serverLevel, id);
+        Entity entity = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), serverLevel, id);
         entity.setPos(currentPos.x, currentPos.y, currentPos.z);
         serverLevel.addFreshEntity(entity);
         this.entityId = entity.getUUID();
