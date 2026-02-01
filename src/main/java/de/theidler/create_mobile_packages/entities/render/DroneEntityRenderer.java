@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 
 public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel<RoboBeeEntity>> {
     private static final ResourceLocation TEXTURE = CreateMobilePackages.asResource("textures/entity/robo_bee.png");
@@ -26,13 +27,13 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
     }
 
     @Override
-    public ResourceLocation getTextureLocation(RoboBeeEntity pEntity) {
+    public @NotNull ResourceLocation getTextureLocation(@NotNull RoboBeeEntity pEntity) {
         return TEXTURE;
     }
 
     @Override
-    public void render(RoboBeeEntity entity, float entityYaw, float partialTicks, PoseStack poseStack,
-                       MultiBufferSource buffer, int packedLight) {
+    public void render(@NotNull RoboBeeEntity entity, float entityYaw, float partialTicks, @NotNull PoseStack poseStack,
+                       @NotNull MultiBufferSource buffer, int packedLight) {
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
         ItemStack stack = entity.getItemStack();
 
@@ -46,7 +47,7 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
 
         poseStack.pushPose();
         poseStack.translate(-0.5D, 0 - (riggingOffset - 5 / 16f) * heightScale, -0.5D);
-        poseStack.scale(1F, heightScale * 1F, 1F);
+        poseStack.scale(1F, heightScale, 1F);
 
         PartialModel partialModel = AllPartialModels.PACKAGE_RIGGING.get(modelKey);
         if (partialModel != null) {

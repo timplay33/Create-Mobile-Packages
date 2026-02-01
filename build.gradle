@@ -24,6 +24,12 @@ base {
     version = mod_version + (!isMainBranch && buildNumber ? "-${buildNumber}" : '') + (!isMainBranch && branchName ? "-${branchName}" : '')
 }
 
+Provider<RegularFile> refmap
+mixin {
+    refmap = add(sourceSets.main, "create_mobile_packages.refmap.json")
+    config "create_mobile_packages.mixins.json"
+}
+
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
@@ -86,7 +92,10 @@ repositories {
     maven { url = "https://maven.tterrag.com" } // Registrate
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven { url = "https://maven.blamejared.com/" } // JEI
+    maven { url = "https://maven.terraformersmc.com/releases/" } // EMI
     maven { url = "https://dl.zznty.ru/maven" } // Create Factory Abstractions, Create Factory Logistics
+    maven { url = "https://maven.theillusivec4.top/" } // Curios
+    maven { url = "https://api.modrinth.com/maven" }
     mavenCentral()
     mavenLocal()
     flatDir {
@@ -104,12 +113,22 @@ dependencies {
     implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
     modImplementation("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    compileOnly("dev.emi:emi-forge:${emi_version}:api")
+    modRuntimeOnly("dev.emi:emi-forge:${emi_version}")
     modImplementation(jarJar("ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
     modRuntimeOnly("ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
     compileOnly("org.jetbrains:annotations:24.0.1")
 
     // testing mod compatibilities
     modRuntimeOnly("tschipp.carryon:carryon-forge-1.20.1:2.1.2.7")
+    compileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
+    modRuntimeOnly("top.theillusivec4.curios:curios-forge:${curios_version}")
+    modImplementation("maven.modrinth:jade:${jade_version}")
+    // Prevent Mixin annotation processor from getting into IntelliJ's annotation processor settings
+    // This allows 'Settings > Build, Execution, and Deployment > Build Tools > Gradle > Build and run using' set to IntelliJ to work correctly
+    if (!Boolean.getBoolean("idea.sync.active")) {
+        annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+    }
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -145,7 +164,8 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : mod_authors,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                'MixinConfigs'            : 'create_mobile_packages.mixins.json'
         ])
     }
 

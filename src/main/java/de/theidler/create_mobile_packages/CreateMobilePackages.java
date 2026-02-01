@@ -5,6 +5,8 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.compat.curios.Curios;
 import de.theidler.create_mobile_packages.index.*;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.createmod.catnip.lang.FontHelper;
@@ -12,7 +14,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -34,7 +38,6 @@ public class CreateMobilePackages
                     new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                             .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
             );
-    public static final RoboManager ROBO_MANAGER = new RoboManager();
 
     public CreateMobilePackages(FMLJavaModLoadingContext context) {
         onCtor(context);
@@ -53,12 +56,22 @@ public class CreateMobilePackages
         CMPConfigs.register(modLoadingContext);
         CMPEntities.register();
         CMPDisplaySources.register();
+        CMPToasts.registerAll();
+
+        forgeEventBus.register(CreateMobilePackages.class);
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> CreateMobilePackagesClient.onCtorClient(modEventBus, forgeEventBus));
+
+        Mods.CURIOS.executeIfInstalled(() -> () -> Curios.init(modEventBus));
 
     }
 
     public static ResourceLocation asResource(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+        CMPCommands.register(event.getDispatcher());
     }
 }

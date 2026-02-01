@@ -2,15 +2,26 @@ package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import com.simibubi.create.content.logistics.packagePort.PackagePortMenu;
 import com.simibubi.create.content.logistics.packagePort.PackagePortScreen;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
+import static de.theidler.create_mobile_packages.network_settings.NetworkSettingsHelper.createNetworkSettingsButton;
+
 public class BeePortScreen extends PackagePortScreen {
+
     public BeePortScreen(PackagePortMenu container, Inventory inv, Component title) {
         super(container, inv, title);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        LogisticallyLinkedBehaviour lo = (LogisticallyLinkedBehaviour) menu.contentHolder.getAllBehaviours().stream().filter(b -> b instanceof LogisticallyLinkedBehaviour).findFirst().orElse(null);
+        if (lo == null) return;
+        addRenderableWidget(createNetworkSettingsButton(getGuiLeft() - 22, getGuiTop() - 10, lo.freqId));
     }
 
     @Override

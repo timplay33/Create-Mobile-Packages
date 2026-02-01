@@ -5,9 +5,9 @@ import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
 import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
+import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.compat.curios.Curios;
 import net.createmod.catnip.nbt.NBTHelper;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -18,17 +18,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkHooks;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
 import java.util.*;
 import java.util.stream.IntStream;
-
-import static com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem.isTuned;
 
 public class PortableStockTicker extends StockCheckingItem {
 
@@ -48,6 +45,15 @@ public class PortableStockTicker extends StockCheckingItem {
         if (playerInventory.player.getMainHandItem().getItem() instanceof PortableStockTicker) {
             return pst;
         }
+
+        // Check Curios if installed
+        if (Mods.CURIOS.isLoaded()) {
+            pst = Curios.findPortableStockTickerCurios(playerInventory.player);
+            if (pst.getItem() instanceof PortableStockTicker) {
+                return pst;
+            }
+        }
+
         // take first PST in inventory
         for (int i = 0; i < playerInventory.getContainerSize(); i++) {
             ItemStack portableStockTicker = playerInventory.getItem(i);
@@ -60,14 +66,14 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     @Override
-    public Rarity getRarity(ItemStack pStack) {
+    public @NotNull Rarity getRarity(@NotNull ItemStack pStack) {
         return Rarity.UNCOMMON;
     }
 
-    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,
+    public boolean broadcastPackageRequest(ItemStack stack, LogisticallyLinkedBehaviour.RequestType type, GenericOrder order,
                                            IdentifiedInventory ignoredHandler,
                                            String address, Player player) {
-        boolean result = super.broadcastPackageRequest(type, order, ignoredHandler, address);
+        boolean result = super.broadcastPackageRequest(stack, type, order, ignoredHandler, address);
         previouslyUsedAddress = address;
 
         if (player instanceof ServerPlayer) {
@@ -80,7 +86,7 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext pContext) {
+    public @NotNull InteractionResult useOn(UseOnContext pContext) {
         ItemStack stack = pContext.getItemInHand();
         BlockPos pos = pContext.getClickedPos();
         Level level = pContext.getLevel();
@@ -91,10 +97,12 @@ public class PortableStockTicker extends StockCheckingItem {
 
         if (!level.isClientSide() && player.isShiftKeyDown()) {
             if (level.getBlockEntity(pos) instanceof StockTickerBlockEntity stbe) {
+                // Copy categories from StockTickerBlockEntity
                 CompoundTag tag = new CompoundTag();
                 stbe.saveAdditional(tag);
                 categories = NBTHelper.readItemList(tag.getList("Categories", Tag.TAG_COMPOUND));
             } else if (level.getBlockEntity(pos) instanceof PackagerLinkBlockEntity) {
+                // Clear categories from an old link
                 categories = new ArrayList<>();
             }
             saveCategoriesToStack(stack, categories);
@@ -105,27 +113,21 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level pLevel, Player pPlayer, @NotNull InteractionHand pUsedHand) {
         ItemStack stack = pPlayer.getItemInHand(pUsedHand);
         previouslyUsedAddress = loadAddressFromStack(stack);
         categories = loadCategoriesFromStack(stack);
         hiddenCategoriesByPlayer = getHiddenCategoriesByPlayerFromStack(stack);
-        if (!pLevel.isClientSide) {
+        if (!pLevel.isClientSide && !pPlayer.isShiftKeyDown()) {
             if (!isTuned(stack)) {
                 pPlayer.displayClientMessage(
                         Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);
                 return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
             }
-            MenuProvider provider = new SimpleMenuProvider(
-                    (id, inv, p) -> new PortableStockTickerMenu(id, inv),
-                    Component.translatable("item.create_mobile_packages.portable_stock_ticker")
-            );
-            NetworkHooks.openScreen((ServerPlayer) pPlayer, provider);
             if (pPlayer instanceof ServerPlayer serverPlayer) {
-                NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
-                        (id, inv, ply) -> new PortableStockTickerMenu(id, inv),
-                        Component.translatable("item.create_mobile_packages.portable_stock_ticker")
-                ), buf -> {
+                MenuProvider provider = new SimpleMenuProvider((id, inv, p) -> new PortableStockTickerMenu(id, inv),
+                        Component.translatable("item.create_mobile_packages.portable_stock_ticker"));
+                NetworkHooks.openScreen(serverPlayer, provider, buf -> {
                 });
             }
             return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
@@ -142,7 +144,7 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     public String loadAddressFromStack(ItemStack stack) {
-        if (stack.hasTag() && stack.getTag().contains(ADDRESS_TAG)) {
+        if (stack.getTag() != null && stack.hasTag() && stack.getTag().contains(ADDRESS_TAG)) {
             return stack.getTag().getString(ADDRESS_TAG);
         }
         return null;
@@ -155,7 +157,7 @@ public class PortableStockTicker extends StockCheckingItem {
     }
 
     public List<ItemStack> loadCategoriesFromStack(ItemStack stack) {
-        if (stack.hasTag() && stack.getTag().contains("Categories")) {
+        if (stack.getTag() != null && stack.hasTag() && stack.getTag().contains("Categories")) {
             List<ItemStack> readCategories = NBTHelper.readItemList(
                     stack.getTag().getList("Categories", Tag.TAG_COMPOUND));
             readCategories.removeIf(itemStack -> !itemStack.isEmpty() && !(itemStack.getItem() instanceof FilterItem));
@@ -180,13 +182,13 @@ public class PortableStockTicker extends StockCheckingItem {
 
     public Map<UUID, List<Integer>> getHiddenCategoriesByPlayerFromStack(ItemStack stack) {
         Map<UUID, List<Integer>> hiddenCategoriesByPlayer = new HashMap<>();
-        if (stack.hasTag() && stack.getTag().contains("HiddenCategories")) {
+        if (stack.getTag() != null && stack.hasTag() && stack.getTag().contains("HiddenCategories")) {
             CompoundTag tag = stack.getTag().getCompound("HiddenCategories");
             NBTHelper.iterateCompoundList(tag.getList("HiddenCategories", Tag.TAG_COMPOUND),
-                                          c -> hiddenCategoriesByPlayer.put(c.getUUID("Id"),
-                                                                            IntStream.of(c.getIntArray("Indices"))
-                                                                                    .boxed()
-                                                                                    .toList()));
+                    c -> hiddenCategoriesByPlayer.put(c.getUUID("Id"),
+                            IntStream.of(c.getIntArray("Indices"))
+                                    .boxed()
+                                    .toList()));
         }
         return hiddenCategoriesByPlayer;
     }

@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.blocks.bee_port;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem;
 import com.simibubi.create.foundation.block.IBE;
 import de.theidler.create_mobile_packages.index.CMPBlockEntities;
 import de.theidler.create_mobile_packages.index.CMPBlocks;
@@ -9,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -82,8 +84,21 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-                                 BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
+        if (player.getItemInHand(handIn).getItem() instanceof LogisticallyLinkedBlockItem)
+            return InteractionResult.PASS;
+
         return onBlockEntityUse(worldIn, pos, be -> be.use(player));
+    }
+
+    @Override
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(world, pos, state, placer, stack);
+        if (placer instanceof Player player) {
+            BeePortBlockEntity entity = (BeePortBlockEntity) world.getBlockEntity(pos);
+            if (entity != null) {
+                entity.setPlacerUUID(player.getUUID());
+            }
+        }
     }
 }

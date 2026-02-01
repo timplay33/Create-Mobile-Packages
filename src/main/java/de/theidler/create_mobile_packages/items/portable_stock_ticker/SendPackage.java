@@ -64,6 +64,7 @@ public class SendPackage extends SimplePacketBase {
         PortableStockTicker pst = pstStack != null ? (PortableStockTicker) pstStack.getItem() : null;
         if (pst != null)
             pst.broadcastPackageRequest(
+                    pstStack,
                     LogisticallyLinkedBehaviour.RequestType.PLAYER,
                     order,
                     null,
