@@ -127,7 +127,11 @@ public class NetworkSettingsScreen extends Screen {
     }
 
     private void createNameBox() {
-        Consumer<String> onTextChanged = s -> nameBox.setX(nameBoxX(s, nameBox));
+        Consumer<String> onTextChanged = s -> {
+            nameBox.setX(nameBoxX(s, nameBox));
+            //save network name
+            CMPPackets.getChannel().sendToServer(new SetNetworkNamePackage(nameBox.getValue(), networkId));
+        };
         nameBox = new EditBox(new NoShadowFontWrapper(font), guiLeft + 25, guiTop + 4, windowWidth - 50, 10, Component.empty());
         nameBox.setMaxLength(25);
         nameBox.setBordered(false);
@@ -226,9 +230,6 @@ public class NetworkSettingsScreen extends Screen {
 
     @Override
     public void onClose() {
-        //save network name
-        CMPPackets.getChannel().sendToServer(new SetNetworkNamePackage(nameBox.getValue(), networkId));
-
         if (parent != null) {
             Minecraft.getInstance().setScreen(parent);
         } else {

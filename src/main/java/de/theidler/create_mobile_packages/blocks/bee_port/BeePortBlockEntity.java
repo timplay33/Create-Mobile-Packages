@@ -201,9 +201,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (placerUUID != null) {
             tag.putUUID("PlacerUUID", placerUUID);
         }
-        if (hasRunNetworkCheck) {
-            tag.putBoolean("hasRunNetworkCheck", true);
-        }
     }
 
     /**
@@ -240,9 +237,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
         if (tag.hasUUID("PlacerUUID")) {
             placerUUID = tag.getUUID("PlacerUUID");
-        }
-        if (tag.contains("hasRunNetworkCheck")) {
-            hasRunNetworkCheck = tag.getBoolean("hasRunNetworkCheck");
         }
     }
 
