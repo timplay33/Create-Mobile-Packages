@@ -27,6 +27,7 @@ public class PlayerTarget implements RoboTarget {
     private final Player player;
     private int eta;
     private final IExtendedLogisticsNetwork network;
+    private long lastToastUpdate = 0;
 
     public PlayerTarget(Player player, UUID networkId) {
         this.player = player;
@@ -58,6 +59,8 @@ public class PlayerTarget implements RoboTarget {
     }
 
     public void updateEtaToast(VirtualRobo robo) {
+        // update only every Second
+        if (System.currentTimeMillis() - lastToastUpdate < 1000) return;
         ItemStack packageItem = robo.getItemStack();
         ItemStackHandler itemHandler = packageItem.isEmpty() ? new ItemStackHandler(9) : PackageItem.getContents(packageItem);
         List<ItemStack> items = new ArrayList<>();
@@ -74,6 +77,7 @@ public class PlayerTarget implements RoboTarget {
         );
         if (player instanceof ServerPlayer serverPlayer)
             CMPPackets.getChannel().send(PacketDistributor.PLAYER.with(()-> serverPlayer), new ShowToastOnClientPacket(toast));
+        lastToastUpdate = System.currentTimeMillis();
     }
 
     @Override
