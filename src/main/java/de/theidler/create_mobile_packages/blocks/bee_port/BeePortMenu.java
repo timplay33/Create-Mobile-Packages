@@ -39,6 +39,8 @@ public class BeePortMenu extends PackagePortMenu {
     @OnlyIn(Dist.CLIENT)
     protected BeePortBlockEntity createOnClient(FriendlyByteBuf extraData) {
         BlockPos readBlockPos = extraData.readBlockPos();
+        // Use Level instead of ClientLevel to avoid importing client-only classes
+        // The method is @OnlyIn(Dist.CLIENT) so it's safe to use Minecraft.getInstance()
         Level world = net.minecraft.client.Minecraft.getInstance().level;
         BlockEntity blockEntity = world != null ? world.getBlockEntity(readBlockPos) : null;
         if (blockEntity instanceof BeePortBlockEntity beePortBlockEntity)
