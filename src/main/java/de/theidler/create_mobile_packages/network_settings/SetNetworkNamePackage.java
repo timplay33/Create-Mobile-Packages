@@ -1,8 +1,11 @@
 package de.theidler.create_mobile_packages.network_settings;
 
+import com.simibubi.create.Create;
+import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.UUID;
@@ -31,8 +34,14 @@ public class SetNetworkNamePackage extends SimplePacketBase {
     @Override
     public boolean handle(NetworkEvent.Context context) {
         context.enqueueWork(() -> {
-            IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(networkId);
-            if (extendedNetwork == null) return;
+            ServerPlayer player = context.getSender();
+            LogisticsNetwork logisticsNetwork = Create.LOGISTICS.logisticsNetworks.get(networkId);
+            IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(logisticsNetwork);
+            if (logisticsNetwork == null || extendedNetwork == null) return;
+
+            // validate ownership. Only the owner can change the network name
+            if (player == null || !logisticsNetwork.owner.equals(player.getUUID())) return;
+
             extendedNetwork.create_mobile_packages$setName(name);
        });
         return true;

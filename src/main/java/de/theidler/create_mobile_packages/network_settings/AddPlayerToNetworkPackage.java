@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.network_settings;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.UUID;
@@ -31,8 +32,15 @@ public class AddPlayerToNetworkPackage extends SimplePacketBase {
     @Override
     public boolean handle(NetworkEvent.Context context) {
         context.enqueueWork(() -> {
+            ServerPlayer player = context.getSender();
+            if (player == null) return;
+
             IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(networkId);
             if (extendedNetwork == null) return;
+
+            // Player can only add themselves to the network
+            if (!playerId.equals(player.getUUID())) return;
+
             extendedNetwork.create_mobile_packages$addPlayer(playerId);
         });
         return true;
