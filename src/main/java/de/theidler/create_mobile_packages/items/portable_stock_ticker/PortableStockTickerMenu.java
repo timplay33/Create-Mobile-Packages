@@ -11,8 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 import static de.theidler.create_mobile_packages.items.portable_stock_ticker.LogisticallyLinkedItem.isTuned;
 
-import net.minecraft.world.inventory.Slot;
-
 public class PortableStockTickerMenu extends AbstractContainerMenu {
     public PortableStockTicker portableStockTicker;
     public Object screenReference;

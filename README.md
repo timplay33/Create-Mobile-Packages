@@ -12,11 +12,11 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 
 ### 1.20.1 Forge
 - Forge 47.3.33 or newer
-- Create 6.0.7 or newer
+- Create 6.0.8 or newer
 
 ### 1.21.1 NeoForge
-- NeoForge 21.1.159 or newer
-- Create 6.0.7 or newer
+- NeoForge 21.1.206 or newer
+- Create 6.0.9 or newer
 
 
 ## Where to Download?

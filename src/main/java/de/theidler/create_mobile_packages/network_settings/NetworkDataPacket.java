@@ -13,18 +13,18 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class NetworkDataPacket implements ClientboundPacketPayload {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, NetworkDataPacket> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC, packet -> packet.networkId,
-            UUIDUtil.STREAM_CODEC, packet -> packet.owner,
+            ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC), packet -> Optional.ofNullable(packet.owner),
             ByteBufCodecs.BOOL, packet -> packet.locked,
             ByteBufCodecs.STRING_UTF8, packet -> packet.name,
             CatnipStreamCodecBuilders.list(UUIDUtil.STREAM_CODEC), packet -> packet.players,
-            NetworkDataPacket::new
-
+            (networkId, owner, locked, name, players) -> new NetworkDataPacket(networkId, owner.orElse(null), locked, name, players)
     );
 
     private final UUID networkId;

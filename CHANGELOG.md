@@ -19,7 +19,7 @@ Create: Mobile Packages - v0.6.0 - 1.21.1 - 15.02.2026
 - Simplify Robo behavior state system
 - Add nametag `No valid target` to Robos
 - Add Abstractions for the target
-- Bump create_version to 6.0.8-289
+- Bump create_version to 6.0.9-215
 - Disable dimension travel for robos (nether & end portals) (#250)
 - Update Translations (#243, #269)
 
