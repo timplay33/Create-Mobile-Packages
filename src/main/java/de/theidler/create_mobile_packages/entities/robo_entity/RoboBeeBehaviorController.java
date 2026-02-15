@@ -152,7 +152,7 @@ public class RoboBeeBehaviorController {
         }
         // Try to deliver to block entity
         if (robo.getTarget() != null && !delivered && robo.getTarget().asBeePortBlockEntity() != null && !robo.getItemStack().isEmpty()) {
-            delivered = robo.getTarget().asBeePortBlockEntity().addItemStack(robo.getItemStack());
+            delivered = robo.getTarget().asBeePortBlockEntity().addItemStack(robo.getItemStack(), false);
             if (delivered) {
                 robo.setItemStack(ItemStack.EMPTY);
                 robo.invalidateTarget();

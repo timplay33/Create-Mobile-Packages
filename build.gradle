@@ -33,6 +33,12 @@ base {
     version = mod_version + (!isMainBranch && buildNumber ? "-${buildNumber}" : '') + (!isMainBranch && branchName ? "-${branchName}" : '')
 }
 
+Provider<RegularFile> refmap
+mixin {
+    refmap = add(sourceSets.main, "create_mobile_packages.refmap.json")
+    config "create_mobile_packages.mixins.json"
+}
+
 // Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
@@ -137,6 +143,7 @@ repositories {
     maven { url = "https://maven.terraformersmc.com/releases/" } // EMI
     maven { url = "https://dl.zznty.ru/maven" } // Create Factory Abstractions, Create Factory Logistics
     maven { url = "https://maven.theillusivec4.top/" } // Curios
+    maven { url = "https://api.modrinth.com/maven" }
     mavenCentral()
     mavenLocal()
     flatDir {
@@ -183,6 +190,11 @@ dependencies {
     runtimeOnly("tschipp.carryon:carryon-neoforge-1.21.1:2.2.3.3")
     compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
     runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")
+    implementation("maven.modrinth:jade:${jade_version}")
+
+    if (!Boolean.getBoolean("idea.sync.active")) {
+        annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

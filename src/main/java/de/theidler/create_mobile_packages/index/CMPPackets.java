@@ -3,9 +3,8 @@ package de.theidler.create_mobile_packages.index;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.items.mobile_packager.ConfirmEditMenuPacket;
 import de.theidler.create_mobile_packages.items.mobile_packager.OpenEditMenuPacket;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
+import de.theidler.create_mobile_packages.network_settings.*;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.RemoveToastOnClientPacket;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
@@ -25,12 +24,21 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
     OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker.STREAM_CODEC),
     OPEN_EDIT_MENU(OpenEditMenuPacket.class, OpenEditMenuPacket.STREAM_CODEC),
     CONFIRM_EDIT_MENU(ConfirmEditMenuPacket.class, ConfirmEditMenuPacket.STREAM_CODEC),
+    SET_NETWORK_NAME(SetNetworkNamePackage.class, SetNetworkNamePackage.STREAM_CODEC),
+    ADD_PLAYER_TO_NETWORK(AddPlayerToNetworkPackage.class, AddPlayerToNetworkPackage.STREAM_CODEC),
+    REMOVE_PLAYER_FROM_NETWORK(RemovePlayerFromNetworkPackage.class, RemovePlayerFromNetworkPackage.STREAM_CODEC),
+    MODIFY_NETWORK_LOCK_STATE(ModifyNetworkLockStatePackage.class, ModifyNetworkLockStatePackage.STREAM_CODEC),
+    REQUEST_NETWORK_DATA(RequestNetworkDataPacket.class, RequestNetworkDataPacket.STREAM_CODEC),
+    REQUEST_PLAYER_NETWORKS(RequestPlayerNetworksPacket.class, RequestPlayerNetworksPacket.STREAM_CODEC),
+
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC),
     SHOW_TOAST_ON_CLIENT(ShowToastOnClientPacket.class, ShowToastOnClientPacket.STREAM_CODEC),
     REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket.class, RemoveToastOnClientPacket.STREAM_CODEC),
-    REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket.STREAM_CODEC);
+    REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket.STREAM_CODEC),
+    NETWORK_DATA(NetworkDataPacket.class, NetworkDataPacket.STREAM_CODEC),
+    CLEAR_NETWORKS(ClearNetworksPacket.class, ClearNetworksPacket.STREAM_CODEC);
 
 
     private final CatnipPacketRegistry.PacketType<?> type;

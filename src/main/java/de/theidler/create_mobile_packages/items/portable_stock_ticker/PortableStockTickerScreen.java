@@ -21,6 +21,7 @@ import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
+import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.platform.CatnipServices;
@@ -29,6 +30,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
@@ -67,6 +69,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private static final AllGuiTextures FOOTER = AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER;
     public static final int MAX_REPORTED_STACK_AMOUNT = 1000;
 
+    public static final int MAX_REPORTED_STACK_AMOUNT = 1000;
+
     public LerpedFloat itemScroll;
 
     final int cols = 9;
@@ -100,6 +104,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private List<Rect2i> extraAreas = Collections.emptyList();
     private List<GenericStack> lastSeenStacks = null;
     private GenericInventorySummary cachedSummary = null;
+    private final ThreadLocal<Integer> orderForStackCallCount = ThreadLocal.withInitial(() -> 0);
 
     public PortableStockTickerScreen(PortableStockTickerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -115,6 +120,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         hiddenCategories = new HashSet<>(
                 menu.portableStockTicker.hiddenCategoriesByPlayer.getOrDefault(menu.player.getUUID(), List.of()));
     }
+
+    private GenericInventorySummary cachedSummary = null;
 
     @Override
     protected void containerTick() {
@@ -326,7 +333,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         return noneHovered;
     }
-    
+
     @Override
     protected void renderBg(@NotNull GuiGraphics pGuiGraphics, float partialTicks, int mouseX, int mouseY) {
         if (minecraft != null && this != minecraft.screen)
@@ -636,12 +643,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                     .renderSlot(graphics, entry.get().key(), 0, 0);
         ms.popPose();
 
-        ms.pushPose();
-        ms.translate(0, 0, 200);
-        if (customCount != 0 || craftable)
-            GenericContentExtender.registrationOf(entry.get().key())
-                    .clientProvider().guiHandler()
-                    .renderDecorations(graphics, entry.get().key(), customCount, 1, 1);
         ms.popPose();
     }
 
@@ -912,6 +913,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
             boolean remove = scrollY < 0;
             int transfer = Mth.ceil(Math.abs(scrollY)) * (hasControlDown() ? 10 : 1);
+
+            if (recipeClicked && entry instanceof CraftableGenericStack cbis) {
+                requestCraftable(cbis, remove ? -transfer : transfer);
+                return true;
+            }
 
             if (recipeClicked && entry instanceof CraftableGenericStack cbis) {
                 requestCraftable(cbis, remove ? -transfer : transfer);

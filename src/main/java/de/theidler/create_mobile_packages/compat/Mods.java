@@ -14,8 +14,9 @@ import java.util.function.Supplier;
 
 public enum Mods {
     JEI,
-    EMI,
-    CURIOS;
+    CURIOS,
+    JADE,
+    EMI;
 
     // from com/simibubi/create/compat/Mods.java
 
@@ -59,7 +60,7 @@ public enum Mods {
 
     /**
      * Simple hook to run code if a mod is installed
-     * 
+     *
      * @param toRun will be run only if the mod is loaded
      * @return Optional.empty() if the mod is not loaded, otherwise an Optional of
      *         the return value of the given supplier
@@ -72,7 +73,7 @@ public enum Mods {
 
     /**
      * Simple hook to execute code if a mod is installed
-     * 
+     *
      * @param toExecute will be executed only if the mod is loaded
      */
     public void executeIfInstalled(Supplier<Runnable> toExecute) {

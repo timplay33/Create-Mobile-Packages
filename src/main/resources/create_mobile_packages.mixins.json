@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "de.theidler.create_mobile_packages.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "create_mobile_packages.refmap.json",
+  "mixins": [
+    "LogisticsNetworkMixin"
+  ],
+  "client": [
+  ],
+  "minVersion": "0.8"
+}

@@ -44,6 +44,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: endsWith(github.ref, '/main') && github.event_name == 'push'
+    permissions:
+      contents: write
+      packages: read
 
     steps:
       - name: Checkout repository

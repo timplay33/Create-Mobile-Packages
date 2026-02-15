@@ -9,6 +9,8 @@ import de.theidler.create_mobile_packages.index.CMPShapes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -90,5 +92,16 @@ public class BeePortBlock extends Block implements IBE<BeePortBlockEntity>, IWre
         }
 
         return onBlockEntityUseItemOn(level, pos, be -> be.use(player));
+    }
+
+    @Override
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(world, pos, state, placer, stack);
+        if (placer instanceof Player player) {
+            BeePortBlockEntity entity = (BeePortBlockEntity) world.getBlockEntity(pos);
+            if (entity != null) {
+                entity.setPlacerUUID(player.getUUID());
+            }
+        }
     }
 }

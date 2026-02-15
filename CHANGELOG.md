@@ -7,28 +7,34 @@ Create: Mobile Packages - v0.6.0 - 1.21.1 - unreleased
 
 **Warning! This will break all existing ports. They need to be replaced to link to a logistics network!**
 
-- link a bee port to a logistics network or place one to create a new one
-- bees will only fly to bee ports within their network.
-- the bee item can be linked to a logistics network
-- if a bee item is not connected to a network, then the bee will fly to any port (closest)
+- Link a bee port to a logistics network or place one to create a new one
+- Robo Bees will only fly to Robo Bee Ports and Players within their network
+- The Robo Bee Item can be linked to a logistics network
+- If a Robo Bee Item is not connected to a network, then the bee will fly to any port (closest)
+- Players can add themselves to a logistics network by clicking the new button on the bee port GUI
+- Players can see all networks they are part of with the hotkey `H`
+- Players can pick up Robo Bees in their network by hitting them
 
 ### Changes
-- simplify Robo behavior state system
-- add nametag 'No valid target' to Robos
-- added Abstractions for the target
+- Simplify Robo behavior state system
+- Add nametag `No valid target` to Robos
+- Add Abstractions for the target
 - Bump create_version to 6.0.8-289
-- disable dimension travel for robos (nether & end portals) (#250)
-- update Translations (#243)
+- Disable dimension travel for robos (nether & end portals) (#250)
+- Update Translations (#243, #269)
 
 ### Bug Fixes
-- add support for Create 6.0.7 (#241)
-- fix Recipe Freezes (#279)
-- fix bee port duplication bug (#252)
+- Add support for Create `6.0.7` (#241)
+- Fixed item duplication in the Mobile Packager (#270)
+- Fixed missing Robo Bee clear recipe (#276)
+- Fixed recipe freezes (#279)
+- Fixed bee port duplication bug (#252)
 
 ### Additions
-- added support for EMI (#279)
-- added "/cmp robos clear" command to remove all robos (#261)
-- added Mobile Packager for packaging items on the go
+
+- Added support for EMI (#279)
+- Added `/cmp robos clear` command to remove all robos (#261)
+- Added Mobile Packager for packaging items on the go
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.5.5 - 1.21.1 - 13.09.2025

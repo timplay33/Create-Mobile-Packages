@@ -54,10 +54,19 @@
     "create_mobile_packages.ponder.port_to_port.text_5": "Cette fonctionnalité peut être désactivée dans les fichiers de configuration.",
     "tooltip.create_mobile_packages.robo_bee.package_transport": "Lorsque vous tenez un colis dans la main secondaire, il sera envoyé avec la Robeille.",
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Objet permettant de faire apparaître une Robeille. Nécessaire dans les Ports de Robeille pour envoyer des colis.",
+    "tooltip.create_mobile_packages.bee_port.jade.network": "Network: %1$s",
+    "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "You are part of this network",
+    "tooltip.create_mobile_packages.network.remove_player": "Remove Player",
+    "tooltip.create_mobile_packages.network.add_yourself": "Add Yourself",
+    "tooltip.create_mobile_packages.network.leave": "Leave Network",
+    "tooltip.create_mobile_packages.network.settings": "Network Settings",
     "item.create_mobile_packages.mobile_packager": "Emballeur portable",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Emballer des objets à la volée",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "Lorsqu'il est utilisé",
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Ouvre un menu pour créer un colis",
     "item.create_mobile_packages.mobile_packager.tooltip.condition2": "Lorsqu'il est utilisé en étant accroupis",
-    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Ouvre un menu pour modifier un colis"
+    "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Ouvre un menu pour modifier un colis",
+    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
+    "create_mobile_packages.network.players": "Players in Network:",
+    "create_mobile_packages.network.owner": "Owner: %1$s"
 }

@@ -19,5 +19,10 @@ public class InputEvents {
         if (CMPKeys.OPEN_PORTABLE_STOCK_TICKER.isPressed()) {
             CatnipServices.NETWORK.sendToServer(OpenPortableStockTicker.INSTANCE);
         }
+        if (CMPKeys.OPEN_PLAYER_NETWORKS_SCREEN.isPressed()) {
+            Minecraft.getInstance().setScreen(new PlayerNetworksScreen(
+                    Minecraft.getInstance().player != null ? Minecraft.getInstance().player.getDisplayName() : Component.empty()
+            ));
+        }
     }
 }

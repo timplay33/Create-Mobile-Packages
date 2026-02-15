@@ -19,6 +19,8 @@ public class RequestStockUpdate implements ServerboundPacketPayload {
             .unit(INSTANCE);
     public static final int MAX_ITEMS_PER_PACKET = 500;
 
+    public static final int MAX_ITEMS_PER_PACKET = 500;
+
     public RequestStockUpdate() {
     }
 

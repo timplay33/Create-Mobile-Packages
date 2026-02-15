@@ -90,10 +90,11 @@ public class RoboManager extends SavedData {
         allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(request.getTargetPos()))).ifPresent(target -> target.handleRequest(request));
     }
 
-    public UUID newRobo(ServerLevel level, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId, float packageHeightScale) {
+    public UUID newRobo(ServerLevel level, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId, float packageHeightScale, @Nullable BlockPos HomePort) {
         UUID id = UUID.randomUUID();
         VirtualRobo robo = new VirtualRobo(level, id, itemStack, spawnPos, logisticsNetworkId);
         robo.setPackageHeightScale(packageHeightScale);
+        robo.setHomePortPos(HomePort);
         this.add(robo);
         setDirty();
         return id;

@@ -4,6 +4,7 @@ import de.theidler.create_mobile_packages.entities.models.RoboBeeModel;
 import de.theidler.create_mobile_packages.entities.render.DroneEntityRenderer;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import de.theidler.create_mobile_packages.index.ponder.CMPPonderPlugin;
+import de.theidler.create_mobile_packages.network_settings.ClientNetworkDataStorage;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -22,10 +23,18 @@ public class CreateMobilePackagesClient {
         modEventBus.addListener(CreateMobilePackagesClient::clientInit);
         modEventBus.addListener(CreateMobilePackagesClient::registerEntityRenderers);
         modEventBus.addListener(CreateMobilePackagesClient::registerLayerDefinitions);
+
+        forgeEventBus.addListener(CreateMobilePackagesClient::onLevelLeave);
     }
 
     private static void clientInit(FMLClientSetupEvent event) {
         PonderIndex.addPlugin(new CMPPonderPlugin());
+    }
+
+    public static void onLevelLeave(EntityLeaveLevelEvent event) {
+        if (event.getEntity().level().isClientSide && event.getEntity() == net.minecraft.client.Minecraft.getInstance().player) {
+            ClientNetworkDataStorage.clear();
+        }
     }
 
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {

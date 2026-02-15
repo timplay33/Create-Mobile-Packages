@@ -11,7 +11,7 @@ public class CMPEMI implements EmiPlugin {
 
     /**
      * Sets the search text in EMI's search field
-     * 
+     *
      * @param searchText The text to set in EMI's search field
      */
     public static void setSearchText(String searchText) {
