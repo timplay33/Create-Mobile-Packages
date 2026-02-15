@@ -5,6 +5,7 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticsNetwork;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import net.createmod.catnip.nbt.NBTHelper;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,8 +32,7 @@ public abstract class LogisticsNetworkMixin implements IExtendedLogisticsNetwork
 
     @Inject(method = "read", at = @At("RETURN"), remap = false)
     private static void create_mobile_packages$read(
-            CompoundTag tag,
-            CallbackInfoReturnable<LogisticsNetwork> cir
+            CompoundTag tag, HolderLookup.Provider registries, CallbackInfoReturnable<LogisticsNetwork> cir
     ) {
         LogisticsNetwork network = cir.getReturnValue();
         if (!(network instanceof IExtendedLogisticsNetwork ext)) return;

@@ -69,10 +69,10 @@ public class MobilePackagerEditScreen extends AbstractSimiContainerScreen<Mobile
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        if (addressBox.mouseScrolled(mouseX, mouseY, delta))
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (addressBox.mouseScrolled(mouseX, mouseY, scrollX, scrollY))
             return true;
-        return super.mouseScrolled(mouseX, mouseY, delta);
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     @Override

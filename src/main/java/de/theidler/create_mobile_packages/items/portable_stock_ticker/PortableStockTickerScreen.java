@@ -44,7 +44,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
-import net.minecraft.client.renderer.Rect2i;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.OrderProvider;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.RecipeRequestHelper;
 import ru.zznty.create_factory_abstractions.api.generic.search.CategoriesProvider;
@@ -55,7 +54,6 @@ import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.CraftableGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
-import net.createmod.catnip.data.Pair;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -67,8 +65,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private static final AllGuiTextures HEADER = AllGuiTextures.STOCK_KEEPER_REQUEST_HEADER;
     private static final AllGuiTextures BODY = AllGuiTextures.STOCK_KEEPER_REQUEST_BODY;
     private static final AllGuiTextures FOOTER = AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER;
-    public static final int MAX_REPORTED_STACK_AMOUNT = 1000;
-
     public static final int MAX_REPORTED_STACK_AMOUNT = 1000;
 
     public LerpedFloat itemScroll;
@@ -120,8 +116,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         hiddenCategories = new HashSet<>(
                 menu.portableStockTicker.hiddenCategoriesByPlayer.getOrDefault(menu.player.getUUID(), List.of()));
     }
-
-    private GenericInventorySummary cachedSummary = null;
 
     @Override
     protected void containerTick() {
@@ -340,6 +334,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             return; // stencil buffer does not cooperate with ponders gui fade out
 
         PoseStack ms = pGuiGraphics.pose();
+
         ms.pushPose();
 
         float currentScroll = itemScroll.getValue(partialTicks);
@@ -641,7 +636,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             GenericContentExtender.registrationOf(entry.get().key())
                     .clientProvider().guiHandler()
                     .renderSlot(graphics, entry.get().key(), 0, 0);
-        ms.popPose();
 
         ms.popPose();
     }
@@ -698,9 +692,6 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     public Level world() {
         return playerInventory.player.level();
     }
-
-    private final ThreadLocal<Integer> orderForStackCallCount = ThreadLocal.withInitial(() -> 0);
-
 
     @Nullable
     @Override

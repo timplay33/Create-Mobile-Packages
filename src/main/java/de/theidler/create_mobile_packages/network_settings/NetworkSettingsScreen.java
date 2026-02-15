@@ -5,8 +5,8 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import de.theidler.create_mobile_packages.index.CMPGuiTextures;
-import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -56,7 +56,7 @@ public class NetworkSettingsScreen extends Screen {
         this.guiTop = (height - windowHeight) / 2;
 
         // Request network data from server
-        CMPPackets.getChannel().sendToServer(new RequestNetworkDataPacket(networkId));
+        CatnipServices.NETWORK.sendToServer(new RequestNetworkDataPacket(networkId));
 
         // Also try to load from server-side data as fallback
         loadFromServerIfNeeded();
@@ -99,7 +99,7 @@ public class NetworkSettingsScreen extends Screen {
             loadTicks++;
             if (loadTicks == 1 || loadTicks == 40 || loadTicks == 100) {
                 // Request immediately, after 2 seconds, and after 5 seconds
-                CMPPackets.getChannel().sendToServer(new RequestNetworkDataPacket(networkId));
+                CatnipServices.NETWORK.sendToServer(new RequestNetworkDataPacket(networkId));
             }
         } else {
             loadTicks = 0;
@@ -111,7 +111,7 @@ public class NetworkSettingsScreen extends Screen {
         networkLockButton = new IconButton(guiLeft + windowWidth - 30, guiTop + 25, networkData.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
         networkLockButton.setToolTip(Component.translatable(networkData.locked ? "create.gui.stock_keeper.network_locked" : "create.gui.stock_keeper.network_open"));
         networkLockButton.withCallback(() -> {
-            CMPPackets.getChannel().sendToServer(new ModifyNetworkLockStatePackage(!networkData.locked, networkId));
+            CatnipServices.NETWORK.sendToServer(new ModifyNetworkLockStatePackage(!networkData.locked, networkId));
             // Server will send back updated data - no need to update locally
         });
         addRenderableWidget(networkLockButton);
@@ -125,7 +125,7 @@ public class NetworkSettingsScreen extends Screen {
             IconButton removeBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
             removeBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.remove_player"));
             removeBtn.withCallback(() -> {
-                CMPPackets.getChannel().sendToServer(new RemovePlayerFromNetworkPackage(pId, networkId));
+                CatnipServices.NETWORK.sendToServer(new RemovePlayerFromNetworkPackage(pId, networkId));
                 // Server will send back updated data - no need to update locally
             });
             addRenderableWidget(removeBtn);
@@ -139,7 +139,7 @@ public class NetworkSettingsScreen extends Screen {
         addPlayerButton.withCallback(() -> {
             Player player = Minecraft.getInstance().player;
             if (player == null) return;
-            CMPPackets.getChannel().sendToServer(new AddPlayerToNetworkPackage(player.getUUID(), networkId));
+            CatnipServices.NETWORK.sendToServer(new AddPlayerToNetworkPackage(player.getUUID(), networkId));
             // Server will send back updated data - no need to update locally
         });
         addRenderableWidget(addPlayerButton);
@@ -149,7 +149,7 @@ public class NetworkSettingsScreen extends Screen {
         Consumer<String> onTextChanged = s -> {
             nameBox.setX(nameBoxX(s, nameBox));
             //save network name
-            CMPPackets.getChannel().sendToServer(new SetNetworkNamePackage(nameBox.getValue(), networkId));
+            CatnipServices.NETWORK.sendToServer(new SetNetworkNamePackage(nameBox.getValue(), networkId));
             networkData.name = nameBox.getValue();
         };
         nameBox = new EditBox(new NoShadowFontWrapper(font), guiLeft + 25, guiTop + 4, windowWidth - 50, 10, Component.empty());
@@ -196,10 +196,10 @@ public class NetworkSettingsScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         float maxScroll = getMaxScroll();
         if (maxScroll <= 0) return false;
-        float newTarget = Mth.clamp(scroll.getChaseTarget() - (float) delta, 0, maxScroll);
+        float newTarget = Mth.clamp(scroll.getChaseTarget() - (float) scrollY, 0, maxScroll);
         scroll.chase(newTarget, 0.5f, LerpedFloat.Chaser.EXP);
         return true;
     }
@@ -305,7 +305,6 @@ public class NetworkSettingsScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(guiGraphics);
 
         renderBg(guiGraphics, partialTick, mouseX, mouseY);
 
@@ -405,7 +404,7 @@ public class NetworkSettingsScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(@NotNull GuiGraphics guiGraphics) {
-        super.renderBackground(guiGraphics);
+    public void renderBackground(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Do nothing - don't render the blur background
     }
 }

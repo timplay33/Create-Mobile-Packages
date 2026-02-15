@@ -2,8 +2,10 @@ package de.theidler.create_mobile_packages;
 
 import de.theidler.create_mobile_packages.index.CMPKeys;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.OpenPortableStockTicker;
+import de.theidler.create_mobile_packages.network_settings.PlayerNetworksScreen;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

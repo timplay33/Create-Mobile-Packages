@@ -4,8 +4,8 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import de.theidler.create_mobile_packages.index.CMPGuiTextures;
-import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.createmod.catnip.animation.LerpedFloat;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -54,7 +54,7 @@ public class PlayerNetworksScreen extends Screen {
         doneBtn = new IconButton(guiLeft + windowWidth - 25, guiTop + windowHeight - 24, AllIcons.I_CONFIRM);
         doneBtn.withCallback(() -> minecraft.setScreen(null));
 
-        CMPPackets.getChannel().sendToServer(new RequestPlayerNetworksPacket());
+        CatnipServices.NETWORK.sendToServer(RequestPlayerNetworksPacket.INSTANCE);
         lastKnownUpdateCount = ClientNetworkDataStorage.getUpdateCount();
 
         refreshNetworks();
@@ -72,10 +72,10 @@ public class PlayerNetworksScreen extends Screen {
             leaveBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.leave"));
 
             leaveBtn.withCallback(() -> {
-                CMPPackets.getChannel().sendToServer(new RemovePlayerFromNetworkPackage(getPlayer().getUUID(), networkId));
+                CatnipServices.NETWORK.sendToServer(new RemovePlayerFromNetworkPackage(getPlayer().getUUID(), networkId));
                 // Clear cache and refetch networks from server
                 ClientNetworkDataStorage.clear();
-                CMPPackets.getChannel().sendToServer(new RequestPlayerNetworksPacket());
+                CatnipServices.NETWORK.sendToServer(RequestPlayerNetworksPacket.INSTANCE);
                 lastKnownUpdateCount = ClientNetworkDataStorage.getUpdateCount();
                 this.refreshNetworks();
             });
@@ -105,10 +105,10 @@ public class PlayerNetworksScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         float maxScroll = getMaxScroll();
         if (maxScroll <= 0) return false;
-        float newTarget = Mth.clamp(scroll.getChaseTarget() - (float) delta, 0, maxScroll);
+        float newTarget = Mth.clamp(scroll.getChaseTarget() - (float) scrollY, 0, maxScroll);
         scroll.chase(newTarget, 0.5f, LerpedFloat.Chaser.EXP);
         return true;
     }
@@ -171,7 +171,6 @@ public class PlayerNetworksScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(guiGraphics);
         renderBg(guiGraphics, partialTick, mouseX, mouseY);
 
         float scrollOffset = scroll.getValue(partialTick);
@@ -260,5 +259,10 @@ public class PlayerNetworksScreen extends Screen {
                 .filter(entry -> entry.getValue().players.contains(getPlayer().getUUID()) || getPlayer().getUUID().equals(entry.getValue().owner))
                 .map(java.util.Map.Entry::getKey)
                 .toList();
+    }
+
+    @Override
+    public void renderBackground(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Do nothing - don't render the blur background
     }
 }

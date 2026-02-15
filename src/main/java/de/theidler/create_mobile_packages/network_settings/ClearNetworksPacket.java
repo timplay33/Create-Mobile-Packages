@@ -1,17 +1,26 @@
 package de.theidler.create_mobile_packages.network_settings;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-public class ClearNetworksPacket extends SimplePacketBase {
+public class ClearNetworksPacket implements ClientboundPacketPayload {
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClearNetworksPacket> STREAM_CODEC = StreamCodec.composite(
+            CatnipStreamCodecBuilders.list(UUIDUtil.STREAM_CODEC), packet -> packet.validNetworkIds,
+            ClearNetworksPacket::new
+    );
 
     private final List<UUID> validNetworkIds;
 
@@ -19,31 +28,9 @@ public class ClearNetworksPacket extends SimplePacketBase {
         this.validNetworkIds = new ArrayList<>(validNetworkIds);
     }
 
-    public static ClearNetworksPacket read(FriendlyByteBuf buffer) {
-        int count = buffer.readInt();
-        List<UUID> networkIds = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            networkIds.add(buffer.readUUID());
-        }
-        return new ClearNetworksPacket(networkIds);
-    }
-
     @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeInt(validNetworkIds.size());
-        for (UUID networkId : validNetworkIds) {
-            buffer.writeUUID(networkId);
-        }
-    }
-
-    @Override
-    public boolean handle(NetworkEvent.Context context) {
-        context.enqueueWork(this::handleClient);
-        return true;
-    }
-
     @OnlyIn(Dist.CLIENT)
-    public void handleClient() {
+    public void handle(LocalPlayer player) {
         // Remove networks that are not in the valid list
         var validSet = new HashSet<>(validNetworkIds);
         var networksToRemove = new ArrayList<UUID>();
@@ -57,5 +44,10 @@ public class ClearNetworksPacket extends SimplePacketBase {
         for (UUID networkId : networksToRemove) {
             ClientNetworkDataStorage.removeNetwork(networkId);
         }
+    }
+
+    @Override
+    public PacketTypeProvider getTypeProvider() {
+        return CMPPackets.CLEAR_NETWORKS;
     }
 }

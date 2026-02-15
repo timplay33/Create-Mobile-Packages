@@ -33,11 +33,9 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -250,17 +248,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         behaviours.add(behaviour = new LogisticallyLinkedBehaviour(this, true));
         super.addBehaviours(behaviours);
-    }
-
-    @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
-        if (tag.contains("RoboBeeInventory")) {
-            roboBeeInventory.deserializeNBT(tag.getCompound("RoboBeeInventory"));
-        }
-        if (tag.hasUUID("PlacerUUID")) {
-            placerUUID = tag.getUUID("PlacerUUID");
-        }
     }
 
     @Override

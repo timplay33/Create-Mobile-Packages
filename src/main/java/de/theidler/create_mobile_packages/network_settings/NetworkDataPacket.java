@@ -1,17 +1,31 @@
 package de.theidler.create_mobile_packages.network_settings;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import de.theidler.create_mobile_packages.index.CMPPackets;
+import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
+import net.createmod.catnip.net.base.ClientboundPacketPayload;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class NetworkDataPacket extends SimplePacketBase {
+public class NetworkDataPacket implements ClientboundPacketPayload {
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, NetworkDataPacket> STREAM_CODEC = StreamCodec.composite(
+            UUIDUtil.STREAM_CODEC, packet -> packet.networkId,
+            UUIDUtil.STREAM_CODEC, packet -> packet.owner,
+            ByteBufCodecs.BOOL, packet -> packet.locked,
+            ByteBufCodecs.STRING_UTF8, packet -> packet.name,
+            CatnipStreamCodecBuilders.list(UUIDUtil.STREAM_CODEC), packet -> packet.players,
+            NetworkDataPacket::new
+
+    );
 
     private final UUID networkId;
     private final UUID owner; // Can be null for error packets
@@ -29,43 +43,9 @@ public class NetworkDataPacket extends SimplePacketBase {
         this.isError = name != null && name.startsWith("ERROR:");
     }
 
-    public static NetworkDataPacket read(FriendlyByteBuf buffer) {
-        UUID networkId = buffer.readUUID();
-        boolean hasOwner = buffer.readBoolean();
-        UUID owner = hasOwner ? buffer.readUUID() : null;
-        boolean locked = buffer.readBoolean();
-        String name = buffer.readUtf();
-        int playerCount = buffer.readInt();
-        List<UUID> players = new ArrayList<>();
-        for (int i = 0; i < playerCount; i++) {
-            players.add(buffer.readUUID());
-        }
-        return new NetworkDataPacket(networkId, owner, locked, name, players);
-    }
-
     @Override
-    public void write(FriendlyByteBuf buffer) {
-        buffer.writeUUID(networkId);
-        buffer.writeBoolean(owner != null);
-        if (owner != null) {
-            buffer.writeUUID(owner);
-        }
-        buffer.writeBoolean(locked);
-        buffer.writeUtf(name);
-        buffer.writeInt(players.size());
-        for (UUID player : players) {
-            buffer.writeUUID(player);
-        }
-    }
-
-    @Override
-    public boolean handle(NetworkEvent.Context context) {
-        context.enqueueWork(this::handleClient);
-        return true;
-    }
-
     @OnlyIn(Dist.CLIENT)
-    public void handleClient() {
+    public void handle(LocalPlayer player) {
         if (isError) {
             ClientNetworkDataStorage.setErrorMessage(networkId, name);
         } else {
@@ -79,5 +59,10 @@ public class NetworkDataPacket extends SimplePacketBase {
                 ClientNetworkDataStorage.removeNetwork(networkId);
             }
         }
+    }
+
+    @Override
+    public PacketTypeProvider getTypeProvider() {
+        return CMPPackets.NETWORK_DATA;
     }
 }

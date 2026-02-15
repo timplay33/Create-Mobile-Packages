@@ -11,6 +11,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 
 @Mod(value = CreateMobilePackages.MODID, dist = Dist.CLIENT)
 public class CreateMobilePackagesClient {
@@ -23,8 +25,7 @@ public class CreateMobilePackagesClient {
         modEventBus.addListener(CreateMobilePackagesClient::clientInit);
         modEventBus.addListener(CreateMobilePackagesClient::registerEntityRenderers);
         modEventBus.addListener(CreateMobilePackagesClient::registerLayerDefinitions);
-
-        forgeEventBus.addListener(CreateMobilePackagesClient::onLevelLeave);
+        NeoForge.EVENT_BUS.addListener(CreateMobilePackagesClient::onLevelLeave);
     }
 
     private static void clientInit(FMLClientSetupEvent event) {
