@@ -7,6 +7,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class DronePortTracker extends SavedData {
     private final List<BeePortBlockEntity> dronePorts = new ArrayList<>();
@@ -43,5 +44,9 @@ public class DronePortTracker extends SavedData {
     @Override
     public CompoundTag save(CompoundTag compoundTag, HolderLookup.Provider provider) {
         return compoundTag;
+    }
+
+    public List<BeePortBlockEntity> getAllByNetwork(UUID logisticsNetworkId) {
+        return dronePorts.stream().filter(dpbe -> dpbe.getLogisticsNetworkId().equals(logisticsNetworkId)).toList();
     }
 }

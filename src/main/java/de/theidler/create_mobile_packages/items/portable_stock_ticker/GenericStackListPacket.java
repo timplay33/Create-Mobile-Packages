@@ -15,22 +15,26 @@ import java.util.List;
 
 public class GenericStackListPacket implements ClientboundPacketPayload {
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, GenericStackListPacket> STREAM_CODEC = StreamCodec.composite(
-            CatnipStreamCodecBuilders.list(FactoryAbstractions.GENERIC_STACK_STREAM_CODEC), packet -> packet.stacks,
-            GenericStackListPacket::new
-    );
+    public static final StreamCodec<RegistryFriendlyByteBuf, GenericStackListPacket> STREAM_CODEC = StreamCodec
+            .composite(
+                    CatnipStreamCodecBuilders.list(FactoryAbstractions.GENERIC_STACK_STREAM_CODEC),
+                    packet -> packet.stacks,
+                    net.minecraft.network.codec.ByteBufCodecs.BOOL, packet -> packet.last,
+                    GenericStackListPacket::new);
 
     private final List<GenericStack> stacks;
+    private final boolean last;
 
     // Standard constructor
-    public GenericStackListPacket(List<GenericStack> stacks) {
+    public GenericStackListPacket(List<GenericStack> stacks, boolean last) {
         this.stacks = stacks;
+        this.last = last;
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
     public void handle(LocalPlayer player) {
-        ClientScreenStorage.stacks = stacks;
+        ClientScreenStorage.receiveChunk(stacks, last);
     }
 
     @Override

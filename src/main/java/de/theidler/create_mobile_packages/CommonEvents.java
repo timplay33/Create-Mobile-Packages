@@ -1,38 +1,42 @@
 package de.theidler.create_mobile_packages;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
+import de.theidler.create_mobile_packages.robo.RoboManager;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.client.Minecraft;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+
+
 
 @EventBusSubscriber
 public class CommonEvents {
 
     @SubscribeEvent
-    public static void onWorldTick(LevelTickEvent.Pre event) {
-        Level world = event.getLevel();
-        if (world.isClientSide() && Minecraft.getInstance().hasSingleplayerServer())
-            return;
-        CreateMobilePackages.ROBO_MANAGER.tick(world);
+    public static void onServerWorldTick(LevelTickEvent.Pre event) {
+        Level level = event.getLevel();
+        if (level instanceof ServerLevel serverLevel)
+            RoboManager.get(serverLevel).tick(serverLevel);
     }
 
-    @SubscribeEvent
-    public static void onLoadWorld(LevelEvent.Load event) {
-        LevelAccessor world = event.getLevel();
-        CreateMobilePackages.ROBO_MANAGER.levelLoaded(world);
-    }
-
-    @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber
     public static class ModBusEvents {
 
-        @net.neoforged.bus.api.SubscribeEvent
+        @SubscribeEvent
         public static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
-
             BeePortBlockEntity.registerCapabilities(event);
         }
     }
+
+    @SubscribeEvent
+    public static void onEntityTravelToDimension(EntityTravelToDimensionEvent event) {
+        if (event.getEntity().level().isClientSide()) return;
+        if (!(event.getEntity() instanceof RoboEntity)) return;
+
+        event.setCanceled(true);
+    }
+
 }

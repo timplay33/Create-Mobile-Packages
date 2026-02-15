@@ -4,15 +4,7 @@ import com.tterrag.registrate.util.entry.ItemEntry;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTicker;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-
-import static de.theidler.create_mobile_packages.index.CMPDataComponents.CMP_FREQ;
+import de.theidler.create_mobile_packages.items.mobile_packager.MobilePackager;
 
 public class CMPItems {
 
@@ -20,34 +12,14 @@ public class CMPItems {
             CreateMobilePackages.REGISTRATE.item("portable_stock_ticker", PortableStockTicker::new)
                     .register();
 
-    public static final ItemEntry<DroneController> DRONE_CONTROLLER =
-            CreateMobilePackages.REGISTRATE.item("drone_controller", DroneController::new)
-                    .removeTab(CreativeModeTabs.SEARCH)
-                    .removeTab(ResourceKey.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, CreateMobilePackages.asResource("create_mobile_packages_tab")))
-                    .register();
-
     public static final ItemEntry<RoboBeeItem> ROBO_BEE =
             CreateMobilePackages.REGISTRATE.item("robo_bee",RoboBeeItem::new)
                     .register();
 
+    public static final ItemEntry<MobilePackager> MOBILE_PACKAGER =
+            CreateMobilePackages.REGISTRATE.item("mobile_packager", MobilePackager::new)
+                    .register();
+
     public static void register() {
-    }
-
-    @Deprecated
-    public static class DroneController extends Item {
-        public DroneController(Properties properties) {
-            super(properties);
-        }
-
-        @Override
-        public void inventoryTick(ItemStack pStack, Level pLevel, Entity pEntity, int pSlotId, boolean pIsSelected) {
-            if (!pLevel.isClientSide && pEntity instanceof Player player) {
-                ItemStack replacement = new ItemStack(CMPItems.PORTABLE_STOCK_TICKER.get());
-                if (pStack.has(CMP_FREQ)) {// preserve NBT
-                    replacement.set(CMP_FREQ, pStack.get(CMP_FREQ));
-                }
-                player.getInventory().setItem(pSlotId, replacement);
-            }
-        }
     }
 }

@@ -1,34 +1,23 @@
 package de.theidler.create_mobile_packages.entities;
 
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
-import de.theidler.create_mobile_packages.index.CMPEntities;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 public class RoboBeeEntity extends RoboEntity {
 
-    public RoboBeeEntity(EntityType<? extends Mob> type, Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
-        super(type, level, itemStack, targetPos, spawnPos);
+    public RoboBeeEntity(EntityType<? extends Mob> entityEntityType, Level level, UUID linkedId) {
+        super(entityEntityType, level, linkedId);
         this.setNoGravity(true);
         this.noPhysics = true;
         this.setNoAi(true);
-        this.setPersistenceRequired();
-    }
-
-    public RoboBeeEntity(Level level, ItemStack itemStack, BlockPos targetPos, BlockPos spawnPos) {
-        this(CMPEntities.ROBO_BEE_ENTITY.get(), level, itemStack, targetPos, spawnPos);
-    }
-
-    public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
-        RoboBeeEntity entity = new RoboBeeEntity(type, level, ItemStack.EMPTY, null, new BlockPos(0, 0, 0));
-        entity.setRequest(false);
-        return entity;
     }
 
     // No AI goals; movement is entirely controlled via tick().
@@ -37,7 +26,7 @@ public class RoboBeeEntity extends RoboEntity {
     }
 
     @Override
-    public boolean canCollideWith(Entity entity) {
+    public boolean canCollideWith(@NotNull Entity entity) {
         return false;
     }
 
@@ -47,11 +36,11 @@ public class RoboBeeEntity extends RoboEntity {
     }
 
     @Override
-    public void push(Entity entity) {
+    public void push(@NotNull Entity entity) {
     }
 
     @Override
-    protected void doPush(Entity entity) {
+    protected void doPush(@NotNull Entity entity) {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -60,8 +49,8 @@ public class RoboBeeEntity extends RoboEntity {
                 .add(Attributes.MOVEMENT_SPEED, 0.0D);
     }
 
-    @Override
-    public void checkDespawn() {
+    public static RoboBeeEntity createEmpty(EntityType<? extends Mob> type, Level level) {
+        UUID linkedId = UUID.randomUUID();
+        return new RoboBeeEntity(type, level, linkedId);
     }
-
 }

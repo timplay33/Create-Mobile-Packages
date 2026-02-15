@@ -12,11 +12,11 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 
 ### 1.20.1 Forge
 - Forge 47.3.33 or newer
-- Create 6.0.4 or newer
+- Create 6.0.8 or newer
 
 ### 1.21.1 NeoForge
-- NeoForge 21.1.159 or newer
-- Create 6.0.4 or newer
+- NeoForge 21.1.206 or newer
+- Create 6.0.9 or newer
 
 
 ## Where to Download?
@@ -68,6 +68,17 @@ Key Features:
 - **Category synchronization**: If linked to a Stock Ticker with categories, those categories will be copied to the Portable Stock Ticker
 
 ![Controller](https://github.com/user-attachments/assets/d8a85e58-3ffa-4c2a-8b74-48f6c2b76642)
+
+### Mobile Packager
+
+The **Mobile Packager** is a handheld device allowing players to create or modify Create mod Packages on the go.
+
+Key Features:
+- **Creating Packages** using the device opens a GUI where up to nine Stacks can be placed along with an address. On submission, a new Package is placed in the player's inventory containing the added items.
+- **Edit Packages** using the device with the Shift key opens a GUI where an existing package can be placed. On submission, the contents of the package are shown and can be modified.
+
+![Mobile Packager](https://github.com/user-attachments/assets/9d21daf4-f64e-4df8-9ad3-a689e6f83ab5)
+
 
 ## Gallery
 

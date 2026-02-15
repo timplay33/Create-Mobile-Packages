@@ -11,12 +11,16 @@ import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 
 @Mod(CreateMobilePackages.MODID)
+@EventBusSubscriber(modid = CreateMobilePackages.MODID)
 public class CreateMobilePackages
 {
     public static final String MODID = "create_mobile_packages";
@@ -32,7 +36,6 @@ public class CreateMobilePackages
                     new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                             .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
             );
-    public static final RoboManager ROBO_MANAGER = new RoboManager();
 
     public CreateMobilePackages(IEventBus eventBus, ModContainer modContainer) {
         onCtor(eventBus, modContainer);
@@ -51,9 +54,16 @@ public class CreateMobilePackages
         CMPEntities.register();
         CMPDisplaySources.register();
         CMPDataComponents.register(modEventBus);
+        CMPToasts.registerAll();
+
     }
 
     public static ResourceLocation asResource(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+        CMPCommands.register(event.getDispatcher());
     }
 }

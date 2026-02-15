@@ -1,7 +1,7 @@
 package de.theidler.create_mobile_packages.compat.jei;
 
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
-import com.simibubi.create.foundation.blockEntity.LegacyRecipeWrapper;
+import com.simibubi.create.foundation.blockEntity.ItemHandlerContainer;
 import com.simibubi.create.foundation.utility.CreateLang;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerMenu;
@@ -27,6 +27,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
@@ -43,40 +44,43 @@ import java.util.Optional;
 
 public class DroneControllerTransferHandler implements IUniversalRecipeTransferHandler<PortableStockTickerMenu> {
 
-    private IJeiHelpers helpers;
+    private final IJeiHelpers helpers;
 
     public DroneControllerTransferHandler(IJeiHelpers helpers) {
         this.helpers = helpers;
     }
 
     @Override
-    public Class<? extends PortableStockTickerMenu> getContainerClass() {
+    public @NotNull Class<? extends PortableStockTickerMenu> getContainerClass() {
         return PortableStockTickerMenu.class;
     }
 
     @Override
-    public Optional<MenuType<PortableStockTickerMenu>> getMenuType() {
+    public @NotNull Optional<MenuType<PortableStockTickerMenu>> getMenuType() {
         return Optional.of(CMPMenuTypes.PORTABLE_STOCK_TICKER_MENU.get());
     }
 
     @Override
-    public @Nullable IRecipeTransferError transferRecipe(PortableStockTickerMenu container, Object object,
-                                                         IRecipeSlotsView recipeSlots, Player player,
-                                                         boolean maxTransfer, boolean doTransfer) {
+    public @Nullable IRecipeTransferError transferRecipe(@NotNull PortableStockTickerMenu container,
+            @NotNull Object object,
+            @NotNull IRecipeSlotsView recipeSlots, Player player,
+            boolean maxTransfer, boolean doTransfer) {
         Level level = player.level();
         if (!(object instanceof RecipeHolder<?> recipe))
             return null;
         MutableObject<IRecipeTransferError> result = new MutableObject<>();
         if (level.isClientSide())
-            //noinspection unchecked
+            // noinspection unchecked
             CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> result
-                    .setValue(transferRecipeOnClient(container, (RecipeHolder<Recipe<?>>) recipe, recipeSlots, player, maxTransfer, doTransfer)));
+                    .setValue(transferRecipeOnClient(container, (RecipeHolder<Recipe<?>>) recipe, recipeSlots, player,
+                            maxTransfer, doTransfer)));
         return result.getValue();
     }
 
-    private IRecipeTransferError transferRecipeOnClient(PortableStockTickerMenu container, RecipeHolder<Recipe<?>> recipeHolder,
-                                                        IRecipeSlotsView recipeSlots, Player player,
-                                                        boolean maxTransfer, boolean doTransfer) {
+    private IRecipeTransferError transferRecipeOnClient(PortableStockTickerMenu container,
+            RecipeHolder<Recipe<?>> recipeHolder,
+            IRecipeSlotsView recipeSlots, Player player,
+            boolean maxTransfer, boolean doTransfer) {
         if (!(container.screenReference instanceof PortableStockTickerScreen screen))
             return null;
 
@@ -85,32 +89,31 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
         for (CraftableGenericStack cbis : screen.recipesToOrder)
             if (cbis.asStack().recipe == recipe)
                 return new RecipeTransferErrorTooltip(CreateLang.translate("gui.stock_keeper.already_ordering_recipe")
-                                                              .component());
+                        .component());
 
         if (screen.itemsToOrder.size() >= 9)
             return new RecipeTransferErrorTooltip(CreateLang.translate("gui.stock_keeper.slots_full")
-                                                          .component());
+                    .component());
 
         GenericInventorySummary summary = screen.stockSnapshot();
 
         List<GenericStack> availableStacks = summary.get();
-        Container outputDummy = new LegacyRecipeWrapper(new ItemStackHandler(9));
+        Container outputDummy = new ItemHandlerContainer(new ItemStackHandler(9));
         List<Slot> craftingSlots = new ArrayList<>();
         for (int i = 0; i < outputDummy.getContainerSize(); i++)
             craftingSlots.add(new Slot(outputDummy, i, 0, 0));
-
         TransferOperationsResult transferOperations = IngredientTransfer.getRecipeTransferOperations(
                 helpers.getIngredientManager(),
                 availableStacks, recipeSlots.getSlotViews(RecipeIngredientRole.INPUT), craftingSlots);
 
         if (!transferOperations.missingItems().isEmpty())
             return new RecipeTransferErrorMissingSlots(CreateLang.translate("gui.stock_keeper.not_in_stock")
-                                                               .component(), transferOperations.missingItems());
+                    .component(), transferOperations.missingItems());
 
         if (screen.itemsToOrder.size() + transferOperations.results().stream().mapToInt(
                 TransferOperation::from).distinct().count() >= 9)
             return new RecipeTransferErrorTooltip(CreateLang.translate("gui.stock_keeper.slots_full")
-                                                          .component());
+                    .component());
 
         if (!doTransfer)
             return null;
@@ -131,10 +134,12 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
 
             for (IRecipeSlotView slotView : recipeSlots.getSlotViews(RecipeIngredientRole.OUTPUT)) {
                 Optional<ITypedIngredient<?>> displayedIngredient = slotView.getDisplayedIngredient();
-                if (displayedIngredient.isEmpty()) continue;
+                if (displayedIngredient.isEmpty())
+                    continue;
                 Optional<GenericStack> ingredient = IngredientTransfer.tryConvert(helpers.getIngredientManager(),
-                                                                                  displayedIngredient.get());
-                if (ingredient.isEmpty()) continue;
+                        displayedIngredient.get());
+                if (ingredient.isEmpty())
+                    continue;
 
                 ingredientStack.results(registryAccess).add(ingredient.get());
             }
@@ -147,8 +152,9 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
         screen.recipesToOrder.add(ingredientStack);
         screen.searchBox.setValue("");
         screen.refreshSearchNextTick = true;
+
         screen.requestCraftable(ingredientStack,
-                                maxTransfer && !cbis.stack.isEmpty() ? cbis.stack.getMaxStackSize() : 1);
+                maxTransfer && !cbis.stack.isEmpty() ? cbis.stack.getMaxStackSize() : 1);
 
         return null;
     }

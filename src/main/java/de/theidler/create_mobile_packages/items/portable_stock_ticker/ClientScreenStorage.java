@@ -5,25 +5,34 @@ import net.createmod.catnip.platform.CatnipServices;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class ClientScreenStorage {
+    public static final int TICKS_BETWEEN_UPDATES = 100;
     public static List<GenericStack> stacks = new ArrayList<>();
+    private static List<GenericStack> collectionBuffer = new ArrayList<>();
 
     private static int ticks = 0;
 
-    public static void tick(UUID networkId) {
-        if (ticks++ > 120) {
-            update(networkId);
+    public static void tick() {
+        if (ticks++ > TICKS_BETWEEN_UPDATES) {
+            update();
             ticks = 0;
         }
     }
 
-    private static void update(UUID networkId) {
-        CatnipServices.NETWORK.sendToServer(new RequestStockUpdate(networkId));
+    private static void update() {
+        CatnipServices.NETWORK.sendToServer(RequestStockUpdate.INSTANCE);
     }
 
-    public static void manualUpdate(UUID networkId) {
-        update(networkId);
+    public static void manualUpdate() {
+        update();
+    }
+
+    public static void receiveChunk(List<GenericStack> chunks, boolean last) {
+        collectionBuffer.addAll(chunks);
+        if (last) {
+            stacks = collectionBuffer;
+            collectionBuffer = new ArrayList<>();
+        }
     }
 }
