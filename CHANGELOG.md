@@ -1,4 +1,13 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.6.1 - 1.20.1 - unreleased
+------------------------------------------------------
+
+### Bug Fixes
+- Fixed Stock quantity not visible in the portable stock ticker (#290)
+- Fixed Fix Inconsistent amount of push and popPose (#292)
+
+
+------------------------------------------------------
 Create: Mobile Packages - v0.6.0 - 01.02.2026
 ------------------------------------------------------
 
