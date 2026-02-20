@@ -638,6 +638,15 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                     .renderSlot(graphics, entry.get().key(), 0, 0);
 
         ms.popPose();
+
+        ms.pushPose();
+        ms.translate(0, 0, 200);
+        if (customCount != 0 || craftable)
+            GenericContentExtender.registrationOf(entry.get().key())
+                    .clientProvider().guiHandler()
+                    .renderDecorations(graphics, entry.get().key(), customCount, 1, 1);
+
+        ms.popPose();
     }
 
     @Override
