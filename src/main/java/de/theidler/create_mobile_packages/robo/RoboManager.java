@@ -87,10 +87,11 @@ public class RoboManager extends SavedData {
         });
     }
 
-    public UUID newRobo(ServerLevel level, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId, float packageHeightScale) {
+    public UUID newRobo(ServerLevel level, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId, float packageHeightScale, @Nullable BlockPos HomePort) {
         UUID id = UUID.randomUUID();
         VirtualRobo robo = new VirtualRobo(level, id, itemStack, spawnPos, logisticsNetworkId);
         robo.setPackageHeightScale(packageHeightScale);
+        robo.setHomePortPos(HomePort);
         this.add(robo);
         setDirty();
         return id;

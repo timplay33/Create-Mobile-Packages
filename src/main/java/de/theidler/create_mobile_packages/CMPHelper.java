@@ -7,10 +7,12 @@ import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -90,5 +92,14 @@ public class CMPHelper {
             return address.equals(playerName);
         }
         return address.substring(atIndex + 1).equals(playerName);
+    }
+
+    public static @Nullable BeePortBlockEntity getPortAtPos(ServerLevel serverLevel, @Nullable BlockPos pos) {
+        if (pos == null) return null;
+        BlockEntity be = serverLevel.getBlockEntity(pos);
+        if (be instanceof BeePortBlockEntity bpbe) {
+            return bpbe;
+        }
+        return null;
     }
 }

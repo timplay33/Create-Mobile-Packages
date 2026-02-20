@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.blocks.bee_port;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packagePort.frogport.FrogportBlockEntity;
@@ -7,13 +8,16 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBeha
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
+import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -36,9 +40,11 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS_OPEN_TEXTURE;
@@ -48,6 +54,8 @@ import static de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock.IS
  * to players or other drone ports using drones.
  */
 public class BeePortBlockEntity extends PackagePortBlockEntity {
+
+    private UUID placerUUID;
 
     private final ContainerData data = new SimpleContainerData(2);
     private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
@@ -190,13 +198,8 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.put("RoboBeeInventory", roboBeeInventory.serializeNBT());
-    }
-
-    @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
-        if (tag.contains("RoboBeeInventory")) {
-            roboBeeInventory.deserializeNBT(tag.getCompound("RoboBeeInventory"));
+        if (placerUUID != null) {
+            tag.putUUID("PlacerUUID", placerUUID);
         }
     }
 
@@ -227,6 +230,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     }
 
     @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        if (tag.contains("RoboBeeInventory")) {
+            roboBeeInventory.deserializeNBT(tag.getCompound("RoboBeeInventory"));
+        }
+        if (tag.hasUUID("PlacerUUID")) {
+            placerUUID = tag.getUUID("PlacerUUID");
+        }
+    }
+
+    @Override
     public void lazyTick() {
         super.lazyTick();
         if (level == null || level.isClientSide()) return;
@@ -235,7 +249,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         } else {
             tryPullingFromAdjacentInventories();
         }
-
     }
 
     private void tryPushingToAdjacentInventories() {
@@ -286,7 +299,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         return inventories;
     }
 
-    private IItemHandler getAdjacentInventory(Direction side) {
+    private @Nullable IItemHandler getAdjacentInventory(Direction side) {
         if (level == null) return null;
         BlockEntity blockEntity = level.getBlockEntity(worldPosition.relative(side));
         if (blockEntity == null || blockEntity instanceof FrogportBlockEntity) return null;
@@ -321,11 +334,17 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         String address = PackageItem.getAddress(itemStack);
         if (address.isBlank()) return; // return if the package has no address
 
-        // Check if the item can be sent to a player.
-        for (Player player : level.players()) {
-            if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(player.blockPosition(), this.getBlockPos())) {
-                sendToPlayer(player, itemStack, slot);
-                return;
+        Set<UUID> playerUUIDs = NetworkHelper.getPlayerUUIDs(getLogisticsNetworkId());
+        if (playerUUIDs != null) {
+            // Check if the item can be sent to a player.
+            for (Player player : level.players()) {
+                if (!playerUUIDs.contains(player.getUUID())) {
+                    continue; // skip players not in the logistics network
+                }
+                if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(player.blockPosition(), this.getBlockPos())) {
+                    sendToPlayer(player, itemStack, slot);
+                    return;
+                }
             }
         }
 
@@ -381,7 +400,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
         roboSendCooldown = 2;
         if (level instanceof ServerLevel serverLevel) {
-            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId(), 0);
+            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId(), 0, this.getBlockPos());
         }
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
@@ -438,6 +457,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (level != null && !level.isClientSide) {
             level.getCapability(ModCapabilities.BEE_PORT_ENTITY_TRACKER_CAP).ifPresent(tracker -> tracker.add(this));
         }
+        // update network data
+        if (level != null)
+            Create.LOGISTICS.linkAdded(behaviour.freqId, GlobalPos.of(level.dimension(), getBlockPos()), placerUUID);
     }
 
     /**
@@ -551,13 +573,23 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         return data;
     }
 
+    public void setPlacerUUID(UUID uuid) {
+        this.placerUUID = uuid;
+        if (level != null)
+            Create.LOGISTICS.linkAdded(behaviour.freqId, GlobalPos.of(level.dimension(), getBlockPos()), placerUUID);
+    }
+
     public UUID getLogisticsNetworkId() {
         return behaviour.freqId;
     }
 
     @Override
     public InteractionResult use(Player player) {
-        if (!behaviour.mayInteractMessage(player)) {
+        IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(behaviour.freqId);
+        if (network != null
+                && !network.create_mobile_packages$getPlayers().contains(player.getUUID())
+                && !behaviour.mayInteractMessage(player)
+        ) {
             return InteractionResult.SUCCESS;
         }
         return super.use(player);

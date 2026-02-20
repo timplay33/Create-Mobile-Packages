@@ -4,8 +4,8 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
+import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboBeeBehaviorController;
-import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
@@ -38,6 +38,7 @@ public class VirtualRobo {
     private ServerLevel serverLevel;
     private float packageHeightScale;
     private RoboRequest request = null;
+    private @Nullable BlockPos homePortPos;
 
     public VirtualRobo(ServerLevel level, UUID id, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId) {
         this.id = id;
@@ -91,6 +92,7 @@ public class VirtualRobo {
 
     public @Nullable Vec3 getTargetPosition() {
         updateTarget();
+        if (target == null) return null;
         return target.getTargetPos();
     }
 
@@ -104,13 +106,31 @@ public class VirtualRobo {
         if (target != null && target.isValid()) return;
 
         // try finding a Player first
-        target = PlayerTarget.fromAddress(serverLevel, targetAddress);
-        if (target.isValid()) {return;}
+        target = PlayerTarget.fromAddress(serverLevel, targetAddress, logisticsNetworkId);
+        if (target != null && target.isValid()) {return;}
 
         // if no player found, try finding a BeePortBlockEntity within the network
         BeePortBlockEntity targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
         if (targetBlockEntity != null) {
             target = new BeePortBlockEntityTarget(targetBlockEntity);
+        }
+        if (target != null && target.isValid()) {
+            return;
+        }
+
+        // if no BeePortBlockEntity found, check HomePort
+        BeePortBlockEntity homePort = CMPHelper.getPortAtPos(serverLevel, homePortPos);
+        if (homePort != null) {
+            target = new BeePortBlockEntityTarget(homePort);
+        }
+        if (target != null && target.isValid()) {
+            return;
+        }
+
+        // if no valid HomePort found, check other ports on the network
+        BeePortBlockEntity otherPort = CMPHelper.getClosestBeePort(serverLevel, null, BlockPos.containing(currentPos), this, logisticsNetworkId);
+        if (otherPort != null) {
+            target = new BeePortBlockEntityTarget(otherPort);
         }
     }
 
@@ -144,7 +164,7 @@ public class VirtualRobo {
         this.move(targetVelocity);
         updateEta();
 
-        // Spawn / despawn RoboEntity if needed
+        // Spawn / despawn RoboBeeEntity if needed
         BlockPos pos = BlockPos.containing(currentPos);
         if (level.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) {
             if (entityId == null) {
@@ -168,7 +188,7 @@ public class VirtualRobo {
     }
 
     private void updateEntity() {
-        if (this.entityId != null && (serverLevel.getEntity(entityId) instanceof RoboEntity roboEntity)) {
+        if (this.entityId != null && (serverLevel.getEntity(entityId) instanceof RoboBeeEntity roboEntity)) {
             roboEntity.syncFromVirtual(this);
         } else {
             entityId = null;
@@ -185,7 +205,7 @@ public class VirtualRobo {
     }
 
     private void spawnAndRememberEntity() {
-        Entity entity = new RoboEntity(CMPEntities.ROBO_BEE_ENTITY.get(), serverLevel, id);
+        Entity entity = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), serverLevel, id);
         entity.setPos(currentPos.x, currentPos.y, currentPos.z);
         serverLevel.addFreshEntity(entity);
         this.entityId = entity.getUUID();
@@ -323,5 +343,14 @@ public class VirtualRobo {
         this.request = request;
         this.request.setStatus(RoboRequest.Status.IN_PROGRESS);
         this.target = new BeePortBlockEntityTarget((BeePortBlockEntity) serverLevel.getBlockEntity(request.getTargetPos()));
+    }
+
+    public UUID getLogisticsNetworkId() {
+        return logisticsNetworkId;
+    }
+
+    public void setHomePortPos(@Nullable BlockPos homePort) {
+        if (homePort == null) return;
+        this.homePortPos = homePort;
     }
 }

@@ -13,7 +13,8 @@ import org.lwjgl.glfw.GLFW;
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public enum CMPKeys {
     // From Create AllKeys.java
-    OPEN_PORTABLE_STOCK_TICKER("open_portable_stock_ticker", GLFW.GLFW_KEY_G);
+    OPEN_PORTABLE_STOCK_TICKER("open_portable_stock_ticker", GLFW.GLFW_KEY_G),
+    OPEN_PLAYER_NETWORKS_SCREEN("open_player_networks_screen", GLFW.GLFW_KEY_H);
 
     private KeyMapping keybind;
     private final String description;

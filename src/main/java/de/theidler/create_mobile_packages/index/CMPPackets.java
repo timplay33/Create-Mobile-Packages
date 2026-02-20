@@ -4,9 +4,8 @@ import com.simibubi.create.foundation.networking.SimplePacketBase;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.items.mobile_packager.ConfirmEditMenuPacket;
 import de.theidler.create_mobile_packages.items.mobile_packager.OpenEditMenuPacket;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.RequestStockUpdate;
-import de.theidler.create_mobile_packages.items.portable_stock_ticker.SendPackage;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
+import de.theidler.create_mobile_packages.network_settings.*;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.RemoveToastOnClientPacket;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
@@ -34,12 +33,20 @@ public enum CMPPackets {
     OPEN_PORTABLE_STOCK_TICKER(OpenPortableStockTicker.class, OpenPortableStockTicker::new, PLAY_TO_SERVER),
     OPEN_EDIT_MENU(OpenEditMenuPacket.class, OpenEditMenuPacket::new, PLAY_TO_SERVER),
     CONFIRM_EDIT_MENU(ConfirmEditMenuPacket.class, ConfirmEditMenuPacket::new, PLAY_TO_SERVER),
+    SET_NETWORK_NAME(SetNetworkNamePackage.class, SetNetworkNamePackage::new, PLAY_TO_SERVER),
+    ADD_PLAYER_TO_NETWORK(AddPlayerToNetworkPackage.class, AddPlayerToNetworkPackage::new, PLAY_TO_SERVER),
+    REMOVE_PLAYER_FROM_NETWORK(RemovePlayerFromNetworkPackage.class, RemovePlayerFromNetworkPackage::new, PLAY_TO_SERVER),
+    MODIFY_NETWORK_LOCK_STATE(ModifyNetworkLockStatePackage.class, ModifyNetworkLockStatePackage::new, PLAY_TO_SERVER),
+    REQUEST_NETWORK_DATA(RequestNetworkDataPacket.class, RequestNetworkDataPacket::new, PLAY_TO_SERVER),
+    REQUEST_PLAYER_NETWORKS(RequestPlayerNetworksPacket.class, RequestPlayerNetworksPacket::new, PLAY_TO_SERVER),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket::read, NetworkDirection.PLAY_TO_CLIENT),
     SHOW_TOAST_ON_CLIENT(ShowToastOnClientPacket.class, ShowToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
     REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket.class, RemoveToastOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
-    REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT);
+    REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket::read, NetworkDirection.PLAY_TO_CLIENT),
+    NETWORK_DATA(NetworkDataPacket.class, NetworkDataPacket::read, NetworkDirection.PLAY_TO_CLIENT),
+    CLEAR_NETWORKS(ClearNetworksPacket.class, ClearNetworksPacket::read, NetworkDirection.PLAY_TO_CLIENT);
 
     public static final ResourceLocation CHANNEL_NAME = CreateMobilePackages.asResource("main");
     public static final int NETWORK_VERSION = 3;

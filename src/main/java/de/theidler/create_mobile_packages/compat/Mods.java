@@ -14,8 +14,9 @@ import java.util.function.Supplier;
 
 public enum Mods {
     JEI,
-    EMI,
-    CURIOS;
+    CURIOS,
+    JADE,
+    EMI;
 
     // from com/simibubi/create/compat/Mods.java
 
