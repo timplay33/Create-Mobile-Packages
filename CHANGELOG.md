@@ -1,5 +1,5 @@
 ------------------------------------------------------
-Create: Mobile Packages - v0.6.1 - 1.21.1 - unreleased
+Create: Mobile Packages - v0.6.1 - 1.21.1 - 20.02.2026
 ------------------------------------------------------
 
 ### Bug Fixes
@@ -8,7 +8,7 @@ Create: Mobile Packages - v0.6.1 - 1.21.1 - unreleased
 - Add Bee Port clearing recipe
 
 ### Changes
-- Update Translations (#285)
+- Update Translations (#285, #297)
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.6.0 - 1.21.1 - 15.02.2026
