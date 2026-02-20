@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "create_mobile_packages:bee_port"
+    }
+  ],
+  "result": {
+    "id": "create_mobile_packages:bee_port",
+    "count": 1
+  }
+}
