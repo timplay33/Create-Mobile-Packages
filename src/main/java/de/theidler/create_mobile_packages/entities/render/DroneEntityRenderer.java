@@ -62,8 +62,8 @@ public class DroneEntityRenderer extends MobRenderer<RoboBeeEntity, RoboBeeModel
                     poseStack,
                     buffer.getBuffer(ItemBlockRenderTypes.getRenderType(ItemStack.EMPTY, true))
             );
-            poseStack.popPose();
         }
+        poseStack.popPose();
 
         if (!stack.isEmpty()) {
             poseStack.pushPose();
