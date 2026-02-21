@@ -68,5 +68,10 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Öppnar en meny att ändra Paket",
     "config.jade.plugin_create_mobile_packages.bee_port": "Robot Bi Ports Information",
     "create_mobile_packages.network.players": "Spelare i Nätverk: ",
-    "create_mobile_packages.network.owner": "Ägare: %1$s"
+    "create_mobile_packages.network.owner": "Ägare: %1$s",
+    "create_mobile_packages": {
+    "keyinfo": {
+    "open_player_networks_screen": "Open Network Settings"
+    }
+    }
 }
