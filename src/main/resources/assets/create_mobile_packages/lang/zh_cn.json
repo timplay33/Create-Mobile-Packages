@@ -22,7 +22,6 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "运输蜂正在运送货物！",
     "create_mobile_packages.toast.eta": "剩余时间：%1$s 秒",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "打开便携式仓库管理器",
-    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "运输蜂停泊港",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "运输蜂停泊港可将包裹送至玩家。",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "将地址为玩家名的包裹放入运输蜂停泊港内。",
@@ -69,5 +68,10 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "打开编辑包裹界面",
     "config.jade.plugin_create_mobile_packages.bee_port": "运输蜂停泊港信息",
     "create_mobile_packages.network.players": "网络中的玩家：",
-    "create_mobile_packages.network.owner": "所有者：%1$s"
+    "create_mobile_packages.network.owner": "所有者：%1$s",
+    "create_mobile_packages": {
+    "keyinfo": {
+    "open_player_networks_screen": "Open Network Settings"
+    }
+    }
 }
