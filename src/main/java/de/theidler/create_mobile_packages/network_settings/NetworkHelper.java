@@ -27,9 +27,6 @@ public class NetworkHelper {
     public static @Nullable IExtendedLogisticsNetwork getExtendedLogisticsNetwork(@Nullable LogisticsNetwork logisticsNetwork) {
         if (logisticsNetwork == null) return null;
 
-        // Debugging to console
-        CreateMobilePackages.LOGGER.debug("Checking network: " + logisticsNetwork.getClass().getName());
-
         if (logisticsNetwork instanceof IExtendedLogisticsNetwork extendedLogisticsNetwork) {
             return extendedLogisticsNetwork;
         }
