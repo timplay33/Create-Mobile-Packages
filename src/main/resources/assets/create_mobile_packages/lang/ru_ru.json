@@ -22,7 +22,6 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "Пчелодрон в пути",
     "create_mobile_packages.toast.eta": "Ожидайте %1$s сек",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Открыть складскую сеть",
-    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "Размышляем над пчелопортами",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "Пчелопорт может быть использован чтобы отправить посылку прямо к игроку.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Поместите посылку, у которой адрес совпадает с ником игрока в печлопорт.",
@@ -69,5 +68,10 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Открывает меню изменения посылки",
     "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
     "create_mobile_packages.network.players": "Игроки в сети:",
-    "create_mobile_packages.network.owner": "Владелец: %1$s"
+    "create_mobile_packages.network.owner": "Владелец: %1$s",
+    "create_mobile_packages": {
+    "keyinfo": {
+    "open_player_networks_screen": "Open Network Settings"
+    }
+    }
 }
