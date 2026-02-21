@@ -22,7 +22,6 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "Abelha Robô a caminho!",
     "create_mobile_packages.toast.eta": "%1$s segundos restantes",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Abrir o Telégrafo de Estoque Portátil",
-    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "Porto de Abelhas Robô",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "Porto de Abelhas Robô pode enviar Pacotes ao Jogador.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Coloque um pacote com o endereço correspondente ao nome do jogador no Porto de Abelhas Robô.",
@@ -69,5 +68,10 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Abre um menu para modificar Pacotes",
     "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
     "create_mobile_packages.network.players": "Players in Network:",
-    "create_mobile_packages.network.owner": "Owner: %1$s"
+    "create_mobile_packages.network.owner": "Owner: %1$s",
+    "create_mobile_packages": {
+    "keyinfo": {
+    "open_player_networks_screen": "Open Network Settings"
+    }
+    }
 }
