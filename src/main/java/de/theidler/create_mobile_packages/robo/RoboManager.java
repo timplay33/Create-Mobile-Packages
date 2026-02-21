@@ -23,19 +23,10 @@ public class RoboManager extends SavedData {
 
     public Map<UUID, VirtualRobo> robos;
     public List<RoboRequest> beePortRoboRequests;
+    public Map<UUID, Map<UUID, List<ItemStack>>> trashSlotsByNetworkAndPlayer;
 
     public RoboManager() {
         init();
-    }
-
-    @Override
-    public @NotNull CompoundTag save(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider provider) {
-        ListTag robosList = new ListTag();
-        for (VirtualRobo robo : robos.values()) {
-            robosList.add(robo.serializeNBT());
-        }
-        tag.put("robos", robosList);
-        return tag;
     }
 
     public static RoboManager load(CompoundTag tag, ServerLevel level) {
@@ -48,7 +39,64 @@ public class RoboManager extends SavedData {
             VirtualRobo robo = VirtualRobo.deserializeNBT(level, roboTag);
             manager.robos.put(robo.getId(), robo);
         }
+
+        // Load Trash Slots by Network and Player
+        if (tag.contains("trashSlots", Tag.TAG_COMPOUND)) {
+            CompoundTag trashSlotsTag = tag.getCompound("trashSlots");
+            for (String networkIdStr : trashSlotsTag.getAllKeys()) {
+                UUID networkId = UUID.fromString(networkIdStr);
+                Map<UUID, List<ItemStack>> playerMap = new HashMap<>();
+                CompoundTag playerTag = trashSlotsTag.getCompound(networkIdStr);
+                for (String playerIdStr : playerTag.getAllKeys()) {
+                    UUID playerId = UUID.fromString(playerIdStr);
+                    List<ItemStack> trashSlots = new ArrayList<>();
+                    ListTag trashSlotsList = playerTag.getList(playerIdStr, Tag.TAG_COMPOUND);
+                    for (int i = 0; i < trashSlotsList.size(); i++) {
+                        CompoundTag itemTag = trashSlotsList.getCompound(i);
+                        ItemStack itemStack = ItemStack.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, itemTag)
+                                .result()
+                                .orElse(ItemStack.EMPTY);
+                        if (!itemStack.isEmpty()) {
+                            trashSlots.add(itemStack);
+                        }
+                    }
+                    playerMap.put(playerId, trashSlots);
+                }
+                manager.trashSlotsByNetworkAndPlayer.put(networkId, playerMap);
+            }
+        }
         return manager;
+    }
+
+    @Override
+    public @NotNull CompoundTag save(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider provider) {
+        ListTag robosList = new ListTag();
+        for (VirtualRobo robo : robos.values()) {
+            robosList.add(robo.serializeNBT());
+        }
+        tag.put("robos", robosList);
+
+        // Save Trash Slots by Network and Player
+        CompoundTag trashSlotsTag = new CompoundTag();
+        for (Map.Entry<UUID, Map<UUID, List<ItemStack>>> networkEntry : trashSlotsByNetworkAndPlayer.entrySet()) {
+            String networkIdStr = networkEntry.getKey().toString();
+            CompoundTag playerTag = new CompoundTag();
+            for (Map.Entry<UUID, List<ItemStack>> playerEntry : networkEntry.getValue().entrySet()) {
+                String playerIdStr = playerEntry.getKey().toString();
+                List<ItemStack> trashSlots = playerEntry.getValue();
+                ListTag trashSlotsList = new ListTag();
+                for (ItemStack itemStack : trashSlots) {
+                    ItemStack stackToSave = itemStack == null ? ItemStack.EMPTY : itemStack;
+                    if (!stackToSave.isEmpty()) {
+                        trashSlotsList.add(stackToSave.save(provider));
+                    }
+                }
+                playerTag.put(playerIdStr, trashSlotsList);
+            }
+            trashSlotsTag.put(networkIdStr, playerTag);
+        }
+        tag.put("trashSlots", trashSlotsTag);
+        return tag;
     }
 
     public static RoboManager get(ServerLevel level) {
@@ -69,6 +117,19 @@ public class RoboManager extends SavedData {
 
     public void add(VirtualRobo robo) {
         robos.put(robo.getId(), robo);
+        this.setDirty();
+    }
+
+    public List<ItemStack> getTrashSlots(UUID networkId, UUID playerId) {
+        return trashSlotsByNetworkAndPlayer
+                .getOrDefault(networkId, new HashMap<>())
+                .getOrDefault(playerId, List.of());
+    }
+
+    public void setTrashSlots(UUID networkId, UUID playerId, List<ItemStack> trashSlots) {
+        trashSlotsByNetworkAndPlayer
+                .computeIfAbsent(networkId, k -> new ConcurrentHashMap<>())
+                .put(playerId, trashSlots);
         this.setDirty();
     }
 
@@ -150,5 +211,7 @@ public class RoboManager extends SavedData {
     private void init() {
         this.robos = new ConcurrentHashMap<>();
         this.beePortRoboRequests = new CopyOnWriteArrayList<>();
+        this.trashSlotsByNetworkAndPlayer = new ConcurrentHashMap<>();
     }
 }
+

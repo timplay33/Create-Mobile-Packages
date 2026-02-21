@@ -4,6 +4,7 @@ import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.items.mobile_packager.ConfirmEditMenuPacket;
 import de.theidler.create_mobile_packages.items.mobile_packager.OpenEditMenuPacket;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.OpenTrashMenuPacket;
 import de.theidler.create_mobile_packages.network_settings.*;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.RemoveToastOnClientPacket;
@@ -30,7 +31,7 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
     MODIFY_NETWORK_LOCK_STATE(ModifyNetworkLockStatePackage.class, ModifyNetworkLockStatePackage.STREAM_CODEC),
     REQUEST_NETWORK_DATA(RequestNetworkDataPacket.class, RequestNetworkDataPacket.STREAM_CODEC),
     REQUEST_PLAYER_NETWORKS(RequestPlayerNetworksPacket.class, RequestPlayerNetworksPacket.STREAM_CODEC),
-
+    OPEN_TRASH_MENU(OpenTrashMenuPacket.class, OpenTrashMenuPacket.STREAM_CODEC),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC),
