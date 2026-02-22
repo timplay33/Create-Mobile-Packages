@@ -5,6 +5,7 @@ import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.LogisticallyLinkedItem;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTicker;
 import de.theidler.create_mobile_packages.robo.RoboManager;
+import de.theidler.create_mobile_packages.robo.RoboTrashStore;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
@@ -24,9 +25,15 @@ import java.util.UUID;
 public class TrashMenu extends MenuBase<PortableStockTicker> {
 
     private ItemStackHandler trashInventory;
+    private String targetAddress = "";
 
     public TrashMenu(int id, Inventory playerInventory, PortableStockTicker contentHolder) {
         super(CMPMenuTypes.TRASH_MENU.get(), id, playerInventory, contentHolder);
+    }
+
+    public TrashMenu(int id, Inventory playerInventory, PortableStockTicker contentHolder, String targetAddress) {
+        super(CMPMenuTypes.TRASH_MENU.get(), id, playerInventory, contentHolder);
+        this.targetAddress = targetAddress != null ? targetAddress : "";
     }
 
     @Override
@@ -73,9 +80,13 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
     protected void initAndReadInventory(PortableStockTicker contentHolder) {
         trashInventory = new ItemStackHandler(9);
         if (player.level() instanceof ServerLevel serverLevel) {
-            List<ItemStack> trashStacks = RoboManager.get(serverLevel).getTrashSlots(getNetworkId(), player.getUUID());
-            for (int i = 0; i < trashStacks.size() && i < trashInventory.getSlots(); i++) {
-                trashInventory.setStackInSlot(i, trashStacks.get(i));
+            RoboTrashStore trashStore = RoboManager.get(serverLevel).getTrashStore(getNetworkId(), player.getUUID());
+            if (trashStore != null) {
+                List<ItemStack> trashSlots = trashStore.getItemStacks();
+                for (int i = 0; i < trashSlots.size() && i < trashInventory.getSlots(); i++) {
+                    trashInventory.setStackInSlot(i, trashSlots.get(i));
+                }
+                targetAddress = trashStore.getTargetAddress();
             }
         }
     }
@@ -88,10 +99,21 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
         return null;
     }
 
+    public String getTargetAddress() {
+        return targetAddress;
+    }
+
+    public void setTargetAddress(String address) {
+        this.targetAddress = address;
+    }
+
     private List<ItemStack> toTrashStacks() {
         List<ItemStack> trashStacks = new ArrayList<>();
         for (int i = 0; i < trashInventory.getSlots(); i++) {
-            trashStacks.add(trashInventory.getStackInSlot(i));
+            ItemStack stack = trashInventory.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                trashStacks.add(stack);
+            }
         }
         return trashStacks;
     }
@@ -107,7 +129,9 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
     @Override
     protected void saveData(PortableStockTicker contentHolder) {
         if (player.level() instanceof ServerLevel serverLevel) {
-            RoboManager.get(serverLevel).setTrashSlots(getNetworkId(), player.getUUID(), toTrashStacks());
+            UUID networkId = getNetworkId();
+            RoboManager roboManager = RoboManager.get(serverLevel);
+            roboManager.setTrashSlots(networkId, player.getUUID(), toTrashStacks());
         }
     }
 

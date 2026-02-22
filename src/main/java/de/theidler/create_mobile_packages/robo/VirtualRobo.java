@@ -320,10 +320,6 @@ public class VirtualRobo {
         this.packageHeightScale = scale;
     }
 
-    public void setTarget(@Nullable RoboTarget target) {
-        this.target = target;
-    }
-
     public void setYaw(float yaw) {
         this.yaw = yaw;
     }
@@ -344,7 +340,15 @@ public class VirtualRobo {
     public void setRequest(RoboRequest request) {
         this.request = request;
         this.request.setStatus(RoboRequest.Status.IN_PROGRESS);
-        this.target = new BeePortBlockEntityTarget((BeePortBlockEntity) serverLevel.getBlockEntity(request.getTargetPos()));
+        this.target = request.getTarget();
+    }
+
+    public void clearRequest() {
+        if (this.request != null) {
+            this.request.setStatus(RoboRequest.Status.DONE);
+            this.request = null;
+        }
+        invalidateTarget();
     }
 
     public UUID getLogisticsNetworkId() {

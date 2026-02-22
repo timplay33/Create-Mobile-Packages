@@ -5,6 +5,8 @@ import de.theidler.create_mobile_packages.items.mobile_packager.ConfirmEditMenuP
 import de.theidler.create_mobile_packages.items.mobile_packager.OpenEditMenuPacket;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.OpenTrashMenuPacket;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.SyncTrashAddressPacket;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.SyncTrashAddressToClientPacket;
 import de.theidler.create_mobile_packages.network_settings.*;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.RemoveToastOnClientPacket;
@@ -32,9 +34,11 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
     REQUEST_NETWORK_DATA(RequestNetworkDataPacket.class, RequestNetworkDataPacket.STREAM_CODEC),
     REQUEST_PLAYER_NETWORKS(RequestPlayerNetworksPacket.class, RequestPlayerNetworksPacket.STREAM_CODEC),
     OPEN_TRASH_MENU(OpenTrashMenuPacket.class, OpenTrashMenuPacket.STREAM_CODEC),
+    SYNC_TRASH_ADDRESS(SyncTrashAddressPacket.class, SyncTrashAddressPacket.STREAM_CODEC),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC),
+    SYNC_TRASH_ADDRESS_TO_CLIENT(SyncTrashAddressToClientPacket.class, SyncTrashAddressToClientPacket.STREAM_CODEC),
     SHOW_TOAST_ON_CLIENT(ShowToastOnClientPacket.class, ShowToastOnClientPacket.STREAM_CODEC),
     REMOVE_TOAST_ON_CLIENT(RemoveToastOnClientPacket.class, RemoveToastOnClientPacket.STREAM_CODEC),
     REMOVE_ALL_TOAST_ON_CLIENT(RemoveAllToastsOnClientPacket.class, RemoveAllToastsOnClientPacket.STREAM_CODEC),

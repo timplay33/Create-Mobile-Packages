@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -23,7 +24,7 @@ public class RoboManager extends SavedData {
 
     public Map<UUID, VirtualRobo> robos;
     public List<RoboRequest> beePortRoboRequests;
-    public Map<UUID, Map<UUID, List<ItemStack>>> trashSlotsByNetworkAndPlayer;
+    public List<RoboTrashStore> roboTrashStores;
 
     public RoboManager() {
         init();
@@ -40,30 +41,12 @@ public class RoboManager extends SavedData {
             manager.robos.put(robo.getId(), robo);
         }
 
-        // Load Trash Slots by Network and Player
-        if (tag.contains("trashSlots", Tag.TAG_COMPOUND)) {
-            CompoundTag trashSlotsTag = tag.getCompound("trashSlots");
-            for (String networkIdStr : trashSlotsTag.getAllKeys()) {
-                UUID networkId = UUID.fromString(networkIdStr);
-                Map<UUID, List<ItemStack>> playerMap = new HashMap<>();
-                CompoundTag playerTag = trashSlotsTag.getCompound(networkIdStr);
-                for (String playerIdStr : playerTag.getAllKeys()) {
-                    UUID playerId = UUID.fromString(playerIdStr);
-                    List<ItemStack> trashSlots = new ArrayList<>();
-                    ListTag trashSlotsList = playerTag.getList(playerIdStr, Tag.TAG_COMPOUND);
-                    for (int i = 0; i < trashSlotsList.size(); i++) {
-                        CompoundTag itemTag = trashSlotsList.getCompound(i);
-                        ItemStack itemStack = ItemStack.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, itemTag)
-                                .result()
-                                .orElse(ItemStack.EMPTY);
-                        if (!itemStack.isEmpty()) {
-                            trashSlots.add(itemStack);
-                        }
-                    }
-                    playerMap.put(playerId, trashSlots);
-                }
-                manager.trashSlotsByNetworkAndPlayer.put(networkId, playerMap);
-            }
+        // Load Trash Stores
+        ListTag trashSlotsTag = tag.getList("trashSlots", Tag.TAG_COMPOUND);
+        for (int i = 0; i < trashSlotsTag.size(); i++) {
+            CompoundTag trashStoreTag = trashSlotsTag.getCompound(i);
+            RoboTrashStore roboTrashStore = RoboTrashStore.load(trashStoreTag);
+            manager.roboTrashStores.add(roboTrashStore);
         }
         return manager;
     }
@@ -76,24 +59,10 @@ public class RoboManager extends SavedData {
         }
         tag.put("robos", robosList);
 
-        // Save Trash Slots by Network and Player
-        CompoundTag trashSlotsTag = new CompoundTag();
-        for (Map.Entry<UUID, Map<UUID, List<ItemStack>>> networkEntry : trashSlotsByNetworkAndPlayer.entrySet()) {
-            String networkIdStr = networkEntry.getKey().toString();
-            CompoundTag playerTag = new CompoundTag();
-            for (Map.Entry<UUID, List<ItemStack>> playerEntry : networkEntry.getValue().entrySet()) {
-                String playerIdStr = playerEntry.getKey().toString();
-                List<ItemStack> trashSlots = playerEntry.getValue();
-                ListTag trashSlotsList = new ListTag();
-                for (ItemStack itemStack : trashSlots) {
-                    ItemStack stackToSave = itemStack == null ? ItemStack.EMPTY : itemStack;
-                    if (!stackToSave.isEmpty()) {
-                        trashSlotsList.add(stackToSave.save(provider));
-                    }
-                }
-                playerTag.put(playerIdStr, trashSlotsList);
-            }
-            trashSlotsTag.put(networkIdStr, playerTag);
+        // Save Trash Stores
+        ListTag trashSlotsTag = new ListTag();
+        for (RoboTrashStore roboTrashStore : roboTrashStores) {
+            trashSlotsTag.add(roboTrashStore.save());
         }
         tag.put("trashSlots", trashSlotsTag);
         return tag;
@@ -120,16 +89,43 @@ public class RoboManager extends SavedData {
         this.setDirty();
     }
 
-    public List<ItemStack> getTrashSlots(UUID networkId, UUID playerId) {
-        return trashSlotsByNetworkAndPlayer
-                .getOrDefault(networkId, new HashMap<>())
-                .getOrDefault(playerId, List.of());
+    public @Nullable RoboTrashStore getTrashStore(UUID networkId, UUID playerId) {
+        return roboTrashStores.stream()
+                .filter((store) -> store.getNetworkUUID().equals(networkId))
+                .filter((store) -> store.getPlayerUUID().equals(playerId))
+                .findFirst().orElse(null);
     }
 
-    public void setTrashSlots(UUID networkId, UUID playerId, List<ItemStack> trashSlots) {
-        trashSlotsByNetworkAndPlayer
-                .computeIfAbsent(networkId, k -> new ConcurrentHashMap<>())
-                .put(playerId, trashSlots);
+    public synchronized void setTrashSlots(UUID networkId, UUID playerId, List<ItemStack> trashSlots) {
+        RoboTrashStore existingStore = getTrashStore(networkId, playerId);
+        if (existingStore != null) {
+            List<ItemStack> storeItems = existingStore.getItemStacks();
+            storeItems.clear();
+            // Create copies of the ItemStacks to ensure proper data transfer
+            for (ItemStack stack : trashSlots) {
+                storeItems.add(stack.copy());
+            }
+        } else {
+            // Create a new mutable list with copies of the stacks
+            List<ItemStack> copiedStacks = new ArrayList<>();
+            for (ItemStack stack : trashSlots) {
+                copiedStacks.add(stack.copy());
+            }
+            roboTrashStores.add(new RoboTrashStore(playerId, networkId, copiedStacks));
+        }
+        this.setDirty();
+    }
+
+    public synchronized void setTrashTargetAddress(UUID networkId, UUID playerId, String targetAddress) {
+        RoboTrashStore existingStore = getTrashStore(networkId, playerId);
+        if (existingStore != null) {
+            existingStore.setTargetAddress(targetAddress != null ? targetAddress : "");
+        } else {
+            List<ItemStack> emptyStacks = new ArrayList<>();
+            RoboTrashStore store = new RoboTrashStore(playerId, networkId, emptyStacks);
+            store.setTargetAddress(targetAddress != null ? targetAddress : "");
+            roboTrashStores.add(store);
+        }
         this.setDirty();
     }
 
@@ -139,6 +135,27 @@ public class RoboManager extends SavedData {
         // prune finished requests older than a minute to avoid unbounded growth
         long now = System.currentTimeMillis();
         beePortRoboRequests.removeIf(r -> (r.getStatus() == RoboRequest.Status.DONE || r.getStatus() == RoboRequest.Status.CANCELLED) && (now - r.getCreatedAt()) > 60_000);
+
+        // handle trash stores
+        roboTrashStores.forEach(store -> {
+            if (store.getItemStacks().isEmpty()) return;
+            Player player = level.getPlayerByUUID(store.getPlayerUUID());
+            if (player == null) return;
+
+            RoboRequest lastRequest = store.getLastRequest();
+            if (lastRequest != null && (lastRequest.getStatus() == RoboRequest.Status.PENDING || lastRequest.getStatus() == RoboRequest.Status.IN_PROGRESS)) {
+                return;
+            }
+
+            RoboRequest request = new RoboRequest(new PlayerTarget(
+                    player,
+                    store.getNetworkUUID()
+            ), store.getNetworkUUID(), RoboRequest.Mission.PICKUP);
+
+            store.setLastRequest(request);
+            requestRobo(request);
+        });
+
         this.setDirty();
     }
 
@@ -146,9 +163,9 @@ public class RoboManager extends SavedData {
         DronePortTracker tracker = DronePortTracker.get(level);
         List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAllByNetwork(request.getLogisticsNetworkId()));
         allBEs.removeIf(BlockEntity::isRemoved);
-        allBEs.removeIf(be -> be.getBlockPos().equals(request.getTargetPos()));
+        allBEs.removeIf(be -> be.getBlockPos().equals(BlockPos.containing(request.getTargetPos())));
         allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
-        allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(request.getTargetPos()))).ifPresent(target -> target.handleRequest(request));
+        allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().getCenter().distanceToSqr(request.getTargetPos()))).ifPresent(target -> target.handleRequest(request));
     }
 
     public UUID newRobo(ServerLevel level, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId, float packageHeightScale, @Nullable BlockPos homePort) {
@@ -169,8 +186,13 @@ public class RoboManager extends SavedData {
         setDirty();
     }
 
-    public synchronized void requestRobo(BlockPos pos, UUID logisticsNetworkId) {
-        beePortRoboRequests.add(new RoboRequest(pos, logisticsNetworkId));
+    public void requestRobo(RoboTarget roboTarget, UUID logisticsNetworkId, RoboRequest.Mission mission) {
+        requestRobo(new RoboRequest(roboTarget, logisticsNetworkId, mission));
+    }
+
+    public synchronized void requestRobo(RoboRequest request) {
+        beePortRoboRequests.add(request);
+        setDirty();
     }
 
     public List<RoboRequest> getRoboRequestsWithStatus(RoboRequest.Status status) {
@@ -182,7 +204,7 @@ public class RoboManager extends SavedData {
     }
 
     public List<RoboRequest> getRoboRequests(BlockPos pos) {
-        return beePortRoboRequests.stream().filter(request -> request.getTargetPos().equals(pos)).toList();
+        return beePortRoboRequests.stream().filter(request -> BlockPos.containing(request.getTargetPos()).equals(pos)).toList();
     }
 
     public List<VirtualRobo> getInboundRobo(BlockPos pos) {
@@ -211,7 +233,7 @@ public class RoboManager extends SavedData {
     private void init() {
         this.robos = new ConcurrentHashMap<>();
         this.beePortRoboRequests = new CopyOnWriteArrayList<>();
-        this.trashSlotsByNetworkAndPlayer = new ConcurrentHashMap<>();
+        this.roboTrashStores = new ArrayList<>();
     }
 }
 
