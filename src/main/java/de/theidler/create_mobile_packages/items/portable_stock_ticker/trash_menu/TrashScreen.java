@@ -1,11 +1,15 @@
 package de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
+import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
+import de.theidler.create_mobile_packages.index.CMPGuiTextures;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,13 +24,17 @@ public class TrashScreen extends AbstractSimiContainerScreen<TrashMenu> {
 
     @Override
     protected void init() {
+        int bgWidth = CMPGuiTextures.TRASH_MENU.getWidth();
+        int bgHeight = CMPGuiTextures.TRASH_MENU.getHeight();
+        setWindowSize(bgWidth, bgHeight + AllGuiTextures.PLAYER_INVENTORY.getHeight());
         super.init();
+        clearWidgets();
         int x = getGuiLeft();
         int y = getGuiTop();
 
         String previousAddress = addressBox == null ? menu.getTargetAddress() : addressBox.getValue();
         lastSyncedAddress = previousAddress;
-        addressBox = new AddressEditBox(this, new NoShadowFontWrapper(font), x + 8, y + 35, 160, 10,
+        addressBox = new AddressEditBox(this, new NoShadowFontWrapper(font), x + 38, y + 39, 160, 10,
                 true);
         addressBox.setValue(previousAddress);
         addressBox.setTextColor(0x555555);
@@ -98,7 +106,25 @@ public class TrashScreen extends AbstractSimiContainerScreen<TrashMenu> {
 
     @Override
     protected void renderBg(@NotNull GuiGraphics guiGraphics, float v, int i, int i1) {
+        if (minecraft != null && this != minecraft.screen)
+            return; // stencil buffer does not cooperate with ponders gui fade out
 
+        PoseStack ms = guiGraphics.pose();
+
+        ms.pushPose();
+
+        int x = getGuiLeft();
+        int y = getGuiTop();
+
+        CMPGuiTextures.TRASH_MENU.render(guiGraphics, x, y - 20);
+        renderPlayerInventory(guiGraphics, x + 40, y + 66);
+
+        MutableComponent headerTitle = Component.translatable(
+                "item.create_mobile_packages.portable_stock_ticker.trash_menu");
+        guiGraphics.drawString(font, headerTitle, x + 256 / 2 - font.width(headerTitle) / 2, y - 16, 0x714A40,
+                false);
+
+        ms.popPose();
     }
 
     public void applyTargetAddress(String address) {

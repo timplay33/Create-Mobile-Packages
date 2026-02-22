@@ -121,9 +121,9 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
     @Override
     protected void addSlots() {
         for (int i = 0; i < trashInventory.getSlots(); i++) {
-            addSlot(new TrashStackHandler(trashInventory, i, 8 + i * 18, 18));
+            addSlot(new TrashStackHandler(trashInventory, i, 40 + i * 20, 4));
         }
-        addPlayerSlots(8, 84);
+        addPlayerSlots(48, 84);
     }
 
     @Override
