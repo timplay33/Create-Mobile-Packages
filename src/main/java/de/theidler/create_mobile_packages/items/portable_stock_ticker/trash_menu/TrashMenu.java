@@ -158,5 +158,10 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
         public TrashStackHandler(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
             super(itemHandler, index, xPosition, yPosition);
         }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return !(stack.getItem() instanceof PortableStockTicker);
+        }
     }
 }
