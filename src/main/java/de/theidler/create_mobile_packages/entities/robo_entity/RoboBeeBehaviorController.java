@@ -76,7 +76,7 @@ public class RoboBeeBehaviorController {
             return false;
         }
 
-        RoboManager.get(robo.getServerLevel()).setTrashSlots(robo.getLogisticsNetworkId(), player.getUUID(), List.of());
+        RoboManager.get(robo.getServerLevel()).setTrashSlots(robo.getServerLevel(), robo.getLogisticsNetworkId(), player.getUUID(), List.of());
         PackageItem.addAddress(packageItem, trashStore.getTargetAddress());
         robo.setItemStack(packageItem);
         return true;

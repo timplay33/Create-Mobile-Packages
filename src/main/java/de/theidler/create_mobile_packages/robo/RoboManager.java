@@ -3,12 +3,15 @@ package de.theidler.create_mobile_packages.robo;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.DronePortTracker;
 import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.SyncTrashItemsToClientPacket;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -114,6 +117,16 @@ public class RoboManager extends SavedData {
             roboTrashStores.add(new RoboTrashStore(playerId, networkId, copiedStacks));
         }
         this.setDirty();
+    }
+
+    public synchronized void setTrashSlots(ServerLevel level, UUID networkId, UUID playerId, List<ItemStack> trashSlots) {
+        setTrashSlots(networkId, playerId, trashSlots);
+
+        // Send sync packet to the player
+        ServerPlayer player = level.getServer().getPlayerList().getPlayer(playerId);
+        if (player != null) {
+            CatnipServices.NETWORK.sendToClient(player, new SyncTrashItemsToClientPacket(new ArrayList<>(trashSlots)));
+        }
     }
 
     public synchronized void setTrashTargetAddress(UUID networkId, UUID playerId, String targetAddress) {

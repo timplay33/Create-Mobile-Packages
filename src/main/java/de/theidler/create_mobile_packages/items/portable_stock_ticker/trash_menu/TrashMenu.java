@@ -62,6 +62,9 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
             } else {
                 slot.setChanged();
             }
+
+            // Save immediately when items change
+            saveDataImmediately();
         }
         return itemStack;
     }
@@ -84,7 +87,8 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
             if (trashStore != null) {
                 List<ItemStack> trashSlots = trashStore.getItemStacks();
                 for (int i = 0; i < trashSlots.size() && i < trashInventory.getSlots(); i++) {
-                    trashInventory.setStackInSlot(i, trashSlots.get(i));
+                    // Use copies to avoid modifying the original store's items
+                    trashInventory.setStackInSlot(i, trashSlots.get(i).copy());
                 }
                 targetAddress = trashStore.getTargetAddress();
             }
@@ -105,6 +109,17 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
 
     public void setTargetAddress(String address) {
         this.targetAddress = address;
+    }
+
+    public void updateTrashInventory(List<ItemStack> items) {
+        // Update the trash inventory with items from server
+        for (int i = 0; i < trashInventory.getSlots(); i++) {
+            if (i < items.size() && !items.get(i).isEmpty()) {
+                trashInventory.setStackInSlot(i, items.get(i).copy());
+            } else {
+                trashInventory.setStackInSlot(i, ItemStack.EMPTY);
+            }
+        }
     }
 
     private List<ItemStack> toTrashStacks() {
@@ -128,10 +143,14 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
 
     @Override
     protected void saveData(PortableStockTicker contentHolder) {
+        saveDataImmediately();
+    }
+
+    private void saveDataImmediately() {
         if (player.level() instanceof ServerLevel serverLevel) {
             UUID networkId = getNetworkId();
             RoboManager roboManager = RoboManager.get(serverLevel);
-            roboManager.setTrashSlots(networkId, player.getUUID(), toTrashStacks());
+            roboManager.setTrashSlots(serverLevel, networkId, player.getUUID(), toTrashStacks());
         }
     }
 
