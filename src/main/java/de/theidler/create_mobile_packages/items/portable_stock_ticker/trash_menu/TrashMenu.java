@@ -143,7 +143,7 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
 
     @Override
     protected void saveData(PortableStockTicker contentHolder) {
-        saveDataImmediately();
+
     }
 
     private void saveDataImmediately() {
