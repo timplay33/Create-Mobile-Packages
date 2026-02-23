@@ -12,13 +12,16 @@ import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
+import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
+import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.OpenTrashMenuPacket;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Pair;
@@ -57,7 +60,6 @@ import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.Optional;
 
 public class PortableStockTickerScreen extends AbstractSimiContainerScreen<PortableStockTickerMenu>
         implements OrderProvider, CategoriesProvider {
@@ -66,6 +68,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private static final AllGuiTextures BODY = AllGuiTextures.STOCK_KEEPER_REQUEST_BODY;
     private static final AllGuiTextures FOOTER = AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER;
     public static final int MAX_REPORTED_STACK_AMOUNT = 1000;
+
+    public IconButton trashMenuButton;
 
     public LerpedFloat itemScroll;
 
@@ -271,6 +275,10 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             playUiSound(SoundEvents.BOOK_PAGE_TURN, 1, 1);
             syncRecipeViewers();
         }
+
+        trashMenuButton = new IconButton(x - 10, y + 25, AllIcons.I_TRASH);
+        trashMenuButton.withCallback(() -> CatnipServices.NETWORK.sendToServer(OpenTrashMenuPacket.INSTANCE));
+        addRenderableWidget(trashMenuButton);
     }
 
     private Couple<Integer> getHoveredSlot(int x, int y) {

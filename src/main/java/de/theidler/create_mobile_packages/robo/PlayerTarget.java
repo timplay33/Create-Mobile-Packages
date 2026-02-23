@@ -2,10 +2,13 @@ package de.theidler.create_mobile_packages.robo;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
+import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
+import de.theidler.create_mobile_packages.toast.Toast;
 import de.theidler.create_mobile_packages.toast.types.PackageToast;
+import de.theidler.create_mobile_packages.toast.types.SimpleToast;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -67,14 +70,26 @@ public class PlayerTarget implements RoboTarget {
             items.add(itemHandler.getStackInSlot(i));
         }
 
-        PackageToast toast = new PackageToast(
-                robo.getId(),
-                Component.translatable("create_mobile_packages.toast.robo_bee_on_the_way"),
-                Component.translatable("create_mobile_packages.toast.eta", getETA()),
-                CMPItems.ROBO_BEE.asStack(),
-                items
-        );
-        if (player instanceof ServerPlayer serverPlayer)
+        Toast toast = null;
+
+        RoboRequest.Mission missionType = robo.getRequest() != null ? robo.getRequest().getMission() : RoboRequest.Mission.DELIVER;
+        switch (missionType) {
+            case DELIVER -> toast = new PackageToast(
+                    robo.getId(),
+                    Component.translatable("create_mobile_packages.toast.robo_bee_on_the_way"),
+                    Component.translatable("create_mobile_packages.toast.eta", getETA()),
+                    CMPItems.ROBO_BEE.asStack(),
+                    items
+            );
+            case PICKUP -> toast = new SimpleToast(
+                    robo.getId(),
+                    Component.translatable("create_mobile_packages.toast.robo_bee_on_the_way"),
+                    Component.translatable("create_mobile_packages.toast.eta", getETA()),
+                    CMPItems.ROBO_BEE.asStack()
+            );
+        }
+
+        if (player instanceof ServerPlayer serverPlayer && toast != null)
             CatnipServices.NETWORK.sendToClient(serverPlayer, new ShowToastOnClientPacket(toast));
         lastToastUpdate = System.currentTimeMillis();
     }
