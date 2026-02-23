@@ -22,6 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "Robo-Pszczół w drodze!",
     "create_mobile_packages.toast.eta": "Pozostało %1$s sekund",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Otwórz Przenośny Licznik Zapasów",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "Port Robo-Pszczół",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "Port Robo-Pszczół może wysłać Paczkę do gracza.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Umieść przesyłkę z adresem odpowiadającym imieniu Gracza w Porcie Robo-Pszcól.",
@@ -68,5 +69,6 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages",
     "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
     "create_mobile_packages.network.players": "Players in Network:",
-    "create_mobile_packages.network.owner": "Owner: %1$s"
+    "create_mobile_packages.network.owner": "Owner: %1$s",
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
 }

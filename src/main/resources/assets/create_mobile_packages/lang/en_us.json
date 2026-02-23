@@ -22,7 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "Robo Bee on the way!",
     "create_mobile_packages.toast.eta": "%1$s seconds remaining",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Open Portable Stock Ticker",
-  "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "Robo Bee Port",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "The Robo Bee Port can send a Package to a Player.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Place a package with an address matching the Player's name in the Robo Bee Port.",
