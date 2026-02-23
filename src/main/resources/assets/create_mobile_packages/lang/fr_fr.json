@@ -22,6 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "Robeille est en chemin !",
     "create_mobile_packages.toast.eta": "%1$s secondes restantes",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Ouvrir le Téléscripteur de Stock Portable",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "Port de Robeille",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "Le Port de Robeille peut envoyer des colis à un joueur.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Placez un colis avec une adresse correspondant au nom du joueur dans le Port de Robeille.",
