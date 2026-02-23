@@ -154,7 +154,7 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
         }
     }
 
-    static class TrashStackHandler extends SlotItemHandler {
+    class TrashStackHandler extends SlotItemHandler {
         public TrashStackHandler(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
             super(itemHandler, index, xPosition, yPosition);
         }
@@ -162,6 +162,13 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
         @Override
         public boolean mayPlace(ItemStack stack) {
             return !(stack.getItem() instanceof PortableStockTicker);
+        }
+
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            // Save immediately when items are moved via mouse
+            saveDataImmediately();
         }
     }
 }
