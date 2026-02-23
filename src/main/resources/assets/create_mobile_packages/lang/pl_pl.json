@@ -22,6 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "Robo-Pszczół w drodze!",
     "create_mobile_packages.toast.eta": "Pozostało %1$s sekund",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Otwórz Przenośny Licznik Zapasów",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "Port Robo-Pszczół",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "Port Robo-Pszczół może wysłać Paczkę do gracza.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Umieść przesyłkę z adresem odpowiadającym imieniu Gracza w Porcie Robo-Pszcól.",
