@@ -11,6 +11,7 @@ import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableSt
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerScreen;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.TrashMenu;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.TrashScreen;
+import net.minecraft.world.item.ItemStack;
 
 public class CMPMenuTypes {
 
@@ -45,7 +46,13 @@ public class CMPMenuTypes {
     public static final MenuEntry<TrashMenu> TRASH_MENU =
             CreateMobilePackages.REGISTRATE.menu(
                     "trash_menu",
-                    (trashMenuType, containerId, playerInventory) -> new TrashMenu(containerId, playerInventory, (PortableStockTicker) PortableStockTicker.find(playerInventory).getItem()),
+                    (trashMenuType, containerId, playerInventory) -> {
+                        ItemStack pstStack = PortableStockTicker.find(playerInventory);
+                        PortableStockTicker pst = (pstStack != null && pstStack.getItem() instanceof PortableStockTicker)
+                                ? (PortableStockTicker) pstStack.getItem()
+                                : null;
+                        return new TrashMenu(containerId, playerInventory, pst);
+                    },
                     () -> TrashScreen::new
             ).register();
 

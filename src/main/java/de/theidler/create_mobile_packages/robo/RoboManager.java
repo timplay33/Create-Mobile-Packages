@@ -92,7 +92,7 @@ public class RoboManager extends SavedData {
         this.setDirty();
     }
 
-    public @Nullable RoboTrashStore getTrashStore(UUID networkId, UUID playerId) {
+    public @Nullable RoboTrashStore getTrashStore(@NotNull UUID networkId, @NotNull UUID playerId) {
         return roboTrashStores.stream()
                 .filter((store) -> store.getNetworkUUID().equals(networkId))
                 .filter((store) -> store.getPlayerUUID().equals(playerId))
@@ -150,30 +150,32 @@ public class RoboManager extends SavedData {
         beePortRoboRequests.removeIf(r -> (r.getStatus() == RoboRequest.Status.DONE || r.getStatus() == RoboRequest.Status.CANCELLED) && (now - r.getCreatedAt()) > 60_000);
 
         // handle trash stores
-        roboTrashStores.forEach(store -> {
-            if (store.getItemStacks().isEmpty()) return;
-            Player player = level.getPlayerByUUID(store.getPlayerUUID());
-            if (player == null) return;
+        synchronized (this) {
+            roboTrashStores.forEach(store -> {
+                if (store.getItemStacks().isEmpty()) return;
+                Player player = level.getPlayerByUUID(store.getPlayerUUID());
+                if (player == null) return;
 
-            UUID networkId = store.getNetworkUUID();
-            UUID playerId = store.getPlayerUUID();
+                UUID networkId = store.getNetworkUUID();
+                UUID playerId = store.getPlayerUUID();
 
-            // Check if there is already an active request for this player and network
-            // This will also clean up dead robos by marking their requests as CANCELLED
-            if (hasActiveTrashRequest(playerId, networkId)) {
-                return;
-            }
+                // Check if there is already an active request for this player and network
+                // This will also clean up dead robos by marking their requests as CANCELLED
+                if (hasActiveTrashRequest(playerId, networkId)) {
+                    return;
+                }
 
-            // At this point, there's no active request, so we can create a new one
-            // (The previous request either completed, was cancelled, or had a dead robo)
-            RoboRequest request = new RoboRequest(new PlayerTarget(
-                    player,
-                    networkId
-            ), networkId, RoboRequest.Mission.PICKUP);
+                // At this point, there's no active request, so we can create a new one
+                // (The previous request either completed, was canceled, or had a dead robo)
+                RoboRequest request = new RoboRequest(new PlayerTarget(
+                        player,
+                        networkId
+                ), networkId, RoboRequest.Mission.PICKUP);
 
-            store.setLastRequest(request);
-            requestRobo(request);
-        });
+                store.setLastRequest(request);
+                requestRobo(request);
+            });
+        }
 
         this.setDirty();
     }
@@ -190,7 +192,7 @@ public class RoboManager extends SavedData {
     /**
      * Checks if there is already an active request (PENDING or IN_PROGRESS) for the given player and network.
      * This ensures only one bee is sent per player+network combination at a time.
-     * If a request is IN_PROGRESS but the robo is dead, it will be cancelled and return false.
+     * If a request is IN_PROGRESS but the robo is dead, it will be canceled and return false.
      */
     private boolean hasActiveTrashRequest(UUID playerId, UUID networkId) {
         for (RoboRequest request : beePortRoboRequests) {
@@ -218,7 +220,7 @@ public class RoboManager extends SavedData {
                 if (roboExists) {
                     return true;
                 } else {
-                    // Robo is dead but request is still IN_PROGRESS - mark as cancelled
+                    // Robo is dead but request is still IN_PROGRESS - mark as canceled
                     request.setStatus(RoboRequest.Status.CANCELLED);
                 }
             }

@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
@@ -25,10 +26,11 @@ import java.util.UUID;
 public class TrashMenu extends MenuBase<PortableStockTicker> {
 
     private ItemStackHandler trashInventory;
-    private String targetAddress = "";
+    private String targetAddress;
 
     public TrashMenu(int id, Inventory playerInventory, PortableStockTicker contentHolder) {
         super(CMPMenuTypes.TRASH_MENU.get(), id, playerInventory, contentHolder);
+        this.targetAddress = "";
     }
 
     public TrashMenu(int id, Inventory playerInventory, PortableStockTicker contentHolder, String targetAddress) {
@@ -62,9 +64,6 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
             } else {
                 slot.setChanged();
             }
-
-            // Save immediately when items change
-            saveDataImmediately();
         }
         return itemStack;
     }
@@ -82,15 +81,29 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
     @Override
     protected void initAndReadInventory(PortableStockTicker contentHolder) {
         trashInventory = new ItemStackHandler(9);
-        if (player.level() instanceof ServerLevel serverLevel) {
-            RoboTrashStore trashStore = RoboManager.get(serverLevel).getTrashStore(getNetworkId(), player.getUUID());
-            if (trashStore != null) {
-                List<ItemStack> trashSlots = trashStore.getItemStacks();
-                for (int i = 0; i < trashSlots.size() && i < trashInventory.getSlots(); i++) {
-                    // Use copies to avoid modifying the original store's items
-                    trashInventory.setStackInSlot(i, trashSlots.get(i).copy());
+
+        // Ensure targetAddress is initialized (may be called before constructor completes)
+        if (targetAddress == null) {
+            targetAddress = "";
+        }
+
+        // Server-side only: Load from RoboManager
+        Level level = player.level();
+        if (!level.isClientSide && level instanceof ServerLevel serverLevel) {
+            UUID networkId = getNetworkId();
+            if (networkId != null) {
+                RoboTrashStore trashStore = RoboManager.get(serverLevel).getTrashStore(networkId, player.getUUID());
+                if (trashStore != null) {
+                    List<ItemStack> trashSlots = trashStore.getItemStacks();
+                    for (int i = 0; i < trashSlots.size() && i < trashInventory.getSlots(); i++) {
+                        // Use copies to avoid modifying the original store's items
+                        trashInventory.setStackInSlot(i, trashSlots.get(i).copy());
+                    }
+                    // Only update targetAddress if it wasn't already set (e.g., from constructor parameter)
+                    if (targetAddress.isEmpty()) {
+                        targetAddress = trashStore.getTargetAddress();
+                    }
                 }
-                targetAddress = trashStore.getTargetAddress();
             }
         }
     }
@@ -136,7 +149,9 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
     @Override
     protected void addSlots() {
         for (int i = 0; i < trashInventory.getSlots(); i++) {
-            addSlot(new TrashStackHandler(trashInventory, i, 40 + i * 20, 4));
+            TrashStackHandler slot = new TrashStackHandler(trashInventory, i, 40 + i * 20, 4);
+            slot.setMenu(this);
+            addSlot(slot);
         }
         addPlayerSlots(48, 84);
     }
@@ -146,17 +161,24 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
 
     }
 
-    private void saveDataImmediately() {
-        if (player.level() instanceof ServerLevel serverLevel) {
-            UUID networkId = getNetworkId();
+
+    private void saveDataImmediately(ServerLevel serverLevel) {
+        UUID networkId = getNetworkId();
+        if (networkId != null) {
             RoboManager roboManager = RoboManager.get(serverLevel);
             roboManager.setTrashSlots(serverLevel, networkId, player.getUUID(), toTrashStacks());
         }
     }
 
-    class TrashStackHandler extends SlotItemHandler {
+    static class TrashStackHandler extends SlotItemHandler {
+        private TrashMenu menu;
+
         public TrashStackHandler(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
             super(itemHandler, index, xPosition, yPosition);
+        }
+
+        public void setMenu(TrashMenu menu) {
+            this.menu = menu;
         }
 
         @Override
@@ -167,8 +189,13 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
         @Override
         public void setChanged() {
             super.setChanged();
-            // Save immediately when items are moved via mouse
-            saveDataImmediately();
+            // Only save immediately on server
+            if (menu != null) {
+                var level = menu.player.level();
+                if (!level.isClientSide && level instanceof ServerLevel serverLevel) {
+                    menu.saveDataImmediately(serverLevel);
+                }
+            }
         }
     }
 }

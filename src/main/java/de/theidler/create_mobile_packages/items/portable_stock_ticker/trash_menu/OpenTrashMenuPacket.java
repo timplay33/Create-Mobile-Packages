@@ -12,6 +12,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.UUID;
+
 import static de.theidler.create_mobile_packages.items.portable_stock_ticker.LogisticallyLinkedItem.networkFromStack;
 
 public class OpenTrashMenuPacket implements ServerboundPacketPayload {
@@ -25,15 +27,21 @@ public class OpenTrashMenuPacket implements ServerboundPacketPayload {
         ItemStack pstItem = PortableStockTicker.find(player.getInventory());
         if (pstItem == null) return;
         PortableStockTicker pst = (PortableStockTicker) pstItem.getItem();
-        RoboTrashStore trashStore = RoboManager.get(player.serverLevel()).getTrashStore(networkFromStack(pstItem), player.getUUID());
+        UUID networkId = networkFromStack(pstItem);
+        if (networkId == null) return; // This should never happen, but just in case
+
+        RoboTrashStore trashStore = RoboManager.get(player.serverLevel()).getTrashStore(networkId, player.getUUID());
         String targetAddress = trashStore != null ? trashStore.getTargetAddress() : "";
 
+        // Open the menu on server with targetAddress
+        // Menu constructor will load inventory from RoboManager automatically
         player.closeContainer();
         player.openMenu(new SimpleMenuProvider(
                 (id, inv, p) -> new TrashMenu(id, inv, pst, targetAddress),
                 net.minecraft.network.chat.Component.translatable("item.create_mobile_packages.portable_stock_ticker.trash_menu")
         ));
 
+        // Sync address to client (redundant but ensures client is aware)
         CatnipServices.NETWORK.sendToClient(player, new SyncTrashAddressToClientPacket(targetAddress));
     }
 

@@ -44,17 +44,18 @@ public class TrashScreen extends AbstractSimiContainerScreen<TrashMenu> {
     protected void containerTick() {
         super.containerTick();
         addressBox.tick();
-        // Check if address has changed and sync to server
+        // Check if address has changed and sync to server (client initiates, server handles)
         String currentAddress = addressBox.getValue();
         if (!currentAddress.equals(lastSyncedAddress)) {
             lastSyncedAddress = currentAddress;
+            // Send to server - server-side will handle RoboManager update
             CatnipServices.NETWORK.sendToServer(new SyncTrashAddressPacket(currentAddress));
         }
     }
 
     @Override
     public void onClose() {
-        // Save the address one final time when closing
+        // Save the address one final time when closing (send to server)
         String currentAddress = addressBox.getValue();
         if (!currentAddress.equals(lastSyncedAddress)) {
             CatnipServices.NETWORK.sendToServer(new SyncTrashAddressPacket(currentAddress));
