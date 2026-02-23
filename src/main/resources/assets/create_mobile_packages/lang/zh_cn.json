@@ -69,9 +69,5 @@
     "config.jade.plugin_create_mobile_packages.bee_port": "运输蜂停泊港信息",
     "create_mobile_packages.network.players": "网络中的玩家：",
     "create_mobile_packages.network.owner": "所有者：%1$s",
-    "create_mobile_packages": {
-    "keyinfo": {
-    "open_player_networks_screen": "Open Network Settings"
-    }
-    }
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
 }
