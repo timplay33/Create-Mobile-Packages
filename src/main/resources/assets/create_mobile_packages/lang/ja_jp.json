@@ -22,6 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "ロボビーが間もなく到着します！",
     "create_mobile_packages.toast.eta": "到着まで残り%1$s秒",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "所持しているポータブルストックティッカーの画面を開く",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "ビーポート",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "ロボビーはプレイヤーに小包を送ることができます",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "プレイヤーと同じ名前のアドレスが設定された小包を配置してください",
