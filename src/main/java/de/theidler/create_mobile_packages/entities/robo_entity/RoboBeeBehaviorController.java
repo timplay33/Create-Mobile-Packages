@@ -3,13 +3,22 @@ package de.theidler.create_mobile_packages.entities.robo_entity;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.SyncTrashItemsToClientPacket;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.TrashMenu;
 import de.theidler.create_mobile_packages.robo.PlayerTarget;
+import de.theidler.create_mobile_packages.robo.RoboManager;
+import de.theidler.create_mobile_packages.robo.RoboTrashStore;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 import static de.theidler.create_mobile_packages.CMPHelper.calcETA;
 
@@ -37,10 +46,61 @@ public class RoboBeeBehaviorController {
             case DELIVER_PACKAGE:
                 handleDeliverPackage(robo);
                 break;
+            case PICKUP_PACKAGE:
+                handlePickupPackage(robo);
+                break;
             case SHUTDOWN:
                 handleShutdown(robo);
                 break;
         }
+    }
+
+    private void handlePickupPackage(VirtualRobo robo) {
+        boolean pickedUp = false;
+        // Try to pickup from player
+        if (robo.getTarget() != null && robo.getTarget().asPlayer() != null) {
+            pickedUp = pickupPackageFromPlayer(robo.getTarget().asPlayer(), robo);
+        }
+        // TODO: PICKUP from bee port
+
+        if (pickedUp) {
+            robo.clearRequest();
+            if (robo.getItemStack() != null) {
+                robo.setTargetAddress(PackageItem.getAddress(robo.getItemStack()), true);
+            }
+            setState(RoboBeeState.IDLE);
+        }
+    }
+
+    private boolean pickupPackageFromPlayer(Player player, VirtualRobo robo) {
+        RoboManager manager = RoboManager.get(robo.getServerLevel());
+        RoboTrashStore trashStore = manager.getTrashStore(robo.getLogisticsNetworkId(), player.getUUID());
+        if (trashStore == null || !trashStore.hasItems()) {
+            return true;
+        }
+        String targetAddress = trashStore.getTargetAddress();
+
+        List<ItemStack> takenItems = manager.takeTrashItems(robo.getLogisticsNetworkId(), player.getUUID());
+        if (takenItems == null) {
+            return true;
+        }
+
+        ServerPlayer serverPlayer = robo.getServerLevel().getServer().getPlayerList().getPlayer(player.getUUID());
+        if (serverPlayer != null) {
+            if (serverPlayer.containerMenu instanceof TrashMenu trashMenu) {
+                trashMenu.markAsPickedUpByRobo();
+            }
+            CatnipServices.NETWORK.sendToClient(serverPlayer, new SyncTrashItemsToClientPacket(List.of()));
+        }
+
+        ItemStack packageItem = PackageItem.containing(takenItems);
+        if (packageItem.isEmpty()) {
+            return false;
+        }
+
+        PackageItem.addAddress(packageItem, targetAddress);
+        robo.setItemStack(packageItem);
+        return true;
     }
 
     private void handleIdle(VirtualRobo robo) {
@@ -112,7 +172,11 @@ public class RoboBeeBehaviorController {
     private void handleLand(VirtualRobo robo) {
         @Nullable BeePortBlockEntity port = robo.getTarget() != null ? robo.getTarget().asBeePortBlockEntity() : null;
         if (port == null) {
-            setState(RoboBeeState.DELIVER_PACKAGE);
+            if (robo.getRequest() != null && robo.getRequest().getMission() == RoboRequest.Mission.PICKUP) {
+                setState(RoboBeeState.PICKUP_PACKAGE);
+            } else {
+                setState(RoboBeeState.DELIVER_PACKAGE);
+            }
             return;
         }
         Vec3 end = getBelow(port, 0.5);
@@ -134,7 +198,11 @@ public class RoboBeeBehaviorController {
             robo.setPos(end);
             robo.setTargetVelocity(Vec3.ZERO);
             openPort(robo.getTarget().asBeePortBlockEntity(), false);
-            setState(RoboBeeState.DELIVER_PACKAGE);
+            if (robo.getRequest() != null && robo.getRequest().getMission() == RoboRequest.Mission.PICKUP) {
+                setState(RoboBeeState.PICKUP_PACKAGE);
+            } else {
+                setState(RoboBeeState.DELIVER_PACKAGE);
+            }
         }
     }
 

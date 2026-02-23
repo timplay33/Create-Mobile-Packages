@@ -6,6 +6,7 @@ public enum RoboBeeState {
     NAVIGATE_TO_TARGET,
     ALIGN_FOR_DELIVERY,
     DELIVER_PACKAGE,
+    PICKUP_PACKAGE,
     LAND,
     SHUTDOWN
 }

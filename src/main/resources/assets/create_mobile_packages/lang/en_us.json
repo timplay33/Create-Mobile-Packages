@@ -68,5 +68,6 @@
   "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages",
   "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
   "create_mobile_packages.network.players": "Players in Network:",
-  "create_mobile_packages.network.owner": "Owner: %1$s"
+  "create_mobile_packages.network.owner": "Owner: %1$s",
+  "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
 }

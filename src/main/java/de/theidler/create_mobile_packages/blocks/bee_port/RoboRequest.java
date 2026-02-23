@@ -1,21 +1,28 @@
 package de.theidler.create_mobile_packages.blocks.bee_port;
 
-import net.minecraft.core.BlockPos;
+import de.theidler.create_mobile_packages.robo.RoboTarget;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
-public class RoboRequest { //TODO: integrate with RoboTarget logic to allow requests from players / ports and blocks
+public class RoboRequest {
     private final UUID logisticsNetworkId;
-    BlockPos targetPos;
+    private final Mission mission;
     long createdAt;
     private Status status;
     private int eta = -1;
+    RoboTarget target;
 
-    public RoboRequest(BlockPos pos, UUID logisticsNetworkId) {
-        this.targetPos = pos;
+    public RoboRequest(RoboTarget target, UUID logisticsNetworkId, Mission mission) {
+        this.target = target;
         status = Status.PENDING;
         createdAt = System.currentTimeMillis();
         this.logisticsNetworkId = logisticsNetworkId;
+        this.mission = mission;
+    }
+
+    public Mission getMission() {
+        return mission;
     }
 
     public int getEta() {
@@ -39,8 +46,12 @@ public class RoboRequest { //TODO: integrate with RoboTarget logic to allow requ
         this.status = status;
     }
 
-    public BlockPos getTargetPos() {
-        return targetPos;
+    public Vec3 getTargetPos() {
+        return target.getTargetPos();
+    }
+
+    public RoboTarget getTarget() {
+        return target;
     }
 
     public long getCreatedAt() {
@@ -49,5 +60,11 @@ public class RoboRequest { //TODO: integrate with RoboTarget logic to allow requ
 
     public enum Status {
         PENDING, IN_PROGRESS, DONE, CANCELLED
+    }
+
+    public enum Mission {
+        RESTOCK, // TODO: remove and replace with PICKUP for "fly by" PICKUP
+        DELIVER,
+        PICKUP
     }
 }
