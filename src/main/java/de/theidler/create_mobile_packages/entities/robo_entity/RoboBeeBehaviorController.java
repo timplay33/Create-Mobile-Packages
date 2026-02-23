@@ -61,6 +61,9 @@ public class RoboBeeBehaviorController {
 
         if (pickedUp) {
             robo.clearRequest();
+            if (robo.getItemStack() != null) {
+                robo.setTargetAddress(PackageItem.getAddress(robo.getItemStack()), true);
+            }
             setState(RoboBeeState.IDLE);
         }
     }
