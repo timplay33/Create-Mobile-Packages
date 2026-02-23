@@ -14,7 +14,7 @@ import java.util.List;
 public class SyncTrashItemsToClientPacket implements ClientboundPacketPayload {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, SyncTrashItemsToClientPacket> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.collection(ArrayList::new, ItemStack.STREAM_CODEC), packet -> packet.items,
+            ByteBufCodecs.collection(ArrayList::new, ItemStack.OPTIONAL_STREAM_CODEC), packet -> packet.items,
             SyncTrashItemsToClientPacket::new
     );
 

@@ -1,6 +1,5 @@
 package de.theidler.create_mobile_packages.robo;
 
-import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -14,7 +13,6 @@ public class RoboTrashStore {
     private final UUID playerUUID;
     private final UUID networkUUID;
     private final List<ItemStack> itemStacks;
-    private RoboRequest lastRequest;
     private String targetAddress = "";
 
     public RoboTrashStore(UUID playerUUID, UUID networkUUID, List<ItemStack> itemStacks) {
@@ -38,14 +36,6 @@ public class RoboTrashStore {
         return store;
     }
 
-    public RoboRequest getLastRequest() {
-        return lastRequest;
-    }
-
-    public void setLastRequest(RoboRequest lastRequest) {
-        this.lastRequest = lastRequest;
-    }
-
     public String getTargetAddress() {
         return targetAddress;
     }
@@ -64,6 +54,13 @@ public class RoboTrashStore {
 
     public List<ItemStack> getItemStacks() {
         return itemStacks;
+    }
+
+    /**
+     * Returns true if at least one slot contains a non-empty ItemStack.
+     */
+    public boolean hasItems() {
+        return itemStacks.stream().anyMatch(stack -> !stack.isEmpty());
     }
 
     public CompoundTag save() {

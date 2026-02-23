@@ -71,7 +71,7 @@ public class RoboBeeBehaviorController {
     private boolean pickupPackageFromPlayer(Player player, VirtualRobo robo) {
         RoboTrashStore trashStore = RoboManager.get(robo.getServerLevel()).getTrashStore(robo.getLogisticsNetworkId(), player.getUUID());
         List<ItemStack> trashSlots = trashStore != null ? trashStore.getItemStacks() : List.of();
-        if (trashSlots.isEmpty()) {
+        if (trashStore == null || !trashStore.hasItems()) {
             return true;
         }
         ItemStack packageItem = PackageItem.containing(trashSlots);

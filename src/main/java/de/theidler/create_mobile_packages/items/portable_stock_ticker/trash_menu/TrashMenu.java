@@ -138,10 +138,8 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
     private List<ItemStack> toTrashStacks() {
         List<ItemStack> trashStacks = new ArrayList<>();
         for (int i = 0; i < trashInventory.getSlots(); i++) {
-            ItemStack stack = trashInventory.getStackInSlot(i);
-            if (!stack.isEmpty()) {
-                trashStacks.add(stack);
-            }
+            // Include all slots (even empty) so slot indices are preserved on the client
+            trashStacks.add(trashInventory.getStackInSlot(i).copy());
         }
         return trashStacks;
     }

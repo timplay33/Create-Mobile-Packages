@@ -152,7 +152,7 @@ public class RoboManager extends SavedData {
         // handle trash stores
         synchronized (this) {
             roboTrashStores.forEach(store -> {
-                if (store.getItemStacks().isEmpty()) return;
+                if (!store.hasItems()) return;
                 Player player = level.getPlayerByUUID(store.getPlayerUUID());
                 if (player == null) return;
 
@@ -172,7 +172,6 @@ public class RoboManager extends SavedData {
                         networkId
                 ), networkId, RoboRequest.Mission.PICKUP);
 
-                store.setLastRequest(request);
                 requestRobo(request);
             });
         }
