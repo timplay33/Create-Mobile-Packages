@@ -27,6 +27,14 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
 
     private ItemStackHandler trashInventory;
     private String targetAddress;
+    /**
+     * True after a robo picks up the items; cleared on the next user interaction.
+     */
+    boolean pickedUpByRobo = false;
+    /**
+     * True while markAsPickedUpByRobo() clears slots, so setChanged() won't reset the flag.
+     */
+    private boolean clearingForPickup = false;
 
     public TrashMenu(int id, Inventory playerInventory, PortableStockTicker contentHolder) {
         super(CMPMenuTypes.TRASH_MENU.get(), id, playerInventory, contentHolder);
@@ -124,6 +132,22 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
         this.targetAddress = address;
     }
 
+    /**
+     * Called by the robo after atomically taking items. Clears the menu inventory and
+     * blocks saveDataImmediately until the next real user interaction.
+     */
+    public void markAsPickedUpByRobo() {
+        pickedUpByRobo = true;
+        clearingForPickup = true;
+        try {
+            for (int i = 0; i < trashInventory.getSlots(); i++) {
+                trashInventory.setStackInSlot(i, ItemStack.EMPTY);
+            }
+        } finally {
+            clearingForPickup = false;
+        }
+    }
+
     public void updateTrashInventory(List<ItemStack> items) {
         // Update the trash inventory with items from server
         for (int i = 0; i < trashInventory.getSlots(); i++) {
@@ -155,16 +179,32 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
     }
 
     @Override
-    protected void saveData(PortableStockTicker contentHolder) {
-
+    public void removed(Player playerIn) {
+        if (!playerIn.level().isClientSide && playerIn.level() instanceof ServerLevel serverLevel && !pickedUpByRobo) {
+            ItemStack carried = getCarried();
+            if (!carried.isEmpty()) {
+                for (int i = 0; i < trashInventory.getSlots(); i++) {
+                    if (trashInventory.getStackInSlot(i).isEmpty()) {
+                        trashInventory.setStackInSlot(i, carried.copy());
+                        setCarried(ItemStack.EMPTY);
+                        break;
+                    }
+                }
+            }
+            saveDataImmediately(serverLevel);
+        }
+        super.removed(playerIn);
     }
 
+    @Override
+    protected void saveData(PortableStockTicker contentHolder) {
+    }
 
     private void saveDataImmediately(ServerLevel serverLevel) {
+        if (pickedUpByRobo) return;
         UUID networkId = getNetworkId();
         if (networkId != null) {
-            RoboManager roboManager = RoboManager.get(serverLevel);
-            roboManager.setTrashSlots(serverLevel, networkId, player.getUUID(), toTrashStacks());
+            RoboManager.get(serverLevel).setTrashSlots(serverLevel, networkId, player.getUUID(), toTrashStacks());
         }
     }
 
@@ -187,10 +227,12 @@ public class TrashMenu extends MenuBase<PortableStockTicker> {
         @Override
         public void setChanged() {
             super.setChanged();
-            // Only save immediately on server
             if (menu != null) {
                 var level = menu.player.level();
                 if (!level.isClientSide && level instanceof ServerLevel serverLevel) {
+                    if (!menu.clearingForPickup) {
+                        menu.pickedUpByRobo = false;
+                    }
                     menu.saveDataImmediately(serverLevel);
                 }
             }

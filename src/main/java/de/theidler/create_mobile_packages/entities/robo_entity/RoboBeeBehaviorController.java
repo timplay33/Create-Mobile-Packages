@@ -3,11 +3,15 @@ package de.theidler.create_mobile_packages.entities.robo_entity;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.SyncTrashItemsToClientPacket;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.TrashMenu;
 import de.theidler.create_mobile_packages.robo.PlayerTarget;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.RoboTrashStore;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -69,18 +73,32 @@ public class RoboBeeBehaviorController {
     }
 
     private boolean pickupPackageFromPlayer(Player player, VirtualRobo robo) {
-        RoboTrashStore trashStore = RoboManager.get(robo.getServerLevel()).getTrashStore(robo.getLogisticsNetworkId(), player.getUUID());
-        List<ItemStack> trashSlots = trashStore != null ? trashStore.getItemStacks() : List.of();
+        RoboManager manager = RoboManager.get(robo.getServerLevel());
+        RoboTrashStore trashStore = manager.getTrashStore(robo.getLogisticsNetworkId(), player.getUUID());
         if (trashStore == null || !trashStore.hasItems()) {
             return true;
         }
-        ItemStack packageItem = PackageItem.containing(trashSlots);
+        String targetAddress = trashStore.getTargetAddress();
+
+        List<ItemStack> takenItems = manager.takeTrashItems(robo.getLogisticsNetworkId(), player.getUUID());
+        if (takenItems == null) {
+            return true;
+        }
+
+        ServerPlayer serverPlayer = robo.getServerLevel().getServer().getPlayerList().getPlayer(player.getUUID());
+        if (serverPlayer != null) {
+            if (serverPlayer.containerMenu instanceof TrashMenu trashMenu) {
+                trashMenu.markAsPickedUpByRobo();
+            }
+            CatnipServices.NETWORK.sendToClient(serverPlayer, new SyncTrashItemsToClientPacket(List.of()));
+        }
+
+        ItemStack packageItem = PackageItem.containing(takenItems);
         if (packageItem.isEmpty()) {
             return false;
         }
 
-        RoboManager.get(robo.getServerLevel()).setTrashSlots(robo.getServerLevel(), robo.getLogisticsNetworkId(), player.getUUID(), List.of());
-        PackageItem.addAddress(packageItem, trashStore.getTargetAddress());
+        PackageItem.addAddress(packageItem, targetAddress);
         robo.setItemStack(packageItem);
         return true;
     }

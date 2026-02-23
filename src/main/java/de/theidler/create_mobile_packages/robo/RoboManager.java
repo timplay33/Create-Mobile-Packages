@@ -99,6 +99,24 @@ public class RoboManager extends SavedData {
                 .findFirst().orElse(null);
     }
 
+    /**
+     * Atomically reads and clears the trash items for the given player+network combination.
+     * Returns a snapshot of the items that were in the store (copies), and empties the store.
+     * Returns null if no store exists or the store has no items.
+     * This prevents duplication when items are modified concurrently while a robo picks them up.
+     */
+    public synchronized @Nullable List<ItemStack> takeTrashItems(@NotNull UUID networkId, @NotNull UUID playerId) {
+        RoboTrashStore store = getTrashStore(networkId, playerId);
+        if (store == null || !store.hasItems()) return null;
+        List<ItemStack> snapshot = new ArrayList<>();
+        for (ItemStack stack : store.getItemStacks()) {
+            snapshot.add(stack.copy());
+        }
+        store.getItemStacks().clear();
+        this.setDirty();
+        return snapshot;
+    }
+
     public synchronized void setTrashSlots(UUID networkId, UUID playerId, List<ItemStack> trashSlots) {
         RoboTrashStore existingStore = getTrashStore(networkId, playerId);
         if (existingStore != null) {
