@@ -69,9 +69,5 @@
     "config.jade.plugin_create_mobile_packages.bee_port": "ビーポートの情報",
     "create_mobile_packages.network.players": "ネットワーク内のプレイヤー：",
     "create_mobile_packages.network.owner": "所有者: %1$s",
-    "create_mobile_packages": {
-    "keyinfo": {
-    "open_player_networks_screen": "Open Network Settings"
-    }
-    }
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
 }
