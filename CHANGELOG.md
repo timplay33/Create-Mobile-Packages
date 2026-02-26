@@ -9,6 +9,10 @@ Create: Mobile Packages - v0.7.0 - 1.21.1 - unreleased
     - Put items in the TrashSlots
     - A Robo Bee will come and pick up the items and send them to the address
 
+### Bug Fixes
+
+- Fixed Port with full packages inventory can't accept RoboBee without package (#301)
+
 ------------------------------------------------------
 Create: Mobile Packages - v0.6.1 - 1.21.1 - 20.02.2026
 ------------------------------------------------------

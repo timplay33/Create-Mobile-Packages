@@ -56,7 +56,7 @@ public class PlayerTarget implements RoboTarget {
     }
 
     @Override
-    public boolean isValid() {
+    public boolean isValid(VirtualRobo robo) {
         return player != null && player.isAlive() && network != null && network.create_mobile_packages$getPlayers().contains(player.getUUID());
     }
 

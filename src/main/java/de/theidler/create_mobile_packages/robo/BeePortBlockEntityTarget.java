@@ -29,9 +29,11 @@ public class BeePortBlockEntityTarget implements RoboTarget {
     }
 
     @Override
-    public boolean isValid() {
+    public boolean isValid(VirtualRobo robo) {
         BeePortBlockEntity be = asBeePortBlockEntity();
-        return be != null && !be.isRemoved() && !be.isFull();
+        boolean doesBeePortExits = be != null && !be.isRemoved();
+        boolean hasItemStack = !robo.getItemStack().isEmpty();
+        return doesBeePortExits && (hasItemStack ? be.hasSpaceForPackageAndRobo() : be.hasSpaceForRobo());
     }
 
     @Override

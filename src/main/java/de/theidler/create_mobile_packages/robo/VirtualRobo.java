@@ -103,11 +103,11 @@ public class VirtualRobo {
 
     private void updateTarget() {
         // if the target is still valid and in the correct network, do nothing
-        if (target != null && target.isValid()) return;
+        if (target != null && target.isValid(this)) return;
 
         // try finding a Player first
         target = PlayerTarget.fromAddress(serverLevel, targetAddress, logisticsNetworkId);
-        if (target != null && target.isValid()) {
+        if (target != null && target.isValid(this)) {
             return;
         }
 
@@ -116,7 +116,7 @@ public class VirtualRobo {
         if (targetBlockEntity != null) {
             target = new BeePortBlockEntityTarget(targetBlockEntity);
         }
-        if (target != null && target.isValid()) {
+        if (target != null && target.isValid(this)) {
             return;
         }
 
@@ -125,7 +125,7 @@ public class VirtualRobo {
         if (homePort != null) {
             target = new BeePortBlockEntityTarget(homePort);
         }
-        if (target != null && target.isValid()) {
+        if (target != null && target.isValid(this)) {
             return;
         }
 

@@ -20,7 +20,7 @@ public interface RoboTarget {
         return null;
     }
 
-    default boolean isValid() {
+    default boolean isValid(VirtualRobo robo) {
         return true;
     }
 
