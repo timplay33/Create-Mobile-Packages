@@ -57,6 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Предмет для создания Пчёлодрона. Необходим в Дронопорте для отправки посылок.",
     "tooltip.create_mobile_packages.bee_port.jade.network": "Сеть: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "Вы часть этой сети",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Enable Bee Return Mode",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Disable Bee Return Mode",
     "tooltip.create_mobile_packages.network.remove_player": "Выгнать игрока",
     "tooltip.create_mobile_packages.network.add_yourself": "Добавить себя",
     "tooltip.create_mobile_packages.network.leave": "Выйти из сети",
