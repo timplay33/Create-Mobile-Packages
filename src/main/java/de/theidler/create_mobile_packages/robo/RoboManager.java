@@ -220,13 +220,9 @@ public class RoboManager extends SavedData {
 
             // Check if this is an active request
             if (request.getStatus() == RoboRequest.Status.PENDING) {
-                // For PENDING requests, check if there's a robo assigned to it
-                boolean roboExists = robos.values().stream()
-                        .anyMatch(robo -> robo.getRequest() == request);
-                if (roboExists) {
+                if (request.getMission() == RoboRequest.Mission.PICKUP) {
                     return true;
                 }
-                // If no robo exists for this PENDING request, let it be handled again
             }
 
             if (request.getStatus() == RoboRequest.Status.IN_PROGRESS) {
@@ -311,7 +307,7 @@ public class RoboManager extends SavedData {
     private void init() {
         this.robos = new ConcurrentHashMap<>();
         this.beePortRoboRequests = new CopyOnWriteArrayList<>();
-        this.roboTrashStores = new ArrayList<>();
+        this.roboTrashStores = new CopyOnWriteArrayList<>();
     }
 }
 
