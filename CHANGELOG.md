@@ -1,4 +1,32 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.7.0 - 1.21.1 - 17.03.2026
+------------------------------------------------------
+
+### Additions
+
+- Added Bee Port Return Mode toggle in the Bee Port GUI (#136)
+  - New button that toggles between normal delivery and return mode
+  - In return mode, Robo Bees spawned from that port fly back to their origin port after successful player delivery
+
+- Added Admin/OP Commands for Network Management (#305)
+  - `/cmp network list` - Display all logistics networks with names, player counts, lock status, and owner information
+  - `/cmp network add <player> <networkId>` - Add a player to a network (auto-filters to named networks only)
+  - `/cmp network remove <player> <networkId>` - Remove a player from a network (auto-filters to networks the player is
+    part of)
+  - Full command auto-completion with intelligent filtering
+
+- Added TrashSlots to the Portable Stock Ticker allowing players to send items (#299)
+    - Set an address
+    - Put items in the TrashSlots
+    - A Robo Bee will come and pick up the items and send them to the address
+
+### Bug Fixes
+
+- Fixed Port with full packages inventory can't accept RoboBee without package (#301)
+- Fixed Portable Stock Ticker not updating to an empty item list if the last item is removed (#302)
+- Fixed Portable Stock Ticker losing address after restart (#287)
+
+------------------------------------------------------
 Create: Mobile Packages - v0.6.1 - 1.21.1 - 20.02.2026
 ------------------------------------------------------
 

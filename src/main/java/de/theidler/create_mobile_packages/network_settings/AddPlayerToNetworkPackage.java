@@ -49,7 +49,6 @@ public class AddPlayerToNetworkPackage implements ServerboundPacketPayload {
         }
 
         extendedNetwork.create_mobile_packages$addPlayer(playerId);
-        CreateMobilePackages.LOGGER.debug("Added player {} to network", playerId);
 
         // Mark as dirty to persist
         Create.LOGISTICS.markDirty();
@@ -70,5 +69,3 @@ public class AddPlayerToNetworkPackage implements ServerboundPacketPayload {
         return CMPPackets.ADD_PLAYER_TO_NETWORK;
     }
 }
-
-

@@ -22,6 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "ロボビーが間もなく到着します！",
     "create_mobile_packages.toast.eta": "到着まで残り%1$s秒",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "所持しているポータブルストックティッカーの画面を開く",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "ビーポート",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "ロボビーはプレイヤーに小包を送ることができます",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "プレイヤーと同じ名前のアドレスが設定された小包を配置してください",
@@ -56,6 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "使用するとロボビーを配置できるアイテム。ビーポートからの搬送に必要です。",
     "tooltip.create_mobile_packages.bee_port.jade.network": "ネットワーク: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "あなたはこのネットワークに属しています",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Enable Bee Return Mode",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Disable Bee Return Mode",
     "tooltip.create_mobile_packages.network.remove_player": "プレイヤーを削除",
     "tooltip.create_mobile_packages.network.add_yourself": "自分を追加",
     "tooltip.create_mobile_packages.network.leave": "ネットワークから退出する",
@@ -68,5 +71,6 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "小包を編集するメニューを開きます",
     "config.jade.plugin_create_mobile_packages.bee_port": "ビーポートの情報",
     "create_mobile_packages.network.players": "ネットワーク内のプレイヤー：",
-    "create_mobile_packages.network.owner": "所有者: %1$s"
+    "create_mobile_packages.network.owner": "所有者: %1$s",
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
 }

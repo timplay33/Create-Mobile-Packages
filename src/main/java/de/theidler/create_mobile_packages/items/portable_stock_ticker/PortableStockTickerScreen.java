@@ -12,13 +12,16 @@ import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
+import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
+import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
+import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.OpenTrashMenuPacket;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Pair;
@@ -57,7 +60,6 @@ import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.Optional;
 
 public class PortableStockTickerScreen extends AbstractSimiContainerScreen<PortableStockTickerMenu>
         implements OrderProvider, CategoriesProvider {
@@ -66,6 +68,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private static final AllGuiTextures BODY = AllGuiTextures.STOCK_KEEPER_REQUEST_BODY;
     private static final AllGuiTextures FOOTER = AllGuiTextures.STOCK_KEEPER_REQUEST_FOOTER;
     public static final int MAX_REPORTED_STACK_AMOUNT = 1000;
+
+    public IconButton trashMenuButton;
 
     public LerpedFloat itemScroll;
 
@@ -81,6 +85,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     public EditBox searchBox;
     public AddressEditBox addressBox;
+    private String lastSyncedAddress = "";
 
     int emptyTicks = 0;
     int successTicks = 0;
@@ -122,6 +127,14 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         super.containerTick();
         orderForStackCallCount.set(0);
         addressBox.tick();
+
+        // Sync address to server if it has changed
+        String currentAddress = addressBox.getValue();
+        if (!currentAddress.equals(lastSyncedAddress)) {
+            lastSyncedAddress = currentAddress;
+            CatnipServices.NETWORK.sendToServer(new SavePortableStockTickerAddressPacket(currentAddress));
+        }
+        
         ClientScreenStorage.tick();
 
         if (forcedEntries != null && !forcedEntries.isEmpty()) {
@@ -168,6 +181,16 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
             itemScroll.setValue(itemScroll.getChaseTarget());
+    }
+
+    @Override
+    public void onClose() {
+        // Save the address one final time when closing (send to server)
+        String currentAddress = addressBox.getValue();
+        if (!currentAddress.equals(lastSyncedAddress)) {
+            CatnipServices.NETWORK.sendToServer(new SavePortableStockTickerAddressPacket(currentAddress));
+        }
+        super.onClose();
     }
 
     private void sortAndCategorize(List<GenericStack> stacks) {
@@ -256,11 +279,27 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         addWidget(searchBox);
 
         boolean initial = addressBox == null;
-        String previouslyUsedAddress = initial ? menu.portableStockTicker.previouslyUsedAddress : addressBox.getValue();
+        // Load address directly from the ItemStack to ensure it persists across world reloads
+        ItemStack pstStack = PortableStockTicker.find(playerInventory);
+        String previouslyUsedAddress = "";
+        if (pstStack != null && pstStack.getItem() instanceof PortableStockTicker pst) {
+            String loadedAddress = pst.loadAddressFromStack(pstStack);
+            previouslyUsedAddress = loadedAddress != null ? loadedAddress : "";
+        }
+        // Fall back to the in-memory address if nothing was loaded from stack
+        if (previouslyUsedAddress.isEmpty() && !initial) {
+            previouslyUsedAddress = addressBox.getValue();
+        }
+        // If still empty, use the item's previouslyUsedAddress field as last resort
+        if (previouslyUsedAddress.isEmpty()) {
+            previouslyUsedAddress = menu.portableStockTicker.previouslyUsedAddress != null ?
+                    menu.portableStockTicker.previouslyUsedAddress : "";
+        }
         addressBox = new AddressEditBox(this, new NoShadowFontWrapper(font), x + 27, y + windowHeight - 36, 92, 10,
                 true, "@" + this.playerInventory.player.getName().getString());
         addressBox.setTextColor(0x714A40);
         addressBox.setValue(previouslyUsedAddress);
+        lastSyncedAddress = previouslyUsedAddress;
         addRenderableWidget(addressBox);
         ClientScreenStorage.manualUpdate();
 
@@ -271,6 +310,10 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             playUiSound(SoundEvents.BOOK_PAGE_TURN, 1, 1);
             syncRecipeViewers();
         }
+
+        trashMenuButton = new IconButton(x - 10, y + 25, AllIcons.I_TRASH);
+        trashMenuButton.withCallback(() -> CatnipServices.NETWORK.sendToServer(OpenTrashMenuPacket.INSTANCE));
+        addRenderableWidget(trashMenuButton);
     }
 
     private Couple<Integer> getHoveredSlot(int x, int y) {

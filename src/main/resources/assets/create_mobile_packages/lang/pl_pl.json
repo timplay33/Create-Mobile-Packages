@@ -22,6 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "Robo-Pszczół w drodze!",
     "create_mobile_packages.toast.eta": "Pozostało %1$s sekund",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Otwórz Przenośny Licznik Zapasów",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "Port Robo-Pszczół",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "Port Robo-Pszczół może wysłać Paczkę do gracza.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Umieść przesyłkę z adresem odpowiadającym imieniu Gracza w Porcie Robo-Pszcól.",
@@ -56,6 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Item to spawn a Robo Bee. Needed in Robo Bee Ports to send packages.",
     "tooltip.create_mobile_packages.bee_port.jade.network": "Network: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "You are part of this network",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Enable Bee Return Mode",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Disable Bee Return Mode",
     "tooltip.create_mobile_packages.network.remove_player": "Remove Player",
     "tooltip.create_mobile_packages.network.add_yourself": "Add Yourself",
     "tooltip.create_mobile_packages.network.leave": "Leave Network",
@@ -68,5 +71,6 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Opens a menu to modify Packages",
     "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
     "create_mobile_packages.network.players": "Players in Network:",
-    "create_mobile_packages.network.owner": "Owner: %1$s"
+    "create_mobile_packages.network.owner": "Owner: %1$s",
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
 }

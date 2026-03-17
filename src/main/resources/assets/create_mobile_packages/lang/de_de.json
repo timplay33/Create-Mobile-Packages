@@ -22,6 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "Robo-Biene auf dem Weg!",
     "create_mobile_packages.toast.eta": "%1$s Sekunden verbleibend",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Öffne den Mobilen Lagerticker",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "Robo-Bienen Port",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "Der Robo-Bienen Port kann Pakete an Spieler senden.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Platziere ein Paket mit einer Adresse, die dem Namen des Spielers entspricht in den Robo-Bienen Port.",
@@ -56,6 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Platziere, das Item, um eine Robo-Biene zu erzeugen. Wird gebraucht in Robo-Bienen Ports um Pakete zu versenden.",
     "tooltip.create_mobile_packages.bee_port.jade.network": "Netzwerk: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "Du bist Teil dieses Netzwerkes",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Bienen-Rückkehrmodus aktivieren",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Bienen-Rückkehrmodus deaktivieren",
     "tooltip.create_mobile_packages.network.remove_player": "Spieler entfernen",
     "tooltip.create_mobile_packages.network.add_yourself": "Füge dich hinzu",
     "tooltip.create_mobile_packages.network.leave": "Verlasse das Netzwerk",
@@ -68,5 +71,6 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Öffnet ein Menü zum Verändern von Päckchen",
     "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
     "create_mobile_packages.network.players": "Players in Network:",
-    "create_mobile_packages.network.owner": "Owner: %1$s"
+    "create_mobile_packages.network.owner": "Owner: %1$s",
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
 }

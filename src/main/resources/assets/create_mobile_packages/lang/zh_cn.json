@@ -22,6 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "运输蜂正在运送货物！",
     "create_mobile_packages.toast.eta": "剩余时间：%1$s 秒",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "打开便携式仓库管理器",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
     "create_mobile_packages.ponder.robo_bee_port.header": "运输蜂停泊港",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "运输蜂停泊港可将包裹送至玩家。",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "将地址为玩家名的包裹放入运输蜂停泊港内。",
@@ -56,6 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "运输蜂的物品形式。运输蜂停泊港发送包裹时需要使用。",
     "tooltip.create_mobile_packages.bee_port.jade.network": "网络：%1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "你是此网络的成员之一",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Enable Bee Return Mode",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Disable Bee Return Mode",
     "tooltip.create_mobile_packages.network.remove_player": "移除玩家",
     "tooltip.create_mobile_packages.network.add_yourself": "添加你自己",
     "tooltip.create_mobile_packages.network.leave": "离开网络",
@@ -68,5 +71,6 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "打开编辑包裹界面",
     "config.jade.plugin_create_mobile_packages.bee_port": "运输蜂停泊港信息",
     "create_mobile_packages.network.players": "网络中的玩家：",
-    "create_mobile_packages.network.owner": "所有者：%1$s"
+    "create_mobile_packages.network.owner": "所有者：%1$s",
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
 }

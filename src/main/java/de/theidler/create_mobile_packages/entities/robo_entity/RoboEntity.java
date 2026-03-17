@@ -1,6 +1,5 @@
 package de.theidler.create_mobile_packages.entities.robo_entity;
 
-import com.simibubi.create.Create;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
@@ -97,6 +96,9 @@ public class RoboEntity extends Mob {
         } else if (virtualRobo.getTarget() != null && virtualRobo.getTarget().asBeePortBlockEntity() != null) {
             BlockPos pos = virtualRobo.getTarget().asBeePortBlockEntity().getBlockPos();
             setCustomName(Component.literal("-> [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]"));
+            setCustomNameVisible(true);
+        } else if (virtualRobo.getTarget() != null && virtualRobo.getTarget().asPlayer() != null) {
+            setCustomName(Component.literal("-> " + virtualRobo.getTarget().asPlayer().getName().getString()));
             setCustomNameVisible(true);
         } else {
             setCustomName(Component.translatable("entity.create_mobile_packages.robo_bee.no_valid_target"));
