@@ -57,6 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Platziere, das Item, um eine Robo-Biene zu erzeugen. Wird gebraucht in Robo-Bienen Ports um Pakete zu versenden.",
     "tooltip.create_mobile_packages.bee_port.jade.network": "Netzwerk: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "Du bist Teil dieses Netzwerkes",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Bienen-Rückkehrmodus aktivieren",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Bienen-Rückkehrmodus deaktivieren",
     "tooltip.create_mobile_packages.network.remove_player": "Spieler entfernen",
     "tooltip.create_mobile_packages.network.add_yourself": "Füge dich hinzu",
     "tooltip.create_mobile_packages.network.leave": "Verlasse das Netzwerk",
