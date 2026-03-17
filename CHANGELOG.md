@@ -4,6 +4,10 @@ Create: Mobile Packages - v0.7.0 - 1.21.1 - unreleased
 
 ### Additions
 
+- Added Bee Port Return Mode toggle in the Bee Port GUI (#136)
+  - New button that toggles between normal delivery and return mode
+  - In return mode, Robo Bees spawned from that port fly back to their origin port after successful player delivery
+
 - Added Admin/OP Commands for Network Management (#305)
   - `/cmp network list` - Display all logistics networks with names, player counts, lock status, and owner information
   - `/cmp network add <player> <networkId>` - Add a player to a network (auto-filters to named networks only)

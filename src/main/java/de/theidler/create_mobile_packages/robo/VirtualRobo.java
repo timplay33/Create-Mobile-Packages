@@ -39,6 +39,7 @@ public class VirtualRobo {
     private float packageHeightScale;
     private RoboRequest request = null;
     private @Nullable BlockPos homePortPos;
+    private boolean returnToHomeAfterDelivery;
 
     public VirtualRobo(ServerLevel level, UUID id, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId) {
         this.id = id;
@@ -64,6 +65,10 @@ public class VirtualRobo {
 
         VirtualRobo virtualRobo = new VirtualRobo(level, id, itemStack, BlockPos.containing(pos), logisticsNetworkId);
         virtualRobo.setSpeed(speed);
+        if (roboTag.contains("homePortPos")) {
+            virtualRobo.setHomePortPos(BlockPos.of(roboTag.getLong("homePortPos")));
+        }
+        virtualRobo.setReturnToHomeAfterDelivery(roboTag.getBoolean("returnToHomeAfterDelivery"));
         if (!virtualRobo.getItemStack().isEmpty()) {
             virtualRobo.setPackageHeightScale(1.0f);
         }
@@ -104,6 +109,17 @@ public class VirtualRobo {
     private void updateTarget() {
         // if the target is still valid and in the correct network, do nothing
         if (target != null && target.isValid(this)) return;
+
+        // Return-mode should prefer the original home port after successful delivery.
+        if (shouldReturnToHomePort()) {
+            BeePortBlockEntity homePort = CMPHelper.getPortAtPos(serverLevel, homePortPos);
+            if (homePort != null) {
+                target = new BeePortBlockEntityTarget(homePort);
+                if (target.isValid(this)) {
+                    return;
+                }
+            }
+        }
 
         // try finding a Player first
         target = PlayerTarget.fromAddress(serverLevel, targetAddress, logisticsNetworkId);
@@ -222,6 +238,10 @@ public class VirtualRobo {
         if (!getItemStack().isEmpty()) {
             tag.put("itemStack", getItemStack().save(serverLevel.registryAccess(), new CompoundTag()));
         }
+        if (homePortPos != null) {
+            tag.putLong("homePortPos", homePortPos.asLong());
+        }
+        tag.putBoolean("returnToHomeAfterDelivery", returnToHomeAfterDelivery);
         return tag;
     }
 
@@ -358,5 +378,13 @@ public class VirtualRobo {
     public void setHomePortPos(@Nullable BlockPos homePort) {
         if (homePort == null) return;
         this.homePortPos = homePort;
+    }
+
+    public boolean shouldReturnToHomePort() {
+        return returnToHomeAfterDelivery && request == null && (itemStack == null || itemStack.isEmpty());
+    }
+
+    public void setReturnToHomeAfterDelivery(boolean returnToHomeAfterDelivery) {
+        this.returnToHomeAfterDelivery = returnToHomeAfterDelivery;
     }
 }

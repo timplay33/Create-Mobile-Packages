@@ -61,8 +61,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private static final int ROBOBEE_INVENTORY_STACK_SIZE = 64;
     private UUID placerUUID;
 
-    private final ContainerData data = new SimpleContainerData(2);
+    private final ContainerData data = new SimpleContainerData(3);
     private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
+    private boolean beeReturnModeEnabled = false;
     private final IItemHandler handler = new IItemHandler() {
         @Override
         public int getSlots() {
@@ -209,6 +210,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         tag.put("RoboBeeInventory", roboBeeInventory.serializeNBT(registries));
+        tag.putBoolean("BeeReturnModeEnabled", beeReturnModeEnabled);
         if (placerUUID != null) {
             tag.putUUID("PlacerUUID", placerUUID);
         }
@@ -220,6 +222,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (tag.contains("RoboBeeInventory")) {
             roboBeeInventory.deserializeNBT(registries, tag.getCompound("RoboBeeInventory"));
         }
+        beeReturnModeEnabled = tag.getBoolean("BeeReturnModeEnabled");
         if (tag.contains("PlacerUUID")) {
             placerUUID = tag.getUUID("PlacerUUID");
         }
@@ -242,6 +245,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             int minEta = eta.stream().min(Comparator.naturalOrder()).orElse(-1);
             this.data.set(0, minEta);
             this.data.set(1, eta.isEmpty() ? 0 : 1);
+            this.data.set(2, beeReturnModeEnabled ? 1 : 0);
         }
     }
 
@@ -412,7 +416,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         }
         roboSendCooldown = 2;
         if (level instanceof ServerLevel serverLevel) {
-            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId(), 0, this.getBlockPos());
+            RoboManager.get(serverLevel).newRobo(serverLevel, itemStack, this.getBlockPos(), this.getLogisticsNetworkId(), 0, this.getBlockPos(), beeReturnModeEnabled);
         }
         inventory.setStackInSlot(slot, ItemStack.EMPTY);
     }
@@ -615,5 +619,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (level instanceof ServerLevel serverLevel) {
             RoboManager.get(serverLevel).newRequestRobo(serverLevel, this.getBlockPos(), request);
         }
+    }
+
+    public void setBeeReturnModeEnabled(boolean beeReturnModeEnabled) {
+        if (this.beeReturnModeEnabled == beeReturnModeEnabled) return;
+        this.beeReturnModeEnabled = beeReturnModeEnabled;
+        if (level != null && !level.isClientSide) {
+            level.blockEntityChanged(worldPosition);
+        }
+        setChanged();
     }
 }
