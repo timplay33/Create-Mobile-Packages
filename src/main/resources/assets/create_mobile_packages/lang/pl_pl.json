@@ -57,6 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Item to spawn a Robo Bee. Needed in Robo Bee Ports to send packages.",
     "tooltip.create_mobile_packages.bee_port.jade.network": "Network: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "You are part of this network",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Enable Bee Return Mode",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Disable Bee Return Mode",
     "tooltip.create_mobile_packages.network.remove_player": "Remove Player",
     "tooltip.create_mobile_packages.network.add_yourself": "Add Yourself",
     "tooltip.create_mobile_packages.network.leave": "Leave Network",

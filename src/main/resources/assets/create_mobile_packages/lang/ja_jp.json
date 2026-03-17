@@ -57,6 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "使用するとロボビーを配置できるアイテム。ビーポートからの搬送に必要です。",
     "tooltip.create_mobile_packages.bee_port.jade.network": "ネットワーク: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "あなたはこのネットワークに属しています",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Enable Bee Return Mode",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Disable Bee Return Mode",
     "tooltip.create_mobile_packages.network.remove_player": "プレイヤーを削除",
     "tooltip.create_mobile_packages.network.add_yourself": "自分を追加",
     "tooltip.create_mobile_packages.network.leave": "ネットワークから退出する",
