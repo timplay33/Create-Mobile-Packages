@@ -61,7 +61,7 @@ The courier entity.
 A handheld device for remote item management.
 
 - **Request Items**: Access your stock remotely by linking to Create Logistics Network.
-- **Send Items**: Use the **Trash Slots** to send items from your inventory to a specific address via Robo Bee.
+- **Send Items**: Use the **Trash Slots** to send items from your inventory to a specific address via Robo Bee. (The Bee Port needs to be in the same network as the Portable Stock Ticker)
 - **Crafting support** within the request interface
 - **JEI Support**: Synchronized item search.
 
@@ -93,5 +93,20 @@ Help translate the mod on [Crowdin](https://crowdin.com/project/create-mobile-pa
 
 ## Gallery
 
-![Gallery 1](https://github.com/user-attachments/assets/80b6f028-61f9-415a-aa4d-bd911d1d1997)
-![Gallery 2](https://github.com/user-attachments/assets/9c9afb41-4671-4092-9a4f-0e23dbf155bb)
+### Simple Setup
+Link the Port and the Stock Link, by clicking with one item on the other block. You can link your Portable Stock Ticker by Shift-Clicking with it on the Stock Link, Port or other Linked Blocks
+<img width="1920" height="1043" alt="2026-03-17_21 28 01" src="https://github.com/user-attachments/assets/9ceff20f-8445-4408-9e41-d7f28a7e6831" />
+
+### Robo Bee on it's way delivering to you
+<img width="1920" height="1043" alt="2026-03-17_21 28 22" src="https://github.com/user-attachments/assets/f59466f4-b04c-48cd-9a37-b65bbeb907ee" />
+
+### Robo Bee on it's way picking up your Trash Slot items to deliver them to "Port1"
+<img width="1920" height="1043" alt="2026-03-17_21 34 10" src="https://github.com/user-attachments/assets/1ef583d9-b4c8-4716-bf8e-9e120f2532e8" />
+
+### Portable Stock Ticker selecting items to be send to you
+<img width="1920" height="1043" alt="2026-03-17_21 29 00" src="https://github.com/user-attachments/assets/2abb559d-e87e-41b2-ab21-e0382ac81a77" />
+
+### Admin Console Command to manage Networks (can also be done via UI)
+<img width="1004" height="281" alt="2026-03-17_21 36 13" src="https://github.com/user-attachments/assets/b9db957e-8e66-4759-9d57-4f1c6ead4e5e" />
+
+
