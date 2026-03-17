@@ -127,4 +127,11 @@ public class BeePortMenu extends PackagePortMenu {
         }
         return false;
     }
+
+    public boolean isBeeReturnModeEnabled() {
+        if (data != null) {
+            return data.get(2) == 1;
+        }
+        return false;
+    }
 }

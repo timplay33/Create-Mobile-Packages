@@ -30,6 +30,11 @@ public class RequestStockUpdate implements ServerboundPacketPayload {
                 return;
 
             List<GenericStack> allStacks = getAccurateSummary(stack).get();
+            if (allStacks.isEmpty()) {
+                CatnipServices.NETWORK.sendToClient(player, new GenericStackListPacket(List.of(), true));
+                return;
+            }
+
             for (int i = 0; i < allStacks.size(); i += MAX_ITEMS_PER_PACKET) {
                 int end = Math.min(i + MAX_ITEMS_PER_PACKET, allStacks.size());
                 boolean last = end == allStacks.size();

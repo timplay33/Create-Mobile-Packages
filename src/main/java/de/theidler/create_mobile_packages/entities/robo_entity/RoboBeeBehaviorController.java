@@ -105,7 +105,7 @@ public class RoboBeeBehaviorController {
 
     private void handleIdle(VirtualRobo robo) {
         robo.setTargetVelocity(Vec3.ZERO);
-        if (robo.getTarget() != null && robo.getTarget().isValid()) {
+        if (robo.getTarget() != null && robo.getTarget().isValid(robo)) {
             setState(RoboBeeState.TAKEOFF);
         }
     }

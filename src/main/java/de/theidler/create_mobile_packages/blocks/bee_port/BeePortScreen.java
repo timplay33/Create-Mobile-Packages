@@ -3,7 +3,10 @@ package de.theidler.create_mobile_packages.blocks.bee_port;
 import com.simibubi.create.content.logistics.packagePort.PackagePortMenu;
 import com.simibubi.create.content.logistics.packagePort.PackagePortScreen;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
+import com.simibubi.create.foundation.gui.widget.IconButton;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.index.CMPIcons;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -12,6 +15,9 @@ import static de.theidler.create_mobile_packages.network_settings.NetworkSetting
 
 public class BeePortScreen extends PackagePortScreen {
 
+    private IconButton enableReturnModeButton;
+    private IconButton disableReturnModeButton;
+
     public BeePortScreen(PackagePortMenu container, Inventory inv, Component title) {
         super(container, inv, title);
     }
@@ -19,9 +25,31 @@ public class BeePortScreen extends PackagePortScreen {
     @Override
     protected void init() {
         super.init();
+        int buttonX = getGuiLeft() - 22;
+        int buttonY = getGuiTop() - 10;
+
         LogisticallyLinkedBehaviour lo = (LogisticallyLinkedBehaviour) menu.contentHolder.getAllBehaviours().stream().filter(b -> b instanceof LogisticallyLinkedBehaviour).findFirst().orElse(null);
         if (lo == null) return;
-        addRenderableWidget(createNetworkSettingsButton(getGuiLeft() - 22, getGuiTop() - 10, lo.freqId));
+        addRenderableWidget(createNetworkSettingsButton(buttonX, buttonY, lo.freqId));
+
+        if (!(menu instanceof BeePortMenu beePortMenu) || !(menu.contentHolder instanceof BeePortBlockEntity beePort))
+            return;
+
+        enableReturnModeButton = new IconButton(buttonX, buttonY + 18, CMPIcons.I_RETURN);
+        enableReturnModeButton.setToolTip(Component.translatable("tooltip.create_mobile_packages.bee_port.enable_return_mode"));
+        enableReturnModeButton.withCallback(() -> CatnipServices.NETWORK.sendToServer(
+                new ToggleBeeReturnModePacket(beePort.getBlockPos(), true)
+        ));
+        addRenderableWidget(enableReturnModeButton);
+
+        disableReturnModeButton = new IconButton(buttonX, buttonY + 18, CMPIcons.I_DIRECT);
+        disableReturnModeButton.setToolTip(Component.translatable("tooltip.create_mobile_packages.bee_port.disable_return_mode"));
+        disableReturnModeButton.withCallback(() -> CatnipServices.NETWORK.sendToServer(
+                new ToggleBeeReturnModePacket(beePort.getBlockPos(), false)
+        ));
+        addRenderableWidget(disableReturnModeButton);
+
+        updateReturnModeButtons(beePortMenu.isBeeReturnModeEnabled());
     }
 
     @Override
@@ -30,11 +58,20 @@ public class BeePortScreen extends PackagePortScreen {
         graphics.blit(CreateMobilePackages.asResource("textures/gui/bee_port.png"), getGuiLeft(), getGuiTop(), 0, 47, 220, 82);
 
         if (menu instanceof BeePortMenu beePortMenu) {
+            updateReturnModeButtons(beePortMenu.isBeeReturnModeEnabled());
             int eta = beePortMenu.getETA();
             Component text = beePortMenu.isBeeOnTravel()
                     ? Component.translatable("create_mobile_packages.bee_port.screen.arrival_time", eta)
                     : Component.translatable("create_mobile_packages.bee_port.screen.no_bee_on_travel");
             graphics.drawString(font, text, getGuiLeft() + 34, getGuiTop() + 64, 0x3D3C48, false);
         }
+    }
+
+    private void updateReturnModeButtons(boolean returnModeEnabled) {
+        if (enableReturnModeButton == null || disableReturnModeButton == null) return;
+        enableReturnModeButton.visible = !returnModeEnabled;
+        enableReturnModeButton.active = !returnModeEnabled;
+        disableReturnModeButton.visible = returnModeEnabled;
+        disableReturnModeButton.active = returnModeEnabled;
     }
 }
