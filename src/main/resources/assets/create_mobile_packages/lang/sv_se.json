@@ -57,6 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Föremål att skapa ett Robot Bi. Används i Robot Bi Portar att skicka paket.",
     "tooltip.create_mobile_packages.bee_port.jade.network": "Nätverk: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "Du är en del av detta nätverk",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Enable Bee Return Mode",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Disable Bee Return Mode",
     "tooltip.create_mobile_packages.network.remove_player": "Ta bort Spelare",
     "tooltip.create_mobile_packages.network.add_yourself": "Lägg till dig själv",
     "tooltip.create_mobile_packages.network.leave": "Lämna Nätverk",
