@@ -48,8 +48,6 @@ public class RequestNetworkDataPacket implements ServerboundPacketPayload {
             return;
         }
 
-        CreateMobilePackages.LOGGER.debug("RequestNetworkDataPacket: Sending network data for {} to player {}", networkId, player.getName().getString());
-
         // Extract data directly from network NBT to avoid mixin issues
         String name = "Logistics Network " + networkId.toString().substring(0, 4);
         List<UUID> players = new ArrayList<>();
@@ -60,7 +58,6 @@ public class RequestNetworkDataPacket implements ServerboundPacketPayload {
             if (extendedNetwork != null) {
                 name = extendedNetwork.create_mobile_packages$getName();
                 players = new ArrayList<>(extendedNetwork.create_mobile_packages$getPlayers());
-                CreateMobilePackages.LOGGER.debug("RequestNetworkDataPacket: Got data from extended network - name: '{}', {} players", name, players.size());
             } else {
                 // Fallback: try to read from NBT
                 CreateMobilePackages.LOGGER.debug("RequestNetworkDataPacket: extendedNetwork is null, trying NBT fallback");
