@@ -4,6 +4,13 @@ Create: Mobile Packages - v0.7.0 - 1.21.1 - unreleased
 
 ### Additions
 
+- Added Admin/OP Commands for Network Management (#305)
+  - `/cmp network list` - Display all logistics networks with names, player counts, lock status, and owner information
+  - `/cmp network add <player> <networkId>` - Add a player to a network (auto-filters to named networks only)
+  - `/cmp network remove <player> <networkId>` - Remove a player from a network (auto-filters to networks the player is
+    part of)
+  - Full command auto-completion with intelligent filtering
+
 - Added TrashSlots to the Portable Stock Ticker allowing players to send items (#299)
     - Set an address
     - Put items in the TrashSlots
