@@ -24,6 +24,7 @@ Create: Mobile Packages - v0.7.0 - 1.21.1 - unreleased
 
 - Fixed Port with full packages inventory can't accept RoboBee without package (#301)
 - Fixed Portable Stock Ticker not updating to an empty item list if the last item is removed (#302)
+- Fixed Portable Stock Ticker losing address after restart (#287)
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.6.1 - 1.21.1 - 20.02.2026

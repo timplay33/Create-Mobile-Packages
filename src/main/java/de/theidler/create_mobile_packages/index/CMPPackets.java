@@ -37,6 +37,7 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
     REQUEST_PLAYER_NETWORKS(RequestPlayerNetworksPacket.class, RequestPlayerNetworksPacket.STREAM_CODEC),
     OPEN_TRASH_MENU(OpenTrashMenuPacket.class, OpenTrashMenuPacket.STREAM_CODEC),
     SYNC_TRASH_ADDRESS(SyncTrashAddressPacket.class, SyncTrashAddressPacket.STREAM_CODEC),
+    SAVE_PORTABLE_STOCK_TICKER_ADDRESS(SavePortableStockTickerAddressPacket.class, SavePortableStockTickerAddressPacket.STREAM_CODEC),
     TOGGLE_BEE_RETURN_MODE(ToggleBeeReturnModePacket.class, ToggleBeeReturnModePacket.STREAM_CODEC),
 
     // Server to Client

@@ -85,6 +85,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     public EditBox searchBox;
     public AddressEditBox addressBox;
+    private String lastSyncedAddress = "";
 
     int emptyTicks = 0;
     int successTicks = 0;
@@ -126,6 +127,14 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         super.containerTick();
         orderForStackCallCount.set(0);
         addressBox.tick();
+
+        // Sync address to server if it has changed
+        String currentAddress = addressBox.getValue();
+        if (!currentAddress.equals(lastSyncedAddress)) {
+            lastSyncedAddress = currentAddress;
+            CatnipServices.NETWORK.sendToServer(new SavePortableStockTickerAddressPacket(currentAddress));
+        }
+        
         ClientScreenStorage.tick();
 
         if (forcedEntries != null && !forcedEntries.isEmpty()) {
@@ -172,6 +181,16 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         if (Math.abs(itemScroll.getValue() - itemScroll.getChaseTarget()) < 1 / 16f)
             itemScroll.setValue(itemScroll.getChaseTarget());
+    }
+
+    @Override
+    public void onClose() {
+        // Save the address one final time when closing (send to server)
+        String currentAddress = addressBox.getValue();
+        if (!currentAddress.equals(lastSyncedAddress)) {
+            CatnipServices.NETWORK.sendToServer(new SavePortableStockTickerAddressPacket(currentAddress));
+        }
+        super.onClose();
     }
 
     private void sortAndCategorize(List<GenericStack> stacks) {
@@ -260,11 +279,27 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         addWidget(searchBox);
 
         boolean initial = addressBox == null;
-        String previouslyUsedAddress = initial ? menu.portableStockTicker.previouslyUsedAddress : addressBox.getValue();
+        // Load address directly from the ItemStack to ensure it persists across world reloads
+        ItemStack pstStack = PortableStockTicker.find(playerInventory);
+        String previouslyUsedAddress = "";
+        if (pstStack != null && pstStack.getItem() instanceof PortableStockTicker pst) {
+            String loadedAddress = pst.loadAddressFromStack(pstStack);
+            previouslyUsedAddress = loadedAddress != null ? loadedAddress : "";
+        }
+        // Fall back to the in-memory address if nothing was loaded from stack
+        if (previouslyUsedAddress.isEmpty() && !initial) {
+            previouslyUsedAddress = addressBox.getValue();
+        }
+        // If still empty, use the item's previouslyUsedAddress field as last resort
+        if (previouslyUsedAddress.isEmpty()) {
+            previouslyUsedAddress = menu.portableStockTicker.previouslyUsedAddress != null ?
+                    menu.portableStockTicker.previouslyUsedAddress : "";
+        }
         addressBox = new AddressEditBox(this, new NoShadowFontWrapper(font), x + 27, y + windowHeight - 36, 92, 10,
                 true, "@" + this.playerInventory.player.getName().getString());
         addressBox.setTextColor(0x714A40);
         addressBox.setValue(previouslyUsedAddress);
+        lastSyncedAddress = previouslyUsedAddress;
         addRenderableWidget(addressBox);
         ClientScreenStorage.manualUpdate();
 
