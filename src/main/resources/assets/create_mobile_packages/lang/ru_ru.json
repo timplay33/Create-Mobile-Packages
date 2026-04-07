@@ -22,7 +22,7 @@
     "create_mobile_packages.toast.robo_bee_on_the_way": "Пчелодрон в пути",
     "create_mobile_packages.toast.eta": "Ожидайте %1$s сек",
     "create_mobile_packages.keyinfo.open_portable_stock_ticker": "Открыть складскую сеть",
-    "create_mobile_packages.keyinfo.open_player_networks_screen": "Open Network Settings",
+    "create_mobile_packages.keyinfo.open_player_networks_screen": "Открыть настройки сети",
     "create_mobile_packages.ponder.robo_bee_port.header": "Размышляем над пчелопортами",
     "create_mobile_packages.ponder.robo_bee_port.text_1": "Пчелопорт может быть использован чтобы отправить посылку прямо к игроку.",
     "create_mobile_packages.ponder.robo_bee_port.text_2": "Поместите посылку, у которой адрес совпадает с ником игрока в печлопорт.",
@@ -57,8 +57,8 @@
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Предмет для создания Пчёлодрона. Необходим в Дронопорте для отправки посылок.",
     "tooltip.create_mobile_packages.bee_port.jade.network": "Сеть: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "Вы часть этой сети",
-    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Enable Bee Return Mode",
-    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Disable Bee Return Mode",
+    "tooltip.create_mobile_packages.bee_port.enable_return_mode": "Включить режим возврата пчелодрона",
+    "tooltip.create_mobile_packages.bee_port.disable_return_mode": "Отключить режим возврата пчелодрона",
     "tooltip.create_mobile_packages.network.remove_player": "Выгнать игрока",
     "tooltip.create_mobile_packages.network.add_yourself": "Добавить себя",
     "tooltip.create_mobile_packages.network.leave": "Выйти из сети",
@@ -69,8 +69,8 @@
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour1": "Открывает меню создания посылки",
     "item.create_mobile_packages.mobile_packager.tooltip.condition2": "Когда shift нажат",
     "item.create_mobile_packages.mobile_packager.tooltip.behaviour2": "Открывает меню изменения посылки",
-    "config.jade.plugin_create_mobile_packages.bee_port": "Bee Port Info",
+    "config.jade.plugin_create_mobile_packages.bee_port": "Информация о пчелопорте",
     "create_mobile_packages.network.players": "Игроки в сети:",
     "create_mobile_packages.network.owner": "Владелец: %1$s",
-    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Меню корзины"
 }
