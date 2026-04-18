@@ -52,9 +52,10 @@ public class ToastOverlayRenderer {
         int toastWidth = 160;
         int screenWidth = mc.getWindow().getGuiScaledWidth();
         int screenHeight = mc.getWindow().getGuiScaledHeight();
+        double guiScale = mc.getWindow().getGuiScale();
         CMPClient.ToastCorner corner = clientConfig.getToastCorner();
-        int offsetX = clientConfig.toastOffsetX.get();
-        int offsetY = clientConfig.toastOffsetY.get();
+        int offsetX = (int) Math.round(clientConfig.toastOffsetX.get() / guiScale);
+        int offsetY = (int) Math.round(clientConfig.toastOffsetY.get() / guiScale);
 
         boolean alignRight = corner == CMPClient.ToastCorner.TOP_RIGHT || corner == CMPClient.ToastCorner.BOTTOM_RIGHT;
         boolean alignBottom = corner == CMPClient.ToastCorner.BOTTOM_RIGHT || corner == CMPClient.ToastCorner.BOTTOM_LEFT;
@@ -63,7 +64,7 @@ public class ToastOverlayRenderer {
         TOASTS.removeIf(toast -> toast.lastUpdate < System.currentTimeMillis() - toast.timeout); // Remove toasts older than timeout
 
         if (alignBottom) {
-            int y = screenHeight - offsetY;
+            int y = screenHeight - offsetY + 4;
             for (Toast toast : TOASTS) {
                 y -= toast.getHeightWithSpacing();
                 toast.draw(guiGraphics, x, y, toastWidth);
