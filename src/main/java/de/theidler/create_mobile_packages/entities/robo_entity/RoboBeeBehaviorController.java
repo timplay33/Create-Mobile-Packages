@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.entities.robo_entity;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
+import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.SyncTrashItemsToClientPacket;
@@ -111,16 +112,21 @@ public class RoboBeeBehaviorController {
     }
 
     private void handleTakeoff(VirtualRobo robo) {
+        BeePortBlockEntity startPort = robo.getStartBeePortBlockEntity();
         if (init) {
-            openPort(robo.getStartBeePortBlockEntity(), true);
+            openPort(startPort, true);
             init = false;
         }
-        if (robo.getStartBeePortBlockEntity() == null) {
+        if (startPort == null) {
+            // Bees spawned from moving contraptions can fail to re-locate the origin
+            // from their projected world position. In that case, skip the takeoff
+            // animation but restore the package scale immediately.
+            robo.setPackageHeightScale(1.0f);
             setState(RoboBeeState.NAVIGATE_TO_TARGET);
             return;
         }
-        Vec3 mid = getAbove(robo.getStartBeePortBlockEntity(), 1.6);
-        Vec3 end = getAbove(robo.getStartBeePortBlockEntity(), 2);
+        Vec3 mid = getAbove(startPort, 1.6);
+        Vec3 end = getAbove(startPort, 2);
 
         double y = robo.getCurrentPos().y;
         double speed = (robo.getSpeed() / 20.0) / 2; // Takeoff slower
@@ -132,7 +138,7 @@ public class RoboBeeBehaviorController {
         } else {
             robo.setPos(end);
             robo.setTargetVelocity(Vec3.ZERO);
-            openPort(robo.getStartBeePortBlockEntity(), false);
+            openPort(startPort, false);
             setState(RoboBeeState.NAVIGATE_TO_TARGET);
         }
     }
@@ -240,8 +246,15 @@ public class RoboBeeBehaviorController {
     }
 
     private void handleShutdown(VirtualRobo robo) {
-        if (robo.getServerLevel().getBlockEntity(BlockPos.containing(robo.getCurrentPos())) instanceof BeePortBlockEntity bpbe)
-            bpbe.addBeeToRoboBeeInventory(1);
+        BeePortBlockEntity shutdownPort = null;
+        if (robo.getServerLevel().getBlockEntity(BlockPos.containing(robo.getCurrentPos())) instanceof BeePortBlockEntity bpbe) {
+            shutdownPort = bpbe;
+        } else if (robo.getTarget() != null) {
+            shutdownPort = robo.getTarget().asBeePortBlockEntity();
+        }
+        if (shutdownPort != null) {
+            shutdownPort.addBeeToRoboBeeInventory(1);
+        }
         if (robo.getRequest() != null) {
             robo.getRequest().setStatus(RoboRequest.Status.DONE);
         }
@@ -257,9 +270,9 @@ public class RoboBeeBehaviorController {
 
     private Vec3 getAbove(Object blockEntityOrPos, double y) {
         if (blockEntityOrPos instanceof BlockPos pos) {
-            return pos.getCenter().add(0, y, 0);
+            return Vec3.atCenterOf(pos).add(0, y, 0);
         } else if (blockEntityOrPos instanceof BlockEntity blockEntity) {
-            return blockEntity.getBlockPos().getCenter().add(0, y, 0);
+            return CMPHelper.getGlobalCenter(blockEntity.getLevel(), blockEntity.getBlockPos()).add(0, y, 0);
         } else if (blockEntityOrPos instanceof Vec3 vec) {
             return vec.add(0, y, 0);
         }
@@ -268,9 +281,9 @@ public class RoboBeeBehaviorController {
 
     private Vec3 getBelow(Object blockEntityOrPos, double y) {
         if (blockEntityOrPos instanceof BlockPos pos) {
-            return pos.getCenter().subtract(0, y, 0);
+            return Vec3.atCenterOf(pos).subtract(0, y, 0);
         } else if (blockEntityOrPos instanceof BlockEntity blockEntity) {
-            return blockEntity.getBlockPos().getCenter().subtract(0, y, 0);
+            return CMPHelper.getGlobalCenter(blockEntity.getLevel(), blockEntity.getBlockPos()).subtract(0, y, 0);
         } else if (blockEntityOrPos instanceof Vec3 vec) {
             return vec.subtract(0, y, 0);
         }

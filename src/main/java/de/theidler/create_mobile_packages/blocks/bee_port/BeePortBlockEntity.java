@@ -357,7 +357,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                 if (!playerUUIDs.contains(player.getUUID())) {
                     continue; // skip players not in the logistics network
                 }
-                if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(player.blockPosition(), this.getBlockPos())) {
+                if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(level, player.blockPosition(), this.getBlockPos())) {
                     sendToPlayer(player, itemStack, slot);
                     return;
                 }
