@@ -97,10 +97,10 @@ Help translate the mod on [Crowdin](https://crowdin.com/project/create-mobile-pa
 Link the Port and the Stock Link, by clicking with one item on the other block. You can link your Portable Stock Ticker by Shift-Clicking with it on the Stock Link, Port or other Linked Blocks
 <img width="1920" height="1043" alt="2026-03-17_21 28 01" src="https://github.com/user-attachments/assets/9ceff20f-8445-4408-9e41-d7f28a7e6831" />
 
-### Robo Bee on it's way delivering to you
+### Robo Bee on its way delivering to you
 <img width="1920" height="1043" alt="2026-03-17_21 28 22" src="https://github.com/user-attachments/assets/f59466f4-b04c-48cd-9a37-b65bbeb907ee" />
 
-### Robo Bee on it's way picking up your Trash Slot items to deliver them to "Port1"
+### Robo Bee on its way picking up your Trash Slot items to deliver them to "Port1"
 <img width="1920" height="1043" alt="2026-03-17_21 34 10" src="https://github.com/user-attachments/assets/1ef583d9-b4c8-4716-bf8e-9e120f2532e8" />
 
 ### Portable Stock Ticker selecting items to be send to you

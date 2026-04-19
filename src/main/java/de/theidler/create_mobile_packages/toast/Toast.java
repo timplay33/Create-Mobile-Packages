@@ -56,6 +56,10 @@ public abstract class Toast {
     protected abstract String getTypeId();
     protected abstract void writeData(RegistryFriendlyByteBuf buf);
 
+    public int getHeightWithSpacing() {
+        return height + 4;
+    }
+
     /**
      * Draws the toast.
      * @param guiGraphics the graphics object to draw on
@@ -64,6 +68,6 @@ public abstract class Toast {
     public int draw(GuiGraphics guiGraphics, int x, int y, int toastWidth) {
         // Draw background rectangle
         guiGraphics.fill(x, y, x + toastWidth, y + height, backgroundColor);
-        return height + 4;
+        return getHeightWithSpacing();
     }
 }

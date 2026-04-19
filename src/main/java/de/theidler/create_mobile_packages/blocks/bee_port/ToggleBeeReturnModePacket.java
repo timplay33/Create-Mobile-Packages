@@ -1,6 +1,8 @@
 package de.theidler.create_mobile_packages.blocks.bee_port;
 
+import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.index.CMPPackets;
+import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import net.createmod.catnip.net.base.ServerboundPacketPayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -31,6 +33,18 @@ public class ToggleBeeReturnModePacket implements ServerboundPacketPayload {
         ServerLevel serverLevel = player.serverLevel();
         if (!(serverLevel.getBlockEntity(portPos) instanceof BeePortBlockEntity beePort)) return;
 
+        if (player.distanceToSqr(portPos.getCenter()) > 64.0) return;
+
+        if (beePort.behaviour != null) {
+            IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(beePort.behaviour.freqId);
+            if (network != null
+                    && !network.create_mobile_packages$getPlayers().contains(player.getUUID())
+                    && !beePort.behaviour.mayInteractMessage(player)
+            ) {
+                return;
+            }
+        }
+
         beePort.setBeeReturnModeEnabled(returnModeEnabled);
     }
 
@@ -39,4 +53,3 @@ public class ToggleBeeReturnModePacket implements ServerboundPacketPayload {
         return CMPPackets.TOGGLE_BEE_RETURN_MODE;
     }
 }
-

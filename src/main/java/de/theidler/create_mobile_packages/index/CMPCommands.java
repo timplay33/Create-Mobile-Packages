@@ -5,9 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.simibubi.create.Create;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
-import de.theidler.create_mobile_packages.network_settings.AddPlayerToNetworkPackage;
 import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
-import de.theidler.create_mobile_packages.network_settings.RemovePlayerFromNetworkPackage;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
@@ -180,8 +178,9 @@ public class CMPCommands {
     private static int addPlayerToNetwork(CommandContext<CommandSourceStack> context, ServerPlayer targetPlayer, UUID networkId) {
         CommandSourceStack source = context.getSource();
 
-        AddPlayerToNetworkPackage packet = new AddPlayerToNetworkPackage(targetPlayer.getUUID(), networkId);
-        CatnipServices.NETWORK.sendToServer(packet);
+        IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(networkId);
+        if (network == null) return 0;
+        network.create_mobile_packages$addPlayer(targetPlayer.getUUID());
 
         source.sendSuccess(() -> Component.literal("Added player " + targetPlayer.getName().getString() + " to network " + networkId), true);
         return 1;
@@ -190,8 +189,9 @@ public class CMPCommands {
     private static int removePlayerFromNetwork(CommandContext<CommandSourceStack> context, ServerPlayer targetPlayer, UUID networkId) {
         CommandSourceStack source = context.getSource();
 
-        RemovePlayerFromNetworkPackage packet = new RemovePlayerFromNetworkPackage(targetPlayer.getUUID(), networkId);
-        CatnipServices.NETWORK.sendToServer(packet);
+        IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(networkId);
+        if (network == null) return 0;
+        network.create_mobile_packages$removePlayer(targetPlayer.getUUID());
 
         source.sendSuccess(() -> Component.literal("Removed player " + targetPlayer.getName().getString() + " from network " + networkId), true);
         return 1;
