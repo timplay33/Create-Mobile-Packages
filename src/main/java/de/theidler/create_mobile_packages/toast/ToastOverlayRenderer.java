@@ -1,6 +1,8 @@
 package de.theidler.create_mobile_packages.toast;
 
 import de.theidler.create_mobile_packages.CreateMobilePackages;
+import de.theidler.create_mobile_packages.index.config.CMPClient;
+import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.neoforged.api.distmarker.Dist;
@@ -45,13 +47,32 @@ public class ToastOverlayRenderer {
 
         GuiGraphics guiGraphics = event.getGuiGraphics();
         Minecraft mc = Minecraft.getInstance();
+        CMPClient clientConfig = CMPConfigs.client();
 
         int toastWidth = 160;
-        int x = mc.getWindow().getGuiScaledWidth() - toastWidth - 10;
-        int y = 10;
+        int screenWidth = mc.getWindow().getGuiScaledWidth();
+        int screenHeight = mc.getWindow().getGuiScaledHeight();
+        double guiScale = mc.getWindow().getGuiScale();
+        CMPClient.ToastCorner corner = clientConfig.getToastCorner();
+        int offsetX = (int) Math.round(clientConfig.toastOffsetX.get() / guiScale);
+        int offsetY = (int) Math.round(clientConfig.toastOffsetY.get() / guiScale);
+
+        boolean alignRight = corner == CMPClient.ToastCorner.TOP_RIGHT || corner == CMPClient.ToastCorner.BOTTOM_RIGHT;
+        boolean alignBottom = corner == CMPClient.ToastCorner.BOTTOM_RIGHT || corner == CMPClient.ToastCorner.BOTTOM_LEFT;
+        int x = alignRight ? screenWidth - toastWidth - offsetX : offsetX;
 
         TOASTS.removeIf(toast -> toast.lastUpdate < System.currentTimeMillis() - toast.timeout); // Remove toasts older than timeout
 
+        if (alignBottom) {
+            int y = screenHeight - offsetY + 4;
+            for (Toast toast : TOASTS) {
+                y -= toast.getHeightWithSpacing();
+                toast.draw(guiGraphics, x, y, toastWidth);
+            }
+            return;
+        }
+
+        int y = offsetY;
         for (Toast toast : TOASTS) {
             y += toast.draw(guiGraphics, x, y, toastWidth);
         }
