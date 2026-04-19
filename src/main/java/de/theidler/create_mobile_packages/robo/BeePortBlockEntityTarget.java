@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.robo;
 
+import de.theidler.create_mobile_packages.CMPHelper;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -17,7 +18,7 @@ public class BeePortBlockEntityTarget implements RoboTarget {
 
     @Override
     public Vec3 getTargetPos() {
-        return Vec3.atCenterOf(pos);
+        return CMPHelper.getGlobalCenter(level, pos);
     }
 
     @Override

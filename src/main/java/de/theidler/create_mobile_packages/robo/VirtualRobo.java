@@ -48,7 +48,7 @@ public class VirtualRobo {
         this.speed = CMPConfigs.server().beeSpeed.get();
         this.itemStack = itemStack;
         setTargetFromItemStack(itemStack);
-        this.currentPos = spawnPos.getCenter().subtract(0, 0.5, 0);
+        this.currentPos = CMPHelper.projectOutOfSubLevel(level, spawnPos.getCenter()).subtract(0, 0.5, 0);
         this.behaviorController = new RoboBeeBehaviorController();
     }
 

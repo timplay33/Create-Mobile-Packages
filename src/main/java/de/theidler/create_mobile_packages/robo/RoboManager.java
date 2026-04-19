@@ -201,9 +201,11 @@ public class RoboManager extends SavedData {
         DronePortTracker tracker = DronePortTracker.get(level);
         List<BeePortBlockEntity> allBEs = new ArrayList<>(tracker.getAllByNetwork(request.getLogisticsNetworkId()));
         allBEs.removeIf(BlockEntity::isRemoved);
-        allBEs.removeIf(be -> be.getBlockPos().equals(BlockPos.containing(request.getTargetPos())));
+        allBEs.removeIf(be -> isTargetingPortAt(be.getBlockPos(), request.getTarget()));
         allBEs.removeIf(be -> be.getRoboBeeInventory().getStackInSlot(0).getCount() <= 0);
-        allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().getCenter().distanceToSqr(request.getTargetPos()))).ifPresent(target -> target.handleRequest(request));
+        allBEs.stream()
+                .min(Comparator.comparingDouble(a -> de.theidler.create_mobile_packages.CMPHelper.getGlobalCenter(level, a.getBlockPos()).distanceToSqr(request.getTargetPos())))
+                .ifPresent(target -> target.handleRequest(request));
     }
 
     /**
@@ -278,14 +280,14 @@ public class RoboManager extends SavedData {
     }
 
     public List<RoboRequest> getRoboRequests(BlockPos pos) {
-        return beePortRoboRequests.stream().filter(request -> BlockPos.containing(request.getTargetPos()).equals(pos)).toList();
+        return beePortRoboRequests.stream().filter(request -> isTargetingPortAt(pos, request.getTarget())).toList();
     }
 
     public List<VirtualRobo> getInboundRobo(BlockPos pos) {
         List<VirtualRobo> inboundRobos = new ArrayList<>();
         for (VirtualRobo robo : robos.values()) {
             RoboTarget target = robo.getTarget();
-            if (target != null && target.getTargetPos() != null && BlockPos.containing(target.getTargetPos()).equals(pos)) {
+            if (target != null && isTargetingPortAt(pos, target)) {
                 inboundRobos.add(robo);
             }
         }
@@ -308,6 +310,17 @@ public class RoboManager extends SavedData {
         this.robos = new ConcurrentHashMap<>();
         this.beePortRoboRequests = new CopyOnWriteArrayList<>();
         this.roboTrashStores = new CopyOnWriteArrayList<>();
+    }
+
+    private boolean isTargetingPortAt(BlockPos pos, @Nullable RoboTarget target) {
+        if (target == null) {
+            return false;
+        }
+        BeePortBlockEntity targetPort = target.asBeePortBlockEntity();
+        if (targetPort != null) {
+            return targetPort.getBlockPos().equals(pos);
+        }
+        return target.getTargetPos() != null && BlockPos.containing(target.getTargetPos()).equals(pos);
     }
 }
 
