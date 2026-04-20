@@ -26,6 +26,7 @@ import static de.theidler.create_mobile_packages.CMPHelper.calcETA;
 public class RoboBeeBehaviorController {
     private RoboBeeState state = RoboBeeState.IDLE;
     private boolean init = true;
+    private @Nullable BeePortBlockEntity lastLandedPort;
 
     public void tick(VirtualRobo robo) {
         switch (state) {
@@ -114,6 +115,7 @@ public class RoboBeeBehaviorController {
     private void handleTakeoff(VirtualRobo robo) {
         BeePortBlockEntity startPort = robo.getStartBeePortBlockEntity();
         if (init) {
+            lastLandedPort = null;
             openPort(startPort, true);
             init = false;
         }
@@ -178,6 +180,7 @@ public class RoboBeeBehaviorController {
     private void handleLand(VirtualRobo robo) {
         @Nullable BeePortBlockEntity port = robo.getTarget() != null ? robo.getTarget().asBeePortBlockEntity() : null;
         if (port == null) {
+            lastLandedPort = null;
             if (robo.getRequest() != null && robo.getRequest().getMission() == RoboRequest.Mission.PICKUP) {
                 setState(RoboBeeState.PICKUP_PACKAGE);
             } else {
@@ -203,6 +206,7 @@ public class RoboBeeBehaviorController {
         } else {
             robo.setPos(end);
             robo.setTargetVelocity(Vec3.ZERO);
+            lastLandedPort = port;
             openPort(robo.getTarget().asBeePortBlockEntity(), false);
             if (robo.getRequest() != null && robo.getRequest().getMission() == RoboRequest.Mission.PICKUP) {
                 setState(RoboBeeState.PICKUP_PACKAGE);
@@ -214,6 +218,7 @@ public class RoboBeeBehaviorController {
 
     private void handleDeliverPackage(VirtualRobo robo) {
         boolean delivered = false;
+        BeePortBlockEntity landedPort = lastLandedPort;
         // Try to deliver to player
         if (robo.getTarget() != null && robo.getTarget().asPlayer() != null && !robo.getItemStack().isEmpty()) {
             delivered = BeePortBlockEntity.sendPackageToPlayer(robo.getTarget().asPlayer(), robo.getItemStack());
@@ -236,7 +241,12 @@ public class RoboBeeBehaviorController {
 
         // if the new taget is a Bee Port and the Robo is in it then shutdown the Robo.
         if (robo.getTarget() != null && robo.getTarget().asBeePortBlockEntity() != null) {
-            if (BlockPos.containing(robo.getCurrentPos()).equals(BlockPos.containing(robo.getTargetPosition()))) {
+            BeePortBlockEntity targetPort = robo.getTarget().asBeePortBlockEntity();
+            boolean alreadyLandedAtTarget = landedPort != null && targetPort != null
+                    && landedPort.getLevel() == targetPort.getLevel()
+                    && landedPort.getBlockPos().equals(targetPort.getBlockPos());
+            if (alreadyLandedAtTarget
+                    || BlockPos.containing(robo.getCurrentPos()).equals(BlockPos.containing(robo.getTargetPosition()))) {
                 setState(RoboBeeState.SHUTDOWN);
                 return;
             }
@@ -249,6 +259,8 @@ public class RoboBeeBehaviorController {
         BeePortBlockEntity shutdownPort = null;
         if (robo.getServerLevel().getBlockEntity(BlockPos.containing(robo.getCurrentPos())) instanceof BeePortBlockEntity bpbe) {
             shutdownPort = bpbe;
+        } else if (lastLandedPort != null && !lastLandedPort.isRemoved()) {
+            shutdownPort = lastLandedPort;
         } else if (robo.getTarget() != null) {
             shutdownPort = robo.getTarget().asBeePortBlockEntity();
         }
