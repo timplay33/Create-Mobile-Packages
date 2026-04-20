@@ -1,4 +1,11 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.7.3 - 1.21.1 - 20.04.2026
+------------------------------------------------------
+
+### Changes
+- Fix bees not being able to return when bee port is not aligned properly on the world grid (enter / exit loop) (#317, #318)
+
+------------------------------------------------------
 Create: Mobile Packages - v0.7.2 - 1.21.1 - 19.04.2026
 ------------------------------------------------------
 
