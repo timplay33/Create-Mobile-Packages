@@ -187,7 +187,7 @@ dependencies {
     compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
     runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")
     implementation("maven.modrinth:jade:${jade_version}")
-    runtimeOnly("maven.modrinth:sable:1.0.6+mc1.21.1")
+    runtimeOnly("maven.modrinth:sable:g8CObHcP")
 
     if (!Boolean.getBoolean("idea.sync.active")) {
         annotationProcessor "org.spongepowered:mixin:0.8.5:processor"

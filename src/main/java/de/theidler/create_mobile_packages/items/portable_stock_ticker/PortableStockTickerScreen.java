@@ -10,6 +10,7 @@ import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
+import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -1154,13 +1155,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private void syncRecipeViewers() {
         if (searchBox == null)
             return;
-        boolean syncEnabled = AllConfigs.client().syncJeiSearch.get();
-        if (!syncEnabled)
+        StockKeeperRequestScreen.SearchSyncMode syncEnabled = AllConfigs.client().syncRecipeViewerSearch.get();
+        if (syncEnabled == StockKeeperRequestScreen.SearchSyncMode.NONE)
             return;
 
         String text = searchBox.getValue();
-        if (text == null)
-            text = "";
 
         // Sync with JEI if loaded
         if (Mods.JEI.isLoaded() && CMPJEI.runtime != null) {
