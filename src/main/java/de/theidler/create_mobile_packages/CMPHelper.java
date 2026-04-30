@@ -1,9 +1,10 @@
 package de.theidler.create_mobile_packages;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
-import de.theidler.create_mobile_packages.compat.sable.SableCompat;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.DronePortTracker;
+import de.theidler.create_mobile_packages.blocks.portal_port.PortalPortTracker;
+import de.theidler.create_mobile_packages.compat.sable.SableCompat;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
@@ -15,10 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class CMPHelper {
 
@@ -107,6 +105,10 @@ public class CMPHelper {
             return bpbe;
         }
         return null;
+    }
+
+    public static Set<BlockPos> getPortalPortPositions(ServerLevel serverLevel) {
+        return PortalPortTracker.get(serverLevel).getAll();
     }
 
     public static Vec3 getGlobalCenter(@Nullable Level level, BlockPos pos) {
