@@ -64,4 +64,3 @@ public class PortalPortTracker extends SavedData {
         return compoundTag;
     }
 }
-

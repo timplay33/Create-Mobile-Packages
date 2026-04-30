@@ -152,7 +152,7 @@ public class VirtualRobo {
         CreateMobilePackages.LOGGER.debug("  -> no local target found, searching for cross-dimension route via portals");
         CMPHelper.PortalTransferRoute transferRoute = CMPHelper.findPortalTransferRoute(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
         if (transferRoute != null) {
-            CreateMobilePackages.LOGGER.info("Robo {} found cross-dimension route: {} -> {} via portals [{}, {}]",
+            CreateMobilePackages.LOGGER.debug("Robo {} found cross-dimension route: {} -> {} via portals [{}, {}]",
                     getId(),
                     serverLevel.dimension().location(),
                     transferRoute.destinationLevel().dimension().location(),
@@ -218,7 +218,6 @@ public class VirtualRobo {
 
         // Spawn / despawn RoboBeeEntity if needed
         BlockPos pos = BlockPos.containing(currentPos);
-        boolean chunkLoaded = level.hasChunk(pos.getX() >> 4, pos.getZ() >> 4);
         if (level.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) {
             if (entityId == null) {
                 CreateMobilePackages.LOGGER.debug("Robo {} spawning entity in level {} at pos {}", getId(), level.dimension().location(), pos);

@@ -404,7 +404,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             return;
         }
         roboSendCooldown = 2;
-        CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
+        CreateMobilePackages.LOGGER.debug("Sending package to player: {}", player.getName().getString());
         sendDrone(itemStack, slot);
     }
 

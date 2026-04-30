@@ -36,5 +36,3 @@ public class PortalPortBlockEntity extends BlockEntity {
         super.setRemoved();
     }
 }
-
-
