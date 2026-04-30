@@ -6,6 +6,9 @@ import de.theidler.create_mobile_packages.blocks.bee_port.DronePortTracker;
 import de.theidler.create_mobile_packages.blocks.portal_port.PortalPortTracker;
 import de.theidler.create_mobile_packages.compat.sable.SableCompat;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
+import de.theidler.create_mobile_packages.robo.BeePortBlockEntityTarget;
+import de.theidler.create_mobile_packages.robo.PlayerTarget;
+import de.theidler.create_mobile_packages.robo.RoboTarget;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -20,6 +23,69 @@ import java.util.*;
 
 public class CMPHelper {
 
+    public static @Nullable PortalTransferRoute findPortalTransferRoute(ServerLevel sourceLevel, String address, BlockPos origin, VirtualRobo robo, UUID logisticsNetworkId) {
+        Set<BlockPos> sourcePortals = getPortalPortPositions(sourceLevel);
+        if (sourcePortals.isEmpty()) {
+            return null;
+        }
+
+        BlockPos sourcePortal = sourcePortals.stream()
+                .min(Comparator.comparingDouble(pos -> Vec3.atCenterOf(pos).distanceToSqr(Vec3.atCenterOf(origin))))
+                .orElse(null);
+        if (sourcePortal == null) {
+            return null;
+        }
+
+        CreateMobilePackages.LOGGER.debug("findPortalTransferRoute: source level {} has {} portals, nearest={}",
+                sourceLevel.dimension().location(), sourcePortals.size(), sourcePortal);
+
+        PortalTransferRoute bestRoute = null;
+        double bestDistance = Double.MAX_VALUE;
+
+        for (ServerLevel candidateLevel : sourceLevel.getServer().getAllLevels()) {
+            if (candidateLevel == sourceLevel) {
+                continue;
+            }
+            CreateMobilePackages.LOGGER.debug("  checking candidate level: {}", candidateLevel.dimension().location());
+
+            Set<BlockPos> destinationPortals = getPortalPortPositions(candidateLevel);
+            if (destinationPortals.isEmpty()) {
+                CreateMobilePackages.LOGGER.debug("    no portals in target level");
+                continue;
+            }
+            CreateMobilePackages.LOGGER.debug("    found {} portals in target level", destinationPortals.size());
+
+            RoboTarget finalTarget = findCrossLevelTarget(candidateLevel, address, robo, logisticsNetworkId);
+            if (finalTarget == null || finalTarget.getTargetPos() == null || !finalTarget.isValid(robo)) {
+                CreateMobilePackages.LOGGER.debug("    no valid target found in this level (address='{}')", address);
+                continue;
+            }
+            CreateMobilePackages.LOGGER.debug("    found valid target at {}", finalTarget.getTargetPos());
+
+            Vec3 finalTargetPos = finalTarget.getTargetPos();
+            BlockPos destinationPortal = destinationPortals.stream()
+                    .min(Comparator.comparingDouble(pos -> Vec3.atCenterOf(pos).distanceToSqr(finalTargetPos)))
+                    .orElse(null);
+
+            if (destinationPortal == null) {
+                CreateMobilePackages.LOGGER.debug("    failed to find destination portal");
+                continue;
+            }
+
+            double destinationDistance = Vec3.atCenterOf(destinationPortal).distanceToSqr(finalTargetPos);
+            if (destinationDistance < bestDistance) {
+                bestDistance = destinationDistance;
+                bestRoute = new PortalTransferRoute(sourcePortal.immutable(), candidateLevel, destinationPortal.immutable(), finalTarget);
+                CreateMobilePackages.LOGGER.debug("    new best route found: {} -> portal {} (distance={})", candidateLevel.dimension().location(), destinationPortal, destinationDistance);
+            }
+        }
+
+        if (bestRoute == null) {
+            CreateMobilePackages.LOGGER.debug("findPortalTransferRoute: no valid route found");
+        }
+        return bestRoute;
+    }
+
     public static Vec3 readVec3FromTag(CompoundTag tag, String key) {
         double x = tag.getDouble(key + "X");
         double y = tag.getDouble(key + "Y");
@@ -27,11 +93,10 @@ public class CMPHelper {
         return new Vec3(x, y, z);
     }
 
-    public static CompoundTag writeVec3ToTag(CompoundTag tag, String key, Vec3 vec) {
+    public static void writeVec3ToTag(CompoundTag tag, String key, Vec3 vec) {
         tag.putDouble(key + "X", vec.x);
         tag.putDouble(key + "Y", vec.y);
         tag.putDouble(key + "Z", vec.z);
-        return tag;
     }
 
     public static boolean isWithinRange(Level level, BlockPos targetPos, BlockPos originPos) {
@@ -109,6 +174,26 @@ public class CMPHelper {
 
     public static Set<BlockPos> getPortalPortPositions(ServerLevel serverLevel) {
         return PortalPortTracker.get(serverLevel).getAll();
+    }
+
+    private static @Nullable RoboTarget findCrossLevelTarget(ServerLevel level, String address, VirtualRobo robo, UUID logisticsNetworkId) {
+        PlayerTarget playerTarget = PlayerTarget.fromAddress(level, address, logisticsNetworkId);
+        if (playerTarget != null) {
+            CreateMobilePackages.LOGGER.debug("      found player target: {}", address);
+            return playerTarget;
+        }
+
+        BeePortBlockEntity addressedPort = CMPHelper.getClosestBeePort(level, address, BlockPos.containing(robo.getCurrentPos()), robo, logisticsNetworkId);
+        if (addressedPort != null) {
+            CreateMobilePackages.LOGGER.debug("      found addressed port: {} at {}", address, addressedPort.getBlockPos());
+            return new BeePortBlockEntityTarget(addressedPort);
+        }
+
+        return null;
+    }
+
+    public record PortalTransferRoute(BlockPos sourcePortalPos, ServerLevel destinationLevel,
+                                      BlockPos destinationPortalPos, RoboTarget finalTarget) {
     }
 
     public static Vec3 getGlobalCenter(@Nullable Level level, BlockPos pos) {
