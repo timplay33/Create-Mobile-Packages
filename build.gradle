@@ -140,6 +140,7 @@ repositories {
     maven { url = "https://dl.zznty.ru/maven" } // Create Factory Abstractions, Create Factory Logistics
     maven { url = "https://maven.theillusivec4.top/" } // Curios
     maven { url = "https://api.modrinth.com/maven" }
+    maven { url = "https://cursemaven.com" }
     mavenCentral()
     mavenLocal()
     flatDir {
@@ -181,6 +182,7 @@ dependencies {
     implementation(jarJar("ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
     //runtimeOnly("ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
     compileOnly("org.jetbrains:annotations:24.0.1")
+    compileOnly("curse.maven:create-fluidlogistic-1475079:8052709")
 
     // testing mod compatibilities
     runtimeOnly("tschipp.carryon:carryon-neoforge-1.21.1:2.2.3.3")
