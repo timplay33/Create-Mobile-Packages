@@ -401,7 +401,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (addressBox.getValue()
                 .isBlank() && !addressBox.isFocused()) {
             pGuiGraphics.drawString(Minecraft.getInstance().font,
-                    CreateLang.translate("gui.stock_keeper.package_adress")
+                    CreateLang.translate("gui.stock_keeper.package_address")
                             .style(ChatFormatting.ITALIC)
                             .component(),
                     addressBox.getX(), addressBox.getY(), 0xff_CDBCA8, false);
