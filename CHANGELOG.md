@@ -1,4 +1,13 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.7.5 - 1.21.1 - 07.05.2026
+------------------------------------------------------
+
+### Changes
+
+- Added support for FluidLogistic (#336, #333)
+- Changed CI pipeline to include the Changelog in the release description
+
+------------------------------------------------------
 Create: Mobile Packages - v0.7.4 - 1.21.1 - 22.04.2026
 ------------------------------------------------------
 
