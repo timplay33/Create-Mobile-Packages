@@ -3,6 +3,8 @@ package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
+import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLBridge;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -37,6 +39,10 @@ public class StockCheckingItem extends LogisticallyLinkedItem {
                                            @Nullable IdentifiedInventory ignoredHandler,
                                            String address) {
         UUID Freq = networkFromStack(stack);
+        if (Mods.FLUIDLOGISTICS.isLoaded() && CFLBridge.containsVirtualFluid(order)) {
+            return LogisticsManager.broadcastPackageRequest(
+                    Freq, type, order.asCrafting(), ignoredHandler, address);
+        }
         return GenericLogisticsManager.broadcastPackageRequest(Freq, type, order, ignoredHandler, address);
     }
 
