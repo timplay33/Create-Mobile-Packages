@@ -54,12 +54,11 @@ public class SimpleToast extends Toast {
         int heightWithSpacing = super.draw(guiGraphics, x, y, toastWidth);
 
         // Draw icon
-        guiGraphics.renderItem(this.icon, x + 6, y + 6);
+        guiGraphics.renderItem(this.icon, x + 5, y + 6);
         // Draw title
-        guiGraphics.drawString(mc.font, this.title, x + 28, y + 6, 0xFFFFFF, false);
+        guiGraphics.drawString(mc.font, this.title, x + 22, y + 6, 0xFFFFFF, false);
         // Draw subtitle
-        guiGraphics.drawString(mc.font, this.subtitle, x + 28, y + 18, 0xAAAAAA, false);
-
+        guiGraphics.drawString(mc.font, this.subtitle, x + 22, y + 18, 0xAAAAAA, false);
         return heightWithSpacing;
     }
 }

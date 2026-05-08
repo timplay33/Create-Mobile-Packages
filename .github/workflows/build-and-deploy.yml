@@ -71,3 +71,113 @@ jobs:
           MODRINTH_API_TOKEN: ${{ secrets.MODRINTH_API_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew publishMod
+
+      - name: Prepare Discord release data
+        id: release_data
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          from pathlib import Path
+          import re
+
+          def read_properties(path: str) -> dict[str, str]:
+              properties = {}
+              for raw_line in Path(path).read_text(encoding='utf-8').splitlines():
+                  line = raw_line.strip()
+                  if not line or line.startswith('#') or '=' not in line:
+                      continue
+                  key, value = line.split('=', 1)
+                  properties[key.strip()] = value.strip()
+              return properties
+
+          properties = read_properties('gradle.properties')
+          required_keys = ('mod_name', 'mod_version', 'minecraft_version')
+          missing_keys = [key for key in required_keys if not properties.get(key)]
+          if missing_keys:
+              raise SystemExit(f"Missing required properties: {', '.join(missing_keys)}")
+
+          mod_name = properties['mod_name']
+          mod_version = properties['mod_version']
+          minecraft_version = properties['minecraft_version']
+
+          changelog_lines = Path('CHANGELOG.md').read_text(encoding='utf-8').splitlines()
+          separator_indexes = [index for index, line in enumerate(changelog_lines) if re.fullmatch(r'-{10,}\s*', line)]
+          if len(separator_indexes) < 2:
+              raise SystemExit('CHANGELOG.md must contain at least two separator lines')
+
+          first_separator = separator_indexes[0]
+          second_separator = separator_indexes[1]
+          next_entry_separator = next((index for index in separator_indexes[2:] if index > second_separator), len(changelog_lines))
+
+          changelog_section = '\n'.join(changelog_lines[first_separator:next_entry_separator]).strip()
+          if not changelog_section:
+              raise SystemExit('Latest changelog section is empty')
+
+          section_lines = changelog_section.splitlines()
+          header_line = section_lines[1].strip() if len(section_lines) > 1 else ''
+          expected_header = rf'^Create: Mobile Packages - v{re.escape(mod_version)} - {re.escape(minecraft_version)} - '
+          if not re.match(expected_header, header_line):
+              raise SystemExit(
+                  f"Latest changelog header '{header_line}' does not match mod_version={mod_version} "
+                  f"and minecraft_version={minecraft_version}"
+              )
+
+          def emit(name: str, value: str) -> None:
+              delimiter = f'EOF_{name}'
+              while delimiter in value:
+                  delimiter += '_'
+              print(f'{name}<<{delimiter}')
+              print(value)
+              print(delimiter)
+
+          emit('MOD_NAME', mod_name)
+          emit('MOD_VERSION', mod_version)
+          emit('MINECRAFT_VERSION', minecraft_version)
+          emit('CHANGELOG', changelog_section)
+          PY
+
+      - name: Send Discord notification
+        if: success()
+        shell: bash
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          MOD_NAME: ${{ steps.release_data.outputs.MOD_NAME }}
+          MOD_VERSION: ${{ steps.release_data.outputs.MOD_VERSION }}
+          MINECRAFT_VERSION: ${{ steps.release_data.outputs.MINECRAFT_VERSION }}
+          CHANGELOG: ${{ steps.release_data.outputs.CHANGELOG }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${DISCORD_WEBHOOK:-}" ]]; then
+            echo "DISCORD_WEBHOOK secret is not configured" >&2
+            exit 1
+          fi
+
+          PAYLOAD=$(python3 - <<'PY'
+          import json
+          import os
+
+          changelog = os.environ['CHANGELOG']
+          payload = {
+              'allowed_mentions': {'parse': []},
+              'embeds': [{
+                  'title': f"New Release: {os.environ['MOD_NAME']} v{os.environ['MOD_VERSION']}",
+                  'description': f"Minecraft {os.environ['MINECRAFT_VERSION']}\n\n```\n{changelog}\n```",
+                  'color': 3447003,
+                  'fields': [{
+                      'name': '🔗 Download Links',
+                      'value': '[CurseForge](https://www.curseforge.com/minecraft/mods/create-mobile-packages/files) | [Modrinth](https://modrinth.com/mod/1vXRfEHZ/versions) | [GitHub](https://github.com/timplay33/Create-Mobile-Packages/releases)',
+                      'inline': False,
+                  }],
+                  'footer': {'text': 'Create: Mobile Packages'},
+              }],
+          }
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+          )
+
+          curl --fail-with-body --silent --show-error --request POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            --data "$PAYLOAD"
+
