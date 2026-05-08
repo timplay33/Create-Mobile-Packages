@@ -26,7 +26,7 @@ public class PackageToast extends SimpleToast {
         this.items = items.stream()
                 .filter(s -> !s.isEmpty())
                 .collect(java.util.stream.Collectors.toList());
-        height = items.isEmpty() ? 32 : 52;
+        height = this.items.isEmpty() ? 32 : 52;
     }
 
     public PackageToast(UUID uuid, Component title, Component subtitle, ItemStack icon, List<ItemStack> items) {
@@ -75,7 +75,7 @@ public class PackageToast extends SimpleToast {
         int visibleItems = Math.min(items.size(), maxVisible);
 
         // Draw Items
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < Math.min(8, items.size()); i++) {
             int sx = startX + i * (slotSize + slotGap);
 
             guiGraphics.fill(sx - 1, slotY - 1, sx + slotSize, slotY + slotSize, 0xFF2A2A2A);

@@ -70,7 +70,7 @@ public abstract class Toast {
         // Outer dark border
         guiGraphics.fill(x, y, x + toastWidth, y + h,0xB3111111);
         // Main background
-        guiGraphics.fill(x + 1,y + 1,x + toastWidth - 1,y + height - 1,0xB31D1D1D);
+        guiGraphics.fill(x + 1, y + 1, x + toastWidth - 1, y + h - 1, 0xB31D1D1D);
         // Top highlight edge
         guiGraphics.fill(x + 1,y + 1, x + toastWidth - 1, y + 2,0xB3444444);
         // Inner inset shadow (bottom + right)
