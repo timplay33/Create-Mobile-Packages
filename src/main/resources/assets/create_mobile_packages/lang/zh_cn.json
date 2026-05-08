@@ -53,7 +53,7 @@
     "create_mobile_packages.ponder.port_to_port.text_3": "将停泊港地址设置成包裹的地址，然后将包裹放置在另一个停泊港中。",
     "create_mobile_packages.ponder.port_to_port.text_4": "包裹将会从一个停泊港运输到另外一个停泊港。",
     "create_mobile_packages.ponder.port_to_port.text_5": "这个功能可以在配置文件中禁用。",
-    "tooltip.create_mobile_packages.robo_bee.package_transport": "运输蜂可以运输处于副手上的包裹。",
+    "tooltip.create_mobile_packages.robo_bee.package_transport": "When holding a package in the offhand it will be sent with the Robo Bee.",
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "运输蜂的物品形式。运输蜂停泊港发送包裹时需要使用。",
     "tooltip.create_mobile_packages.bee_port.jade.network": "网络：%1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "你是此网络的成员之一",
