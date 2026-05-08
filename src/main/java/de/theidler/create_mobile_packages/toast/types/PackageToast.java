@@ -2,6 +2,9 @@ package de.theidler.create_mobile_packages.toast.types;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
+import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLBridge;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLClientBridge;
 import de.theidler.create_mobile_packages.index.CMPToasts;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -61,11 +64,18 @@ public class PackageToast extends SimpleToast {
         // Draw Items
         for (int i = 0; i < items.size(); i++) {
             ItemStack item = items.get(i);
-            guiGraphics.renderItem(item, x + (i*spacing)+4, y + 30);
+            int itemX = x + (i * spacing) + 4;
+            int itemY = y + 30;
+            guiGraphics.renderItem(item, itemX, itemY);
 
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(0, 0, 200);
-            drawItemCount(guiGraphics, item.getCount(),x + (i*spacing)+4, y + 30 );
+            if (Mods.FLUIDLOGISTICS.isLoaded()
+                    && CFLBridge.shouldDisplayAsFluidInPackage(item)) {
+                CFLClientBridge.renderPackageFluidAmount(guiGraphics, item, itemX, itemY);
+            } else {
+                drawItemCount(guiGraphics, item.getCount(), itemX, itemY);
+            }
             guiGraphics.pose().popPose();
         }
 
