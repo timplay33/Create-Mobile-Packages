@@ -6,6 +6,7 @@ import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLBridge;
 import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLClientBridge;
 import de.theidler.create_mobile_packages.index.CMPToasts;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -22,8 +23,10 @@ public class PackageToast extends SimpleToast {
 
     public PackageToast(UUID uuid, Component title, Component subtitle, ItemStack icon, List<ItemStack> items, int timeout) {
         super(uuid, title, subtitle, icon, timeout);
-        this.items = items;
-        height = 50;
+        this.items = items.stream()
+                .filter(s -> !s.isEmpty())
+                .collect(java.util.stream.Collectors.toList());
+        height = items.isEmpty() ? 32 : 52;
     }
 
     public PackageToast(UUID uuid, Component title, Component subtitle, ItemStack icon, List<ItemStack> items) {
@@ -60,23 +63,56 @@ public class PackageToast extends SimpleToast {
     @Override
     public int draw(GuiGraphics guiGraphics, int x, int y, int toastWidth) {
         int heightWithSpacing = super.draw(guiGraphics, x, y, toastWidth);
-        int spacing = toastWidth / items.size();
-        // Draw Items
-        for (int i = 0; i < items.size(); i++) {
-            ItemStack item = items.get(i);
-            int itemX = x + (i * spacing) + 4;
-            int itemY = y + 30;
-            guiGraphics.renderItem(item, itemX, itemY);
 
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(0, 0, 200);
-            if (Mods.FLUIDLOGISTICS.isLoaded()
-                    && CFLBridge.shouldDisplayAsFluidInPackage(item)) {
-                CFLClientBridge.renderPackageFluidAmount(guiGraphics, item, itemX, itemY);
-            } else {
-                drawItemCount(guiGraphics, item.getCount(), itemX, itemY);
+        guiGraphics.fill(x + 4, y + 28, x + toastWidth - 4, y + 29, 0xFF2F2F2F);
+
+        int slotSize = 16;
+        int slotGap = 3;
+        int startX = x + 5;
+        int slotY = y + 31;
+        boolean hasOverflow = items.size() > 8;
+        int maxVisible = hasOverflow ? 7 : 8;
+        int visibleItems = Math.min(items.size(), maxVisible);
+
+        // Draw Items
+        for (int i = 0; i < 8; i++) {
+            int sx = startX + i * (slotSize + slotGap);
+
+            guiGraphics.fill(sx - 1, slotY - 1, sx + slotSize, slotY + slotSize, 0xFF2A2A2A);
+            guiGraphics.fill(sx - 1, slotY - 1, sx + slotSize, slotY, 0xFF3A3A3A);
+
+            if (i < visibleItems) {
+                ItemStack item = items.get(i);
+                guiGraphics.renderItem(item, sx, slotY);
+
+                guiGraphics.pose().pushPose();
+                guiGraphics.pose().translate(0, 0, 200);
+                if (Mods.FLUIDLOGISTICS.isLoaded()
+                        && CFLBridge.shouldDisplayAsFluidInPackage(item)) {
+                    CFLClientBridge.renderPackageFluidAmount(guiGraphics, item, sx, slotY);
+                } else {
+                    drawItemCount(guiGraphics, item.getCount(), sx, slotY);
+                }
+                guiGraphics.pose().popPose();
             }
-            guiGraphics.pose().popPose();
+        }
+
+        if (hasOverflow) {
+            int overflow = items.size() - maxVisible;
+            int sx = startX + maxVisible * (slotSize + slotGap);
+
+            guiGraphics.fill(sx + 3, slotY + 1, sx + slotSize + 3, slotY + slotSize + 1, 0xFF1A1A1A);
+            guiGraphics.fill(sx + 1, slotY + 1, sx + slotSize + 1, slotY + slotSize + 1, 0xFF222200);
+            guiGraphics.fill(sx - 1, slotY - 1, sx + slotSize, slotY + slotSize, 0xFF3D2E00);
+            guiGraphics.fill(sx - 1, slotY - 1, sx + slotSize, slotY, 0xFF5A4500);
+            guiGraphics.fill(sx - 1, slotY - 1, sx + 1, slotY + slotSize, 0xFFC8930A);
+
+            String overflowText = "+" + overflow;
+            int textWidth = Minecraft.getInstance().font.width(overflowText);
+            guiGraphics.drawString(Minecraft.getInstance().font, overflowText,
+                    sx + (slotSize / 2) - (textWidth / 2),
+                    slotY + (slotSize / 2) - 4,
+                    0xF5C842, false);
         }
 
         return heightWithSpacing;
