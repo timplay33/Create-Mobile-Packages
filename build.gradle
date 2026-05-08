@@ -26,6 +26,37 @@ ext.buildNumber = System.getenv('BUILD_NUMBER')
 ext.rawBranchName = System.getenv("BRANCH_NAME")
 ext.branchName = rawBranchName ? rawBranchName.replaceAll("[^a-zA-Z0-9._-]", "_") : null
 
+static def readLatestChangelogSection(File changelogFile) {
+    if (!changelogFile.exists()) {
+        throw new GradleException("CHANGELOG file not found: ${changelogFile.absolutePath}")
+    }
+
+    // Use readLines() directly which already handles line terminators efficiently
+    def lines = changelogFile.readLines('UTF-8')
+    def isSeparator = { String line -> line ==~ /^-{10,}\s*$/ }
+
+    int firstSeparator = lines.findIndexOf { line -> isSeparator(line) }
+    if (firstSeparator < 0) {
+        throw new GradleException("No changelog separator line found in ${changelogFile.name}")
+    }
+
+    int secondSeparator = lines.findIndexOf(firstSeparator + 1) { String line -> isSeparator(line) }
+    if (secondSeparator < 0) {
+        throw new GradleException("Could not find the second separator line in ${changelogFile.name}")
+    }
+
+    int nextEntrySeparator = lines.findIndexOf(secondSeparator + 1) { String line -> isSeparator(line) }
+
+    int endExclusive = nextEntrySeparator >= 0 ? nextEntrySeparator : lines.size()
+    return lines.subList(firstSeparator, endExclusive).join('\n').trim()
+}
+
+def fullChangelogUrl = 'https://github.com/timplay33/Create-Mobile-Packages/blob/mc1.21.1/main/CHANGELOG.md'
+// Lazy evaluation: only compute changelog when publisher task is executed
+def latestChangelogForPublisher = providers.provider {
+    readLatestChangelogSection(rootProject.file('CHANGELOG.md')) + "\n\nFull changelog: ${fullChangelogUrl}"
+}
+
 base {
     archivesName = "${mod_id}-${minecraft_version}"
     group = 'de.theidler.'+ mod_id
@@ -140,6 +171,7 @@ repositories {
     maven { url = "https://dl.zznty.ru/maven" } // Create Factory Abstractions, Create Factory Logistics
     maven { url = "https://maven.theillusivec4.top/" } // Curios
     maven { url = "https://api.modrinth.com/maven" }
+    maven { url = "https://cursemaven.com" }
     mavenCentral()
     mavenLocal()
     flatDir {
@@ -181,6 +213,7 @@ dependencies {
     implementation(jarJar("ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
     //runtimeOnly("ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
     compileOnly("org.jetbrains:annotations:24.0.1")
+    compileOnly("curse.maven:create-fluidlogistic-1475079:8052709")
 
     // testing mod compatibilities
     runtimeOnly("tschipp.carryon:carryon-neoforge-1.21.1:2.2.3.3")
@@ -238,6 +271,31 @@ publishing {
     }
 }
 
+// Task for testing the changelog feature
+tasks.register('testChangelog') {
+    description = 'Test the changelog parsing and output the latest section'
+    group = 'verification'
+
+    doLast {
+        try {
+            def changelogFile = rootProject.file('CHANGELOG.md')
+            if (!changelogFile.exists()) {
+                println "CHANGELOG.md not found at: ${changelogFile.absolutePath}"
+                return
+            }
+
+            println "Reading changelog from: ${changelogFile.absolutePath}"
+            def latestSection = readLatestChangelogSection(changelogFile)
+            println "\n=== Latest Changelog Section ===\n"
+            println latestSection
+            println "\n=== End of Changelog Section ===\n"
+        } catch (Exception e) {
+            println "Error reading changelog: ${e.message}"
+            e.printStackTrace()
+        }
+    }
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
@@ -262,7 +320,7 @@ publisher {
     setCurseID("1232978")
     setModrinthID("1vXRfEHZ")
     setVersionType("release")
-    setChangelog("https://github.com/timplay33/Create-Mobile-Packages/blob/mc1.21.1/main/CHANGELOG.md")
+    setChangelog(latestChangelogForPublisher)
     setVersion("1.21.1-${project.mod_version}")
     setDisplayName("Create: Mobile Packages 1.21.1-${project.mod_version}")
     setGameVersions("1.21.1")
@@ -279,6 +337,7 @@ publisher {
     curseDepends {
         required "create"
         optional "create-factory-logistics"
+        optional "create-fluidlogistic"
     }
 
     github {

@@ -2,6 +2,9 @@ package de.theidler.create_mobile_packages.toast.types;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
+import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLBridge;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLClientBridge;
 import de.theidler.create_mobile_packages.index.CMPToasts;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -69,20 +72,27 @@ public class PackageToast extends SimpleToast {
         int slotY = y + 31;
         boolean hasOverflow = items.size() > 8;
         int maxVisible = hasOverflow ? 7 : 8;
+        int visibleItems = Math.min(items.size(), maxVisible);
 
+        // Draw Items
         for (int i = 0; i < 8; i++) {
             int sx = startX + i * (slotSize + slotGap);
 
             guiGraphics.fill(sx - 1, slotY - 1, sx + slotSize, slotY + slotSize, 0xFF2A2A2A);
             guiGraphics.fill(sx - 1, slotY - 1, sx + slotSize, slotY, 0xFF3A3A3A);
 
-            if (i < Math.min(items.size(), maxVisible)) {
+            if (i < visibleItems) {
                 ItemStack item = items.get(i);
                 guiGraphics.renderItem(item, sx, slotY);
 
                 guiGraphics.pose().pushPose();
                 guiGraphics.pose().translate(0, 0, 200);
-                drawItemCount(guiGraphics, item.getCount(), sx, slotY);
+                if (Mods.FLUIDLOGISTICS.isLoaded()
+                        && CFLBridge.shouldDisplayAsFluidInPackage(item)) {
+                    CFLClientBridge.renderPackageFluidAmount(guiGraphics, item, sx, slotY);
+                } else {
+                    drawItemCount(guiGraphics, item.getCount(), sx, slotY);
+                }
                 guiGraphics.pose().popPose();
             }
         }
