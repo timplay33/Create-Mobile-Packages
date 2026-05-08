@@ -337,6 +337,7 @@ publisher {
     curseDepends {
         required "create"
         optional "create-factory-logistics"
+        optional "create-fluidlogistic"
     }
 
     github {
