@@ -7,8 +7,11 @@ import com.yision.fluidlogistics.item.CompressedTankItem;
 import com.yision.fluidlogistics.registry.AllItems;
 import com.yision.fluidlogistics.util.FluidAmountHelper;
 import com.yision.fluidlogistics.util.IFluidCraftableBigItemStack;
+import com.yision.fluidlogistics.util.VirtualFluidDisplayHelper;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
@@ -114,5 +117,19 @@ public class CFLBridge {
 
     public static ItemStack keyAsItemStack(GenericStack stack) {
         return BigGenericStack.of(stack.withAmount(1)).asStack().stack;
+    }
+
+    public static boolean shouldDisplayAsFluidInPackage(ItemStack stack) {
+        return VirtualFluidDisplayHelper.shouldDisplayAsFluidInPackage(stack)
+                && getPackageFluidAmount(stack) > 0;
+    }
+
+    public static int getPackageFluidAmount(ItemStack stack) {
+        IFluidHandlerItem handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
+        if (handler == null || handler.getTanks() <= 0) {
+            return 0;
+        }
+        FluidStack fluid = handler.getFluidInTank(0);
+        return fluid.isEmpty() ? 0 : fluid.getAmount();
     }
 }
