@@ -1,4 +1,15 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.7.6 - 1.21.1 - 08.05.2026
+------------------------------------------------------
+
+### Changes
+
+- Update Toast design (#338)
+- Fix address bar text key (#339)
+- Fix item count on Toast for fluids with FluidLogistic (#342)
+- Add discord release notification workflow to CI pipeline
+
+------------------------------------------------------
 Create: Mobile Packages - v0.7.5 - 1.21.1 - 07.05.2026
 ------------------------------------------------------
 
