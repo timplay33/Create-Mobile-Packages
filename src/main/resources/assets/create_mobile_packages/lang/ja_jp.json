@@ -53,7 +53,7 @@
     "create_mobile_packages.ponder.port_to_port.text_3": "送り先のビーポートのアドレスを設定した小包を配置してください",
     "create_mobile_packages.ponder.port_to_port.text_4": "小包は、一つのポートから他のポートへ送られます",
     "create_mobile_packages.ponder.port_to_port.text_5": "この機能は設定ファイルで無効にすることができます",
-    "tooltip.create_mobile_packages.robo_bee.package_transport": "オフハンドに小包を持って使用すると、小包がロボビーと一緒に送られます。",
+    "tooltip.create_mobile_packages.robo_bee.package_transport": "When holding a package in the offhand it will be sent with the Robo Bee.",
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "使用するとロボビーを配置できるアイテム。ビーポートからの搬送に必要です。",
     "tooltip.create_mobile_packages.bee_port.jade.network": "ネットワーク: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "あなたはこのネットワークに属しています",
