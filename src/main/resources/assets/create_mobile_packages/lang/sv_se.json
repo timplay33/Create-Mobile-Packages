@@ -53,7 +53,7 @@
     "create_mobile_packages.ponder.port_to_port.text_3": "Set samma adress som i packetes adress och lägg in packetet i den första Porten.",
     "create_mobile_packages.ponder.port_to_port.text_4": "Paketet kommer att skickas från en Port till en annan.",
     "create_mobile_packages.ponder.port_to_port.text_5": "Denna funktion kan stängas av i konfigurationsfilerna.",
-    "tooltip.create_mobile_packages.robo_bee.package_transport": "When holding a package in the offhand it will be sent with the Robo Bee.",
+    "tooltip.create_mobile_packages.robo_bee.package_transport": "När man håller ett packet i sin sekundära han kommer den skickas med Robot Biet.",
     "tooltip.create_mobile_packages.robo_bee.robo_bee": "Föremål att skapa ett Robot Bi. Används i Robot Bi Portar att skicka paket.",
     "tooltip.create_mobile_packages.bee_port.jade.network": "Nätverk: %1$s",
     "tooltip.create_mobile_packages.bee_port.jade.part_of_network": "Du är en del av detta nätverk",
