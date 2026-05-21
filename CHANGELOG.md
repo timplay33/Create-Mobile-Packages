@@ -1,4 +1,14 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.7.7 - 1.21.1 - unreleased
+------------------------------------------------------
+
+### Changes
+
+- BeePort name is shown instead of coordinates if posible (#345)
+- fix Portable Stock Ticker loses categories after restart (hotkey) (#348, #174)
+- Fix discord Curseforge link in ci
+
+------------------------------------------------------
 Create: Mobile Packages - v0.7.6 - 1.21.1 - 08.05.2026
 ------------------------------------------------------
 
