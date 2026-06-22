@@ -82,6 +82,28 @@ public class CMPCommands {
                                                         )
                                         )
                                         .then(
+                                                Commands.literal("rename")
+                                                        .then(
+                                                                Commands.argument("networkId", StringArgumentType.word())
+                                                                        .suggests((ctx, builder) -> {
+                                                                            Create.LOGISTICS.logisticsNetworks.forEach((uuid, value) -> {
+                                                                                IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(value);
+                                                                                if (extendedNetwork != null) {
+                                                                                    String name = extendedNetwork.create_mobile_packages$getName();
+                                                                                    builder.suggest(uuid.toString());
+                                                                                }
+                                                                            });
+                                                                            return builder.buildFuture();
+                                                                        })
+                                                                        .then(
+                                                                                Commands.argument("name", StringArgumentType.greedyString())
+                                                                                        .executes(ctx -> renameNetwork(ctx,
+                                                                                                UUID.fromString(StringArgumentType.getString(ctx, "networkId")),
+                                                                                                StringArgumentType.getString(ctx, "name")))
+                                                                        )
+                                                        )
+                                        )
+                                        .then(
                                                 Commands.literal("remove")
                                                         .then(
                                                                 Commands.argument("player", EntityArgument.player())
@@ -195,6 +217,22 @@ public class CMPCommands {
         network.create_mobile_packages$removePlayer(targetPlayer.getUUID());
 
         source.sendSuccess(() -> Component.literal("Removed player " + targetPlayer.getName().getString() + " from network " + networkId), true);
+        return 1;
+    }
+
+    private static int renameNetwork(CommandContext<CommandSourceStack> context, UUID networkId, String name) {
+        CommandSourceStack source = context.getSource();
+
+        IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(networkId);
+        if (network == null) {
+            source.sendFailure(Component.literal("Network not found: " + networkId));
+            return 0;
+        }
+
+        network.create_mobile_packages$setName(name);
+        Create.LOGISTICS.markDirty();
+
+        source.sendSuccess(() -> Component.literal("Renamed network to \"" + name + "\""), true);
         return 1;
     }
 }

@@ -411,6 +411,9 @@ public class NetworkSettingsScreen extends Screen {
             nameBox.render(guiGraphics, mouseX, mouseY, partialTick);
         if (doneBtn != null)
             doneBtn.doRender(guiGraphics, mouseX, mouseY, partialTick);
+
+        String shortId = networkId.toString().substring(0, 8);
+        guiGraphics.drawCenteredString(font, shortId, guiLeft + windowWidth / 2, guiTop + windowHeight - 10, 0x888888);
     }
 
     private int getScrollbarHeight() {
