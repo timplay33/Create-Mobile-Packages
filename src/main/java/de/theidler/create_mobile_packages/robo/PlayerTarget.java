@@ -39,7 +39,9 @@ public class PlayerTarget implements RoboTarget {
     public static @Nullable PlayerTarget fromAddress(ServerLevel level, String address, UUID networkId) {
         IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(networkId);
         if (network == null) return null;
-        ServerPlayer player = level.getPlayers((p) -> doesAddressMatchPlayer(p, address)).stream().filter(p -> network.create_mobile_packages$getPlayers().contains(p.getUUID())).findFirst().orElse(null);
+        ServerPlayer player = level.getPlayers((p) -> doesAddressMatchPlayer(p, address)).stream()
+                .filter(p -> network.create_mobile_packages$getPlayers().contains(p.getUUID()))
+                .findFirst().orElse(null);
         if (player == null) return null;
         return new PlayerTarget(player, networkId);
     }

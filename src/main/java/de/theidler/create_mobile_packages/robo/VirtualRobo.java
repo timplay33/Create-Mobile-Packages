@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.robo;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CMPHelper;
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
 import de.theidler.create_mobile_packages.entities.RoboBeeEntity;
@@ -11,9 +12,11 @@ import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +43,11 @@ public class VirtualRobo {
     private RoboRequest request = null;
     private @Nullable BlockPos homePortPos;
     private boolean returnToHomeAfterDelivery;
+    private @Nullable ResourceKey<Level> transferDestinationDimension;
+    private @Nullable BlockPos transferSourcePortalPos;
+    private @Nullable BlockPos transferDestinationPortalPos;
+    private @Nullable RoboTarget transferFinalTarget;
+    private @Nullable BlockPos lastTransferPortPos;
 
     public VirtualRobo(ServerLevel level, UUID id, ItemStack itemStack, BlockPos spawnPos, UUID logisticsNetworkId) {
         this.id = id;
@@ -109,11 +117,13 @@ public class VirtualRobo {
     private void updateTarget() {
         // if the target is still valid and in the correct network, do nothing
         if (target != null && target.isValid(this)) return;
+        CreateMobilePackages.LOGGER.debug("Robo {} updateTarget: searching for target (address='{}')", getId(), targetAddress);
 
         // Return-mode should prefer the original home port after successful delivery.
         if (shouldReturnToHomePort()) {
             BeePortBlockEntity homePort = CMPHelper.getPortAtPos(serverLevel, homePortPos);
             if (homePort != null) {
+                CreateMobilePackages.LOGGER.debug("  -> found homePort at {}", homePortPos);
                 target = new BeePortBlockEntityTarget(homePort);
                 if (target.isValid(this)) {
                     return;
@@ -124,30 +134,54 @@ public class VirtualRobo {
         // try finding a Player first
         target = PlayerTarget.fromAddress(serverLevel, targetAddress, logisticsNetworkId);
         if (target != null && target.isValid(this)) {
+            CreateMobilePackages.LOGGER.debug("  -> found player in current level");
             return;
         }
 
         // if no player found, try finding a BeePortBlockEntity within the network
         BeePortBlockEntity targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
         if (targetBlockEntity != null) {
+            CreateMobilePackages.LOGGER.debug("  -> found addressed BeePort at {}", targetBlockEntity.getBlockPos());
             target = new BeePortBlockEntityTarget(targetBlockEntity);
         }
         if (target != null && target.isValid(this)) {
             return;
         }
 
-        // if no BeePortBlockEntity found, check HomePort
+        // No local target with matching address/home: try cross-dimension routing via portal ports.
+        CreateMobilePackages.LOGGER.debug("  -> no local target found, searching for cross-dimension route via portals");
+        CMPHelper.PortalTransferRoute transferRoute = CMPHelper.findPortalTransferRoute(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
+        if (transferRoute != null) {
+            CreateMobilePackages.LOGGER.debug("Robo {} found cross-dimension route: {} -> {} via portals [{}, {}]",
+                    getId(),
+                    serverLevel.dimension().location(),
+                    transferRoute.destinationLevel().dimension().location(),
+                    transferRoute.sourcePortalPos(),
+                    transferRoute.destinationPortalPos());
+            transferDestinationDimension = transferRoute.destinationLevel().dimension();
+            transferSourcePortalPos = transferRoute.sourcePortalPos().immutable();
+            transferDestinationPortalPos = transferRoute.destinationPortalPos();
+            transferFinalTarget = transferRoute.finalTarget();
+            target = new PortalPortTarget(serverLevel, transferRoute.sourcePortalPos());
+            return;
+        }
+        CreateMobilePackages.LOGGER.debug("  -> no cross-dimension route found");
+
+        // if still no target, check HomePort fallback
         BeePortBlockEntity homePort = CMPHelper.getPortAtPos(serverLevel, homePortPos);
         if (homePort != null) {
+            CreateMobilePackages.LOGGER.debug("  -> found homePort fallback at {}", homePortPos);
             target = new BeePortBlockEntityTarget(homePort);
         }
         if (target != null && target.isValid(this)) {
             return;
         }
 
-        // if no valid HomePort found, check other ports on the network
+        // Final fallback: if nothing else is possible, use any local port.
+        CreateMobilePackages.LOGGER.debug("  -> searching for any local port fallback");
         BeePortBlockEntity otherPort = CMPHelper.getClosestBeePort(serverLevel, null, BlockPos.containing(currentPos), this, logisticsNetworkId);
         if (otherPort != null) {
+            CreateMobilePackages.LOGGER.debug("  -> found fallback port at {}", otherPort.getBlockPos());
             target = new BeePortBlockEntityTarget(otherPort);
         }
     }
@@ -186,10 +220,15 @@ public class VirtualRobo {
         BlockPos pos = BlockPos.containing(currentPos);
         if (level.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) {
             if (entityId == null) {
+                CreateMobilePackages.LOGGER.debug("Robo {} spawning entity in level {} at pos {}", getId(), level.dimension().location(), pos);
                 spawnAndRememberEntity();
             }
         } else if (entityId != null) {
+            CreateMobilePackages.LOGGER.debug("Robo {} despawning (chunk unloaded) in level {}", getId(), level.dimension().location());
+            CreateMobilePackages.LOGGER.debug("  -> chunk at {} not loaded ({})", pos, (pos.getX() >> 4) + "," + (pos.getZ() >> 4));
             despawnEntity();
+        } else {
+            CreateMobilePackages.LOGGER.debug("Robo {} waiting for chunk: level={}, chunk_pos=[{},{}], entityId={}", getId(), level.dimension().location(), (pos.getX() >> 4), (pos.getZ() >> 4), entityId);
         }
     }
 
@@ -226,6 +265,7 @@ public class VirtualRobo {
         Entity entity = new RoboBeeEntity(CMPEntities.ROBO_BEE_ENTITY.get(), serverLevel, id);
         entity.setPos(currentPos.x, currentPos.y, currentPos.z);
         serverLevel.addFreshEntity(entity);
+        CreateMobilePackages.LOGGER.debug("Robo {} entity created with id {} at {}", getId(), entity.getUUID(), currentPos);
         this.entityId = entity.getUUID();
     }
 
@@ -302,6 +342,15 @@ public class VirtualRobo {
     }
 
     public @Nullable BeePortBlockEntity getStartBeePortBlockEntity() {
+        // If coming from a portal transfer, try to find the portal
+        if (lastTransferPortPos != null) {
+            if (serverLevel.getBlockState(lastTransferPortPos).is(de.theidler.create_mobile_packages.index.CMPBlocks.PORTAL_PORT.get())) {
+                CreateMobilePackages.LOGGER.debug("Robo {} found portal port at {} for takeoff", getId(), lastTransferPortPos);
+                return null; // Signal that we're at a portal port (handled separately in handleTakeoff)
+            }
+            clearLastTransferPortPos();
+        }
+
         if (serverLevel.getBlockEntity(BlockPos.containing(currentPos)) instanceof BeePortBlockEntity bpbe) {
             return bpbe;
         } else if (serverLevel.getBlockEntity(BlockPos.containing(currentPos.subtract(0,1,0))) instanceof BeePortBlockEntity bpbe) {
@@ -310,6 +359,11 @@ public class VirtualRobo {
             return bpbe;
         }
         return null;
+    }
+
+    public boolean isAtPortalPort() {
+        if (lastTransferPortPos == null) return false;
+        return serverLevel.getBlockState(lastTransferPortPos).is(de.theidler.create_mobile_packages.index.CMPBlocks.PORTAL_PORT.get());
     }
 
     public void setRemoved(ServerLevel level) {
@@ -351,6 +405,60 @@ public class VirtualRobo {
     public void invalidateTarget() {
         this.targetVelocity = Vec3.ZERO;
         this.target = null;
+        this.transferDestinationDimension = null;
+        this.transferSourcePortalPos = null;
+        this.transferDestinationPortalPos = null;
+        this.transferFinalTarget = null;
+    }
+
+    public boolean isPortalTransferPending() {
+        return transferDestinationPortalPos != null && transferFinalTarget != null;
+    }
+
+    public boolean isNavigatingToPortalTransfer() {
+        return isPortalTransferPending() && target instanceof PortalPortTarget;
+    }
+
+    public boolean executePortalTransfer() {
+        if (!isPortalTransferPending() || serverLevel.getServer() == null || transferDestinationPortalPos == null || transferDestinationDimension == null) {
+            return false;
+        }
+
+        ServerLevel destinationLevel = serverLevel.getServer().getLevel(transferDestinationDimension);
+        if (destinationLevel == null) {
+            CreateMobilePackages.LOGGER.warn("Robo {} transfer failed: destination dimension no longer loaded", getId());
+            invalidateTarget();
+            return false;
+        }
+        if (!destinationLevel.getBlockState(transferDestinationPortalPos).is(de.theidler.create_mobile_packages.index.CMPBlocks.PORTAL_PORT.get())) {
+            CreateMobilePackages.LOGGER.warn("Robo {} transfer failed: destination portal at {} no longer exists", getId(), transferDestinationPortalPos);
+            invalidateTarget();
+            return false;
+        }
+
+        CreateMobilePackages.LOGGER.info("Robo {} executing portal transfer: {} ({}) -> {} ({})",
+                getId(),
+                serverLevel.dimension().location(),
+                transferSourcePortalPos,
+                destinationLevel.dimension().location(),
+                transferDestinationPortalPos);
+        RoboManager.get(serverLevel).remove(this.getId());
+        despawnEntity();
+
+        this.serverLevel = destinationLevel;
+        this.currentPos = CMPHelper.getGlobalCenter(destinationLevel, transferDestinationPortalPos).subtract(0, 0.5, 0);
+        this.lastTransferPortPos = transferDestinationPortalPos.immutable();
+        CreateMobilePackages.LOGGER.info("Robo {} transferred: new position = {}, new level = {}", getId(), this.currentPos, destinationLevel.dimension().location());
+        this.target = transferFinalTarget;
+        this.targetVelocity = Vec3.ZERO;
+        this.transferDestinationDimension = null;
+        this.transferSourcePortalPos = null;
+        this.transferDestinationPortalPos = null;
+        this.transferFinalTarget = null;
+
+        CreateMobilePackages.LOGGER.info("Robo {} adding to destination manager for level {}", getId(), destinationLevel.dimension().location());
+        RoboManager.get(destinationLevel).add(this);
+        return true;
     }
 
     public RoboRequest getRequest() {
@@ -386,5 +494,13 @@ public class VirtualRobo {
 
     public void setReturnToHomeAfterDelivery(boolean returnToHomeAfterDelivery) {
         this.returnToHomeAfterDelivery = returnToHomeAfterDelivery;
+    }
+
+    public @Nullable BlockPos getLastTransferPortPos() {
+        return lastTransferPortPos;
+    }
+
+    public void clearLastTransferPortPos() {
+        this.lastTransferPortPos = null;
     }
 }

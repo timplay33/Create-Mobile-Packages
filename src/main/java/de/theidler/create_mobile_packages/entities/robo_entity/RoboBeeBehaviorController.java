@@ -2,14 +2,12 @@ package de.theidler.create_mobile_packages.entities.robo_entity;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import de.theidler.create_mobile_packages.CMPHelper;
+import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.RoboRequest;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.SyncTrashItemsToClientPacket;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.TrashMenu;
-import de.theidler.create_mobile_packages.robo.PlayerTarget;
-import de.theidler.create_mobile_packages.robo.RoboManager;
-import de.theidler.create_mobile_packages.robo.RoboTrashStore;
-import de.theidler.create_mobile_packages.robo.VirtualRobo;
+import de.theidler.create_mobile_packages.robo.*;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,6 +42,9 @@ public class RoboBeeBehaviorController {
                 break;
             case LAND:
                 handleLand(robo);
+                break;
+            case PORTAL_TRANSFER:
+                handlePortalTransfer(robo);
                 break;
             case DELIVER_PACKAGE:
                 handleDeliverPackage(robo);
@@ -114,21 +115,28 @@ public class RoboBeeBehaviorController {
 
     private void handleTakeoff(VirtualRobo robo) {
         BeePortBlockEntity startPort = robo.getStartBeePortBlockEntity();
+        boolean isPortalStart = robo.isAtPortalPort();
+
         if (init) {
             lastLandedPort = null;
             openPort(startPort, true);
             init = false;
         }
-        if (startPort == null) {
+
+        if (startPort == null && !isPortalStart) {
             // Bees spawned from moving contraptions can fail to re-locate the origin
             // from their projected world position. In that case, skip the takeoff
             // animation but restore the package scale immediately.
+            CreateMobilePackages.LOGGER.debug("Robo {} no start port found, skipping takeoff animation", robo.getId());
             robo.setPackageHeightScale(1.0f);
+            robo.clearLastTransferPortPos();
             setState(RoboBeeState.NAVIGATE_TO_TARGET);
             return;
         }
-        Vec3 mid = getAbove(startPort, 1.6);
-        Vec3 end = getAbove(startPort, 2);
+
+        Vec3 startPos = isPortalStart ? Vec3.atCenterOf(robo.getLastTransferPortPos()) : getAbove(startPort, 0.5);
+        Vec3 mid = startPos.add(0, 1.1, 0);
+        Vec3 end = startPos.add(0, 2, 0);
 
         double y = robo.getCurrentPos().y;
         double speed = (robo.getSpeed() / 20.0) / 2; // Takeoff slower
@@ -141,6 +149,10 @@ public class RoboBeeBehaviorController {
             robo.setPos(end);
             robo.setTargetVelocity(Vec3.ZERO);
             openPort(startPort, false);
+            if (isPortalStart) {
+                CreateMobilePackages.LOGGER.debug("Robo {} lifted off from portal port, proceeding to target", robo.getId());
+                robo.clearLastTransferPortPos();
+            }
             setState(RoboBeeState.NAVIGATE_TO_TARGET);
         }
     }
@@ -162,8 +174,43 @@ public class RoboBeeBehaviorController {
             if (robo.getTarget() != null) {
                 robo.getTarget().setETA(0); // set ETA to 0 as the bee arrived
             }
+            if (robo.isNavigatingToPortalTransfer() && robo.getTarget() instanceof PortalPortTarget) {
+                CreateMobilePackages.LOGGER.debug("Robo {} reached portal port target, transitioning to PORTAL_TRANSFER", robo.getId());
+                setState(RoboBeeState.PORTAL_TRANSFER);
+                robo.setTargetVelocity(Vec3.ZERO);
+                return;
+            }
             setState(RoboBeeState.ALIGN_FOR_DELIVERY);
             robo.setTargetVelocity(Vec3.ZERO);
+        }
+    }
+
+    private void handlePortalTransfer(VirtualRobo robo) {
+        CreateMobilePackages.LOGGER.debug("Robo {} handlePortalTransfer tick", robo.getId());
+        Vec3 portalPos = robo.getTargetPosition();
+        if (portalPos == null) {
+            CreateMobilePackages.LOGGER.warn("Robo {} portal transfer failed: portal position is null", robo.getId());
+            setState(RoboBeeState.IDLE);
+            return;
+        }
+
+        Vec3 landingPos = getBelow(portalPos, 0.45);
+        double speed = (robo.getSpeed() / 20.0) / 2;
+        moveAndScale(robo, landingPos, speed, 1, 0);
+
+        if (!isAtTarget(robo, landingPos, speed)) {
+            return;
+        }
+
+        robo.setPos(landingPos);
+        robo.setTargetVelocity(Vec3.ZERO);
+        CreateMobilePackages.LOGGER.debug("Robo {} landed at portal {}, executing transfer...", robo.getId(), portalPos);
+        if (robo.executePortalTransfer()) {
+            CreateMobilePackages.LOGGER.debug("Robo {} successfully transferred, transitioning to TAKEOFF", robo.getId());
+            setState(RoboBeeState.TAKEOFF);
+        } else {
+            CreateMobilePackages.LOGGER.warn("Robo {} transfer execution failed, returning to IDLE", robo.getId());
+            setState(RoboBeeState.IDLE);
         }
     }
 
@@ -240,13 +287,14 @@ public class RoboBeeBehaviorController {
         robo.setTargetAddress(PackageItem.getAddress(robo.getItemStack()), true);
 
         // if the new taget is a Bee Port and the Robo is in it then shutdown the Robo.
+        Vec3 currentTargetPos = robo.getTargetPosition();
         if (robo.getTarget() != null && robo.getTarget().asBeePortBlockEntity() != null) {
             BeePortBlockEntity targetPort = robo.getTarget().asBeePortBlockEntity();
             boolean alreadyLandedAtTarget = landedPort != null && targetPort != null
                     && landedPort.getLevel() == targetPort.getLevel()
                     && landedPort.getBlockPos().equals(targetPort.getBlockPos());
             if (alreadyLandedAtTarget
-                    || BlockPos.containing(robo.getCurrentPos()).equals(BlockPos.containing(robo.getTargetPosition()))) {
+                    || (currentTargetPos != null && BlockPos.containing(robo.getCurrentPos()).equals(BlockPos.containing(currentTargetPos)))) {
                 setState(RoboBeeState.SHUTDOWN);
                 return;
             }
@@ -321,7 +369,7 @@ public class RoboBeeBehaviorController {
         Vec3 dir = target.subtract(robo.getCurrentPos());
         double dist = dir.length();
         double totalDist = 2.0;
-        float progress = (float) Math.max(0.0, Math.min(1.0, 1.0 - (dist / totalDist)));
+        float progress = (float) Math.clamp(1.0 - (dist / totalDist), 0.0, 1.0);
         float scale = scaleStart + (scaleEnd - scaleStart) * progress;
         robo.setPackageHeightScale(scale);
         moveTo(robo, target, speed);

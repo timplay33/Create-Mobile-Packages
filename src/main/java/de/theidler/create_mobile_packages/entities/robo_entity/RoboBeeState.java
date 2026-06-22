@@ -8,6 +8,7 @@ public enum RoboBeeState {
     DELIVER_PACKAGE,
     PICKUP_PACKAGE,
     LAND,
+    PORTAL_TRANSFER,
     SHUTDOWN
 }
 

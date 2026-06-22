@@ -352,14 +352,29 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
 
         Set<UUID> playerUUIDs = NetworkHelper.getPlayerUUIDs(getLogisticsNetworkId());
         if (playerUUIDs != null) {
-            // Check if the item can be sent to a player.
-            for (Player player : level.players()) {
-                if (!playerUUIDs.contains(player.getUUID())) {
-                    continue; // skip players not in the logistics network
+            // Check if the item can be sent to a player (search all levels).
+            if (level instanceof ServerLevel serverLevel && serverLevel.getServer() != null) {
+                for (ServerLevel candidateLevel : serverLevel.getServer().getAllLevels()) {
+                    for (Player player : candidateLevel.players()) {
+                        if (!playerUUIDs.contains(player.getUUID())) {
+                            continue; // skip players not in the logistics network
+                        }
+                        if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(candidateLevel, player.blockPosition(), this.getBlockPos())) {
+                            sendToPlayer(player, itemStack, slot);
+                            return;
+                        }
+                    }
                 }
-                if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(level, player.blockPosition(), this.getBlockPos())) {
-                    sendToPlayer(player, itemStack, slot);
-                    return;
+            } else {
+                // Fallback for non-server level (should not happen)
+                for (Player player : level.players()) {
+                    if (!playerUUIDs.contains(player.getUUID())) {
+                        continue; // skip players not in the logistics network
+                    }
+                    if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(level, player.blockPosition(), this.getBlockPos())) {
+                        sendToPlayer(player, itemStack, slot);
+                        return;
+                    }
                 }
             }
         }
@@ -389,7 +404,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             return;
         }
         roboSendCooldown = 2;
-        CreateMobilePackages.LOGGER.info("Sending package to player: {}", player.getName().getString());
+        CreateMobilePackages.LOGGER.debug("Sending package to player: {}", player.getName().getString());
         sendDrone(itemStack, slot);
     }
 
