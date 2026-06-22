@@ -63,6 +63,8 @@
     "tooltip.create_mobile_packages.network.add_yourself": "Добавить себя",
     "tooltip.create_mobile_packages.network.leave": "Выйти из сети",
     "tooltip.create_mobile_packages.network.settings": "Настройки сети",
+    "tooltip.create_mobile_packages.network.owner_indicator": "You are the owner of this network",
+    "tooltip.create_mobile_packages.network.member_indicator": "You are a member of this network",
     "item.create_mobile_packages.mobile_packager": "Портативный упаковщик",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Упаковывает предметы на ходу",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "Когда используется",
