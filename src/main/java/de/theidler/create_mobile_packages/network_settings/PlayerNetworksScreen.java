@@ -69,22 +69,32 @@ public class PlayerNetworksScreen extends Screen {
         addRenderableWidget(doneBtn);
 
         for (UUID networkId : cachedNetworkIds) {
-            IconButton leaveBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
-            leaveBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.leave"));
+            boolean isMember = isMemberOfNetwork(networkId);
 
-            leaveBtn.withCallback(() -> {
-                CatnipServices.NETWORK.sendToServer(new RemovePlayerFromNetworkPackage(getPlayer().getUUID(), networkId));
-                // Clear cache and refetch networks from server
-                ClientNetworkDataStorage.clear();
-                CatnipServices.NETWORK.sendToServer(RequestPlayerNetworksPacket.INSTANCE);
-                lastKnownUpdateCount = ClientNetworkDataStorage.getUpdateCount();
-                this.refreshNetworks();
-            });
+            IconButton actionBtn;
+            if (isMember) {
+                actionBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
+                actionBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.leave"));
+                actionBtn.withCallback(() -> {
+                    CatnipServices.NETWORK.sendToServer(new RemovePlayerFromNetworkPackage(getPlayer().getUUID(), networkId));
+                    ClientNetworkDataStorage.NetworkData nd = ClientNetworkDataStorage.getNetworkData(networkId);
+                    if (nd != null) nd.removePlayer(getPlayer().getUUID());
+                    lastKnownUpdateCount = -1;
+                });
+            } else {
+                actionBtn = new IconButton(0, 0, AllIcons.I_ADD);
+                actionBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.add_yourself"));
+                actionBtn.withCallback(() -> {
+                    CatnipServices.NETWORK.sendToServer(new AddPlayerToNetworkPackage(getPlayer().getUUID(), networkId));
+                    ClientNetworkDataStorage.NetworkData nd = ClientNetworkDataStorage.getNetworkData(networkId);
+                    if (nd != null) nd.addPlayer(getPlayer().getUUID());
+                    lastKnownUpdateCount = -1;
+                });
+            }
 
-            addRenderableWidget(leaveBtn);
-            networkButtons.add(leaveBtn);
+            addRenderableWidget(actionBtn);
+            networkButtons.add(actionBtn);
 
-            // Add settings button
             IconButton settingsBtn = new IconButton(0, 0, AllIcons.I_CONFIG_OPEN);
             settingsBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.settings"));
             settingsBtn.withCallback(() -> minecraft.setScreen(new NetworkSettingsScreen(this, networkId)));
@@ -190,14 +200,14 @@ public class PlayerNetworksScreen extends Screen {
             int rowCenterY = (int) rowTop + ROW_HEIGHT / 2;
 
             if (i * 2 + 1 < networkButtons.size()) {
-                IconButton leaveBtn = networkButtons.get(i * 2);
+                IconButton actionBtn = networkButtons.get(i * 2);
                 IconButton settingsBtn = networkButtons.get(i * 2 + 1);
 
                 int btnY = rowCenterY - 9;
 
-                leaveBtn.setX(guiLeft + windowWidth - 30);
-                leaveBtn.setY(btnY);
-                leaveBtn.visible = btnY >= listTop && btnY + 18 <= listBottom;
+                actionBtn.setX(guiLeft + windowWidth - 30);
+                actionBtn.setY(btnY);
+                actionBtn.visible = btnY >= listTop && btnY + 18 <= listBottom;
 
                 settingsBtn.setX(guiLeft + windowWidth - 50);
                 settingsBtn.setY(btnY);
@@ -210,7 +220,7 @@ public class PlayerNetworksScreen extends Screen {
 
             int charBase = rowCenterY - 4;
             boolean isOwner = networkData != null && getPlayer().getUUID().equals(networkData.owner);
-            boolean isMember = networkData != null && (networkData.players.contains(getPlayer().getUUID()) || networkData.isOwnerMember);
+            boolean isMember = networkData != null && isMemberOfNetwork(cachedNetworkIds.get(i));
 
             int ownerCX = guiLeft + 8;
             guiGraphics.drawString(font, "O", ownerCX, charBase, isOwner ? 0x4A2D31 : 0xB5B0B0, false);
@@ -289,6 +299,15 @@ public class PlayerNetworksScreen extends Screen {
                 .filter(entry -> !"Unnamed Network".equals(entry.getValue().name))
                 .map(java.util.Map.Entry::getKey)
                 .toList();
+    }
+
+    private boolean isMemberOfNetwork(UUID networkId) {
+        ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
+        if (networkData == null) return false;
+        UUID playerUUID = getPlayer().getUUID();
+        if (playerUUID.equals(networkData.owner))
+            return networkData.isOwnerMember;
+        return networkData.players.contains(playerUUID);
     }
 
     @Override
