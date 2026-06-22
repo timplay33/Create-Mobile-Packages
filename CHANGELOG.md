@@ -8,6 +8,7 @@ Create: Mobile Packages - v0.7.7 - 1.21.1 - unreleased
 - fix Portable Stock Ticker loses categories after restart (hotkey) (#348, #174)
 - Fix discord Curseforge link in ci
 - Fix BeePortBlockEntity.onChunkUnloaded() synchronously loading a chunk (#350)
+- Fix Owners are now members of a network by default (#346)
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.7.6 - 1.21.1 - 08.05.2026
