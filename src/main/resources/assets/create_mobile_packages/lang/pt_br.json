@@ -63,6 +63,8 @@
     "tooltip.create_mobile_packages.network.add_yourself": "Adicionar você mesmo",
     "tooltip.create_mobile_packages.network.leave": "Sair da rede",
     "tooltip.create_mobile_packages.network.settings": "Configurações de rede",
+    "tooltip.create_mobile_packages.network.owner_indicator": "You are the owner of this network",
+    "tooltip.create_mobile_packages.network.member_indicator": "You are a member of this network",
     "item.create_mobile_packages.mobile_packager": "Embalador Móvel",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Embalar itens em movimento",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "Quando usado",
