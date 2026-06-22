@@ -63,6 +63,8 @@
     "tooltip.create_mobile_packages.network.add_yourself": "自分を追加",
     "tooltip.create_mobile_packages.network.leave": "ネットワークから退出する",
     "tooltip.create_mobile_packages.network.settings": "ネットワークの設定",
+    "tooltip.create_mobile_packages.network.owner_indicator": "You are the owner of this network",
+    "tooltip.create_mobile_packages.network.member_indicator": "You are a member of this network",
     "item.create_mobile_packages.mobile_packager": "モバイル梱包機",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "移動中にアイテムを梱包します",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "使ったとき",
