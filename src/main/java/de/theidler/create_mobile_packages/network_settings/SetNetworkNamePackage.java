@@ -37,7 +37,8 @@ public class SetNetworkNamePackage implements ServerboundPacketPayload {
         if (logisticsNetwork == null) return;
 
         // validate ownership. Only the owner can change the network name
-        if (player == null || !logisticsNetwork.owner.equals(player.getUUID())) return;
+        if (player == null || logisticsNetwork.owner == null || !logisticsNetwork.owner.equals(player.getUUID()))
+            return;
 
         // Get the extended network
         IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(logisticsNetwork);
@@ -54,7 +55,8 @@ public class SetNetworkNamePackage implements ServerboundPacketPayload {
                 logisticsNetwork.owner,
                 logisticsNetwork.locked,
                 extendedNetwork.create_mobile_packages$getName(),
-                new ArrayList<>(extendedNetwork.create_mobile_packages$getPlayers())
+                new ArrayList<>(extendedNetwork.create_mobile_packages$getPlayers()),
+                extendedNetwork.create_mobile_packages$isOwnerMember()
         );
         CatnipServices.NETWORK.sendToClient(player, responsePacket);
     }

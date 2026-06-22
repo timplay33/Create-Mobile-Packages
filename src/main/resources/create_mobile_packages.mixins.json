@@ -4,7 +4,6 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "create_mobile_packages.refmap.json",
   "mixins": [
-    "GlobalLogisticsManagerMixin",
     "LogisticsNetworkMixin"
   ],
   "client": [

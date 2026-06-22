@@ -9,6 +9,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,8 +26,13 @@ public abstract class LogisticsNetworkMixin implements IExtendedLogisticsNetwork
         CreateMobilePackages.LOGGER.info("LogisticsNetworkMixin class loaded");
     }
 
+    @Shadow
+    public UUID owner;
+
     @Unique
     private Set<UUID> create_mobile_packages$players = new HashSet<>();
+    @Unique
+    private boolean create_mobile_packages$isOwnerMember = true;
     @Unique
     private String create_mobile_packages$name = "Unnamed Network";
 
@@ -43,6 +49,11 @@ public abstract class LogisticsNetworkMixin implements IExtendedLogisticsNetwork
                     tag.getList("CMP_Players", Tag.TAG_COMPOUND),
                     nbt -> ext.create_mobile_packages$addPlayer(nbt.getUUID("UUID"))
             );
+        }
+
+        // Read isOwnerMember
+        if (tag.contains("CMP_IsOwnerMember")) {
+            ext.create_mobile_packages$setOwnerMember(tag.getBoolean("CMP_IsOwnerMember"));
         }
 
         // Read name
@@ -77,6 +88,7 @@ public abstract class LogisticsNetworkMixin implements IExtendedLogisticsNetwork
                         }
                 )
         );
+        tag.putBoolean("CMP_IsOwnerMember", create_mobile_packages$isOwnerMember);
         tag.putString("name", create_mobile_packages$name);
     }
 
@@ -87,14 +99,41 @@ public abstract class LogisticsNetworkMixin implements IExtendedLogisticsNetwork
 
     @Override
     public void create_mobile_packages$addPlayer(UUID player) {
+        if (player.equals(owner)) {
+            create_mobile_packages$isOwnerMember = true;
+            Create.LOGISTICS.markDirty();
+            return;
+        }
         create_mobile_packages$players.add(player);
         Create.LOGISTICS.markDirty();
     }
 
     @Override
     public void create_mobile_packages$removePlayer(UUID player) {
+        if (player.equals(owner)) {
+            create_mobile_packages$isOwnerMember = false;
+            Create.LOGISTICS.markDirty();
+            return;
+        }
         create_mobile_packages$players.remove(player);
         Create.LOGISTICS.markDirty();
+    }
+
+    @Override
+    public boolean create_mobile_packages$isOwnerMember() {
+        return create_mobile_packages$isOwnerMember;
+    }
+
+    @Override
+    public void create_mobile_packages$setOwnerMember(boolean isMember) {
+        this.create_mobile_packages$isOwnerMember = isMember;
+        Create.LOGISTICS.markDirty();
+    }
+
+    @Override
+    public boolean create_mobile_packages$isPlayerMember(UUID playerUuid) {
+        return create_mobile_packages$players.contains(playerUuid) ||
+                (create_mobile_packages$isOwnerMember && playerUuid.equals(owner));
     }
 
     @Override

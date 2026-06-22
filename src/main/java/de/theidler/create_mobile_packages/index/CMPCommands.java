@@ -91,7 +91,7 @@ public class CMPCommands {
                                                                                             ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
                                                                                             Create.LOGISTICS.logisticsNetworks.forEach((key, value) -> {
                                                                                                 IExtendedLogisticsNetwork extendedNetwork = NetworkHelper.getExtendedLogisticsNetwork(value);
-                                                                                                if (extendedNetwork != null && extendedNetwork.create_mobile_packages$getPlayers().contains(player.getUUID())) {
+                                                                                                if (extendedNetwork != null && extendedNetwork.create_mobile_packages$isPlayerMember(player.getUUID())) {
                                                                                                     builder.suggest(key.toString());
                                                                                                 }
                                                                                             });
@@ -127,9 +127,10 @@ public class CMPCommands {
             String name = extendedNetwork != null ? extendedNetwork.create_mobile_packages$getName() : "Unnamed Network";
             if (name.equals("Unnamed Network")) continue; // Skip unnamed networks
 
-            int playerCount = extendedNetwork.create_mobile_packages$getPlayers().size();
+            boolean isOwnerMember = extendedNetwork.create_mobile_packages$isOwnerMember();
+            int playerCount = extendedNetwork.create_mobile_packages$getPlayers().size() + (isOwnerMember && logisticsNetwork.owner != null ? 1 : 0);
             boolean isLocked = logisticsNetwork.locked;
-            Player owner = level.getPlayerByUUID(logisticsNetwork.owner);
+            Player owner = logisticsNetwork.owner != null ? level.getPlayerByUUID(logisticsNetwork.owner) : null;
             String ownerName = owner != null ? owner.getName().getString() : "Unknown";
 
             String shortId = networkId.toString().substring(0, 8);

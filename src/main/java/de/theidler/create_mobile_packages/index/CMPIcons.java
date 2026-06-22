@@ -17,6 +17,7 @@ public class CMPIcons implements ScreenElement {
     public static final CMPIcons
             I_RETURN = newRow(),
             I_DIRECT = next();
+
     private final int iconX;
     private final int iconY;
 

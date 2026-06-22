@@ -73,7 +73,7 @@ public class NetworkSettingsScreen extends Screen {
         }
 
         // Update tracking variables
-        lastKnownPlayerCount = networkData.players.size();
+        lastKnownPlayerCount = getEffectivePlayerCount(networkData);
         lastKnownNetworkName = networkData.name;
 
         createNameBox(networkData);
@@ -118,7 +118,7 @@ public class NetworkSettingsScreen extends Screen {
     }
 
     private void createPlayerList(ClientNetworkDataStorage.NetworkData networkData) {
-        List<UUID> players = networkData.players;
+        List<UUID> players = getEffectivePlayers(networkData);
         for (int i = 0; i < players.size(); i++) {
             UUID pId = players.get(i);
 
@@ -180,7 +180,7 @@ public class NetworkSettingsScreen extends Screen {
         // Check if network data changed and refresh UI if needed
         ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
         if (networkData != null && nameBox != null) { // Only check if UI is initialized
-            boolean dataChanged = lastKnownPlayerCount != networkData.players.size();
+            boolean dataChanged = lastKnownPlayerCount != getEffectivePlayerCount(networkData);
 
             // Check if player count changed
 
@@ -269,7 +269,7 @@ public class NetworkSettingsScreen extends Screen {
     private int getMaxScroll() {
         ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
         if (networkData == null) return 0;
-        return Math.max(0, networkData.players.size() - 4);
+        return Math.max(0, getEffectivePlayerCount(networkData) - 4);
     }
 
     @Override
@@ -342,8 +342,8 @@ public class NetworkSettingsScreen extends Screen {
 
         guiGraphics.enableScissor(guiLeft, listTop, guiLeft + windowWidth, listBottom);
 
-        List<UUID> players = networkData.players;
-        for (int i = 0; i < players.size(); i++) {
+        List<UUID> effectivePlayers = getEffectivePlayers(networkData);
+        for (int i = 0; i < effectivePlayers.size(); i++) {
             float rowY = listTop + 5 + (i - scrollOffset) * 20;
 
             if (rowY + 15 < listTop || rowY > listBottom) {
@@ -353,7 +353,7 @@ public class NetworkSettingsScreen extends Screen {
                 continue;
             }
 
-            guiGraphics.drawString(font, getPlayerName(players.get(i)), guiLeft + 30, (int) rowY, 0x555555, false);
+            guiGraphics.drawString(font, getPlayerName(effectivePlayers.get(i)), guiLeft + 30, (int) rowY, 0x555555, false);
 
             if (i < playerButtons.size()) {
                 IconButton removeBtn = playerButtons.get(i);
@@ -382,7 +382,7 @@ public class NetworkSettingsScreen extends Screen {
         int barHeight = 106;
 
         float scrollOffset = scroll.getValue();
-        int barSize = Math.max(10, (int) (barHeight * (4f / (networkData.players.size()))));
+        int barSize = Math.max(10, (int) (barHeight * (4f / (getEffectivePlayerCount(networkData)))));
         int scrollBarY = barY + (int) ((barHeight - barSize) * (scrollOffset / maxScroll));
 
         AllGuiTextures pad = AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_PAD;
@@ -393,6 +393,21 @@ public class NetworkSettingsScreen extends Screen {
         if (barSize > 16)
             AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_MID.render(guiGraphics, barX, scrollBarY + barSize / 2 - 4);
         AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_BOT.render(guiGraphics, barX, scrollBarY + barSize - 5);
+    }
+
+    private List<UUID> getEffectivePlayers(ClientNetworkDataStorage.NetworkData networkData) {
+        if (networkData.isOwnerMember && networkData.owner != null) {
+            List<UUID> result = new ArrayList<>(networkData.players);
+            if (!result.contains(networkData.owner)) {
+                result.add(0, networkData.owner);
+            }
+            return result;
+        }
+        return networkData.players;
+    }
+
+    private int getEffectivePlayerCount(ClientNetworkDataStorage.NetworkData networkData) {
+        return getEffectivePlayers(networkData).size();
     }
 
     public String getPlayerName(UUID uuid) {

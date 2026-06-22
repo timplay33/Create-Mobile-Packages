@@ -24,7 +24,8 @@ public class NetworkDataPacket implements ClientboundPacketPayload {
             ByteBufCodecs.BOOL, packet -> packet.locked,
             ByteBufCodecs.STRING_UTF8, packet -> packet.name,
             CatnipStreamCodecBuilders.list(UUIDUtil.STREAM_CODEC), packet -> packet.players,
-            (networkId, owner, locked, name, players) -> new NetworkDataPacket(networkId, owner.orElse(null), locked, name, players)
+            ByteBufCodecs.BOOL, packet -> packet.isOwnerMember,
+            (networkId, owner, locked, name, players, isOwnerMember) -> new NetworkDataPacket(networkId, owner.orElse(null), locked, name, players, isOwnerMember)
     );
 
     private final UUID networkId;
@@ -32,14 +33,16 @@ public class NetworkDataPacket implements ClientboundPacketPayload {
     private final boolean locked;
     private final String name;
     private final List<UUID> players;
+    private final boolean isOwnerMember;
     private final boolean isError;
 
-    public NetworkDataPacket(UUID networkId, UUID owner, boolean locked, String name, List<UUID> players) {
+    public NetworkDataPacket(UUID networkId, UUID owner, boolean locked, String name, List<UUID> players, boolean isOwnerMember) {
         this.networkId = networkId;
         this.owner = owner;
         this.locked = locked;
         this.name = name;
         this.players = players;
+        this.isOwnerMember = isOwnerMember;
         this.isError = name != null && name.startsWith("ERROR:");
     }
 
@@ -50,10 +53,11 @@ public class NetworkDataPacket implements ClientboundPacketPayload {
             ClientNetworkDataStorage.setErrorMessage(networkId, name);
         } else {
             // Check if the network is locked or owner or part
+            boolean isMember = players.contains(Minecraft.getInstance().player.getUUID()) || isOwnerMember;
             if (!locked || (Minecraft.getInstance().player != null &&
-                    (Minecraft.getInstance().player.getUUID().equals(owner) || players.contains(Minecraft.getInstance().player.getUUID())))) {
+                    (Minecraft.getInstance().player.getUUID().equals(owner) || isMember))) {
                 // Player is in the network, store the data
-                ClientNetworkDataStorage.updateNetworkData(networkId, owner, locked, name, players);
+                ClientNetworkDataStorage.updateNetworkData(networkId, owner, locked, name, players, isOwnerMember);
             } else {
                 // Player is not in the network, remove it from the cache
                 ClientNetworkDataStorage.removeNetwork(networkId);
