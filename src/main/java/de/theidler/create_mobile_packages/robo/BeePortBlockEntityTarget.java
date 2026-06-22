@@ -6,6 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
+
 public class BeePortBlockEntityTarget implements RoboTarget {
     private final BlockPos pos;
     private final ServerLevel level;
@@ -22,9 +24,9 @@ public class BeePortBlockEntityTarget implements RoboTarget {
     }
 
     @Override
-    public BeePortBlockEntity asBeePortBlockEntity() {
-        // Lazy lookup to avoid holding onto a removed/invalid instance
+    public @Nullable BeePortBlockEntity asBeePortBlockEntity() {
         if (level == null) return null;
+        if (!level.hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) return null;
         if (level.getBlockEntity(pos) instanceof BeePortBlockEntity be) return be;
         return null;
     }
