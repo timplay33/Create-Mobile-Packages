@@ -63,6 +63,8 @@
     "tooltip.create_mobile_packages.network.add_yourself": "添加你自己",
     "tooltip.create_mobile_packages.network.leave": "离开网络",
     "tooltip.create_mobile_packages.network.settings": "网络设置",
+    "tooltip.create_mobile_packages.network.owner_indicator": "You are the owner of this network",
+    "tooltip.create_mobile_packages.network.member_indicator": "You are a member of this network",
     "item.create_mobile_packages.mobile_packager": "手持式打包工具",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "随时随地，打包物品",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "使用时",
