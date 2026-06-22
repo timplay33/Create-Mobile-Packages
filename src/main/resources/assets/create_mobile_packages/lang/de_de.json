@@ -63,6 +63,8 @@
     "tooltip.create_mobile_packages.network.add_yourself": "Füge dich hinzu",
     "tooltip.create_mobile_packages.network.leave": "Verlasse das Netzwerk",
     "tooltip.create_mobile_packages.network.settings": "Netzwerk Einstellungen",
+    "tooltip.create_mobile_packages.network.owner_indicator": "You are the owner of this network",
+    "tooltip.create_mobile_packages.network.member_indicator": "You are a member of this network",
     "item.create_mobile_packages.mobile_packager": "Mobiler Verpacker",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Verpackt Gegenstände unterwegs",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "Wenn benutzt",
