@@ -48,6 +48,7 @@ public class NetworkSettingsScreen extends Screen {
     private int loadTicks = 0;
     private int lastKnownPlayerCount = -1;
     private String lastKnownNetworkName = null;
+    private boolean lastKnownLocked = false;
 
     @Override
     protected void init() {
@@ -75,6 +76,7 @@ public class NetworkSettingsScreen extends Screen {
         // Update tracking variables
         lastKnownPlayerCount = getEffectivePlayerCount(networkData);
         lastKnownNetworkName = networkData.name;
+        lastKnownLocked = networkData.locked;
 
         createNameBox(networkData);
         createLockButton(networkData);
@@ -108,7 +110,7 @@ public class NetworkSettingsScreen extends Screen {
 
 
     private void createLockButton(ClientNetworkDataStorage.NetworkData networkData) {
-        networkLockButton = new IconButton(guiLeft + windowWidth - 30, guiTop + 25, networkData.locked ? AllIcons.I_CONFIG_UNLOCKED : AllIcons.I_CONFIG_LOCKED);
+        networkLockButton = new IconButton(guiLeft + windowWidth - 30, guiTop + 25, networkData.locked ? AllIcons.I_CONFIG_LOCKED : AllIcons.I_CONFIG_UNLOCKED);
         networkLockButton.setToolTip(Component.translatable(networkData.locked ? "create.gui.stock_keeper.network_locked" : "create.gui.stock_keeper.network_open"));
         networkLockButton.withCallback(() -> {
             CatnipServices.NETWORK.sendToServer(new ModifyNetworkLockStatePackage(!networkData.locked, networkId));
@@ -186,6 +188,11 @@ public class NetworkSettingsScreen extends Screen {
 
             // Check if name changed (excluding our own edits)
             if (lastKnownNetworkName != null && !lastKnownNetworkName.equals(networkData.name) && !nameBox.isFocused()) {
+                dataChanged = true;
+            }
+
+            // Check if lock state changed
+            if (lastKnownLocked != networkData.locked) {
                 dataChanged = true;
             }
 

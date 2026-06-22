@@ -11,6 +11,7 @@ Create: Mobile Packages - v0.7.7 - 1.21.1 - unreleased
 - Fix Owners are now members of a network by default (#346)
 - Fix Playernetworks Screen now showing network connection status: Member / Owner (#346)
 - Fix NetworkSettingsScreen scrollbar not working (#328)
+- Fix Lock / Unlock button not updating (#331)
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.7.6 - 1.21.1 - 08.05.2026
