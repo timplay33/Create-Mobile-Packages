@@ -229,10 +229,10 @@ public class NetworkSettingsScreen extends Screen {
         }
         int maxScroll = getMaxScroll();
         if (maxScroll > 0 && button == 0) {
-            int barX = guiLeft + windowWidth - 10;
-            int barY = guiTop + 25;
+            int barX = guiLeft + windowWidth - 8;
+            int barY = guiTop + 15;
             int barWidth = 6;
-            int barHeight = 106;
+            int barHeight = getScrollbarHeight();
             if (mouseX >= barX && mouseX <= barX + barWidth && mouseY >= barY && mouseY <= barY + barHeight) {
                 scrollHandleActive = true;
                 return true;
@@ -257,8 +257,8 @@ public class NetworkSettingsScreen extends Screen {
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (scrollHandleActive && button == 0) {
             int maxScroll = getMaxScroll();
-            int barHeight = 106;
-            double relativeY = mouseY - (guiTop + 25);
+            int barHeight = getScrollbarHeight();
+            double relativeY = mouseY - (guiTop + 15);
             float target = (float) (relativeY / barHeight * maxScroll);
             scroll.chase(Mth.clamp(target, 0, maxScroll), 0.5f, LerpedFloat.Chaser.EXP);
             return true;
@@ -266,10 +266,19 @@ public class NetworkSettingsScreen extends Screen {
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
+    private int getVisibleRows() {
+        int hH = CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight();
+        int bgH = CMPGuiTextures.PLAYER_NETWORKS_BG.getHeight();
+        int fH = CMPGuiTextures.PLAYER_NETWORKS_FOOTER.getHeight();
+        int bgCount = (windowHeight - hH - fH) / bgH;
+        int contentH = hH + bgCount * bgH - 15;
+        return Math.max(1, contentH / 20);
+    }
+
     private int getMaxScroll() {
         ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
         if (networkData == null) return 0;
-        return Math.max(0, getEffectivePlayerCount(networkData) - 4);
+        return Math.max(0, getEffectivePlayerCount(networkData) + 2 - getVisibleRows());
     }
 
     @Override
@@ -282,16 +291,17 @@ public class NetworkSettingsScreen extends Screen {
     }
 
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        int x = guiLeft;
         int y = guiTop;
 
-        CMPGuiTextures.PLAYER_NETWORKS_HEADER.render(graphics, x, y);
+        CMPGuiTextures.PLAYER_NETWORKS_HEADER.render(graphics, guiLeft, y);
         y += CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight();
+
         for (int i = 0; i < (windowHeight - CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight() - CMPGuiTextures.PLAYER_NETWORKS_FOOTER.getHeight()) / CMPGuiTextures.PLAYER_NETWORKS_BG.getHeight(); i++) {
-            CMPGuiTextures.PLAYER_NETWORKS_BG.render(graphics, x, y);
+            CMPGuiTextures.PLAYER_NETWORKS_BG.render(graphics, guiLeft, y);
             y += CMPGuiTextures.PLAYER_NETWORKS_BG.getHeight();
         }
-        CMPGuiTextures.PLAYER_NETWORKS_FOOTER.render(graphics, x, y);
+
+        CMPGuiTextures.PLAYER_NETWORKS_FOOTER.render(graphics, guiLeft, y);
 
         if (nameBox != null) {
             String text = nameBox.getValue();
@@ -332,21 +342,33 @@ public class NetworkSettingsScreen extends Screen {
             refreshUI();
         }
 
-        guiGraphics.drawString(font, Component.translatable("create_mobile_packages.network.owner", getPlayerName(networkData.owner)), guiLeft + 20, guiTop + 30, 0x3D3C48, false);
-
-        guiGraphics.drawString(font, Component.translatable("create_mobile_packages.network.players"), guiLeft + 20, guiTop + 50, 0x3D3C48, false);
-
         float scrollOffset = scroll.getValue(partialTick);
-        int listTop = guiTop + 60;
-        int listBottom = guiTop + windowHeight - 10;
+        int contentTop = guiTop + 15;
+        int headerH = CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight();
+        int bgH = CMPGuiTextures.PLAYER_NETWORKS_BG.getHeight();
+        int footerH = CMPGuiTextures.PLAYER_NETWORKS_FOOTER.getHeight();
+        int bgCount = (windowHeight - headerH - footerH) / bgH;
+        int footerY = guiTop + headerH + bgCount * bgH;
+        int contentBottom = footerY;
 
-        guiGraphics.enableScissor(guiLeft, listTop, guiLeft + windowWidth, listBottom);
+        guiGraphics.enableScissor(guiLeft, contentTop, Integer.MAX_VALUE, contentBottom);
+
+        int scrollRowOffset = (int) (scrollOffset * 20);
+
+        if (networkLockButton != null)
+            networkLockButton.setY(guiTop + 25 - scrollRowOffset);
+        if (addPlayerButton != null)
+            addPlayerButton.setY(guiTop + 25 - scrollRowOffset);
+
+        guiGraphics.drawString(font, Component.translatable("create_mobile_packages.network.owner", getPlayerName(networkData.owner)), guiLeft + 20, guiTop + 30 - scrollRowOffset, 0x3D3C48, false);
+
+        guiGraphics.drawString(font, Component.translatable("create_mobile_packages.network.players"), guiLeft + 20, guiTop + 50 - scrollRowOffset, 0x3D3C48, false);
 
         List<UUID> effectivePlayers = getEffectivePlayers(networkData);
         for (int i = 0; i < effectivePlayers.size(); i++) {
-            float rowY = listTop + 5 + (i - scrollOffset) * 20;
+            float rowY = guiTop + 65 + (i - scrollOffset) * 20;
 
-            if (rowY + 15 < listTop || rowY > listBottom) {
+            if (rowY + 15 < contentTop || rowY > contentBottom) {
                 if (i < playerButtons.size()) {
                     playerButtons.get(i).visible = false;
                 }
@@ -363,11 +385,33 @@ public class NetworkSettingsScreen extends Screen {
             }
         }
 
+        if (doneBtn != null)
+            doneBtn.visible = false;
+        boolean nameBoxFocused = nameBox != null && nameBox.isFocused();
+        if (nameBox != null)
+            nameBox.visible = false;
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        if (nameBox != null)
+            nameBox.visible = nameBoxFocused;
+        if (doneBtn != null)
+            doneBtn.visible = true;
+
         guiGraphics.disableScissor();
 
         renderScrollbar(guiGraphics);
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        if (nameBox != null && nameBoxFocused)
+            nameBox.render(guiGraphics, mouseX, mouseY, partialTick);
+        if (doneBtn != null)
+            doneBtn.doRender(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    private int getScrollbarHeight() {
+        int hH = CMPGuiTextures.PLAYER_NETWORKS_HEADER.getHeight();
+        int bgH = CMPGuiTextures.PLAYER_NETWORKS_BG.getHeight();
+        int fH = CMPGuiTextures.PLAYER_NETWORKS_FOOTER.getHeight();
+        int bgCount = (windowHeight - hH - fH) / bgH;
+        return hH + bgCount * bgH - 15;
     }
 
     private void renderScrollbar(GuiGraphics guiGraphics) {
@@ -377,12 +421,14 @@ public class NetworkSettingsScreen extends Screen {
         ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
         if (networkData == null) return;
 
-        int barX = guiLeft + windowWidth - 10;
-        int barY = guiTop + 25;
-        int barHeight = 106;
+        int barX = guiLeft + windowWidth - 8;
+        int barY = guiTop + 15;
+        int barHeight = getScrollbarHeight();
 
         float scrollOffset = scroll.getValue();
-        int barSize = Math.max(10, (int) (barHeight * (4f / (getEffectivePlayerCount(networkData)))));
+        int visibleRows = getVisibleRows();
+        int totalRows = getEffectivePlayerCount(networkData) + 2;
+        int barSize = Math.max(10, (int) (barHeight * ((float) visibleRows / totalRows)));
         int scrollBarY = barY + (int) ((barHeight - barSize) * (scrollOffset / maxScroll));
 
         AllGuiTextures pad = AllGuiTextures.STOCK_KEEPER_REQUEST_SCROLL_PAD;
