@@ -64,7 +64,7 @@
     "tooltip.create_mobile_packages.network.leave": "Lämna Nätverk",
     "tooltip.create_mobile_packages.network.settings": "Nätverksinställningar",
     "tooltip.create_mobile_packages.network.owner_indicator": "You are the owner of this network",
-    "tooltip.create_mobile_packages.network.member_indicator": "You are a member of this network",
+    "tooltip.create_mobile_packages.network.member_indicator": "Du är medlem i detta nätverk",
     "item.create_mobile_packages.mobile_packager": "Portabel Packare",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Packa föremål på språng",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "När använd",
@@ -74,5 +74,5 @@
     "config.jade.plugin_create_mobile_packages.bee_port": "Robot Bi Ports Information",
     "create_mobile_packages.network.players": "Spelare i Nätverk: ",
     "create_mobile_packages.network.owner": "Ägare: %1$s",
-    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Papperskorgsmenyn"
 }
