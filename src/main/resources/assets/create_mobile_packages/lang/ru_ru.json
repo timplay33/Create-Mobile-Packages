@@ -5,7 +5,7 @@
     "item.create_mobile_packages.portable_stock_ticker": "Портативный складской тикер",
     "item.create_mobile_packages.portable_stock_ticker.screen_title": "Портативный складской тикер",
     "item.create_mobile_packages.portable_stock_ticker.not_linked": "Сеть не выбрана",
-    "item.create_mobile_packages.portable_stock_ticker.tooltip.summary": "Переносной складской хранитель",
+    "item.create_mobile_packages.portable_stock_ticker.tooltip.summary": "Переносной кладовщик",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.condition1": "ПКМ крадучись по складскому передатчику или тикеру",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.behaviour1": "Подключается к складской сети.",
     "item.create_mobile_packages.portable_stock_ticker.tooltip.condition2": "При использовании",
