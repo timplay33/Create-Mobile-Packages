@@ -898,7 +898,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             transfer = hasControlDown() ? 1 : hasShiftDown() ? 100 : 1000;
         } else {
             transfer = hasShiftDown() ? GenericContentExtender.registrationOf(entry.get().key())
-                    .clientProvider().guiHandler().stackSize(entry.get().key())
+                    .provider().stackSize(entry.get().key())
                     : hasControlDown() ? 10 : 1;
         }
 

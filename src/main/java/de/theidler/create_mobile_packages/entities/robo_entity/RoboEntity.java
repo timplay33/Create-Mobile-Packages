@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages.entities.robo_entity;
 
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
+import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
@@ -94,8 +95,11 @@ public class RoboEntity extends Mob {
             setCustomName(Component.literal("-> " + virtualRobo.getTargetAddress()));
             setCustomNameVisible(true);
         } else if (virtualRobo.getTarget() != null && virtualRobo.getTarget().asBeePortBlockEntity() != null) {
-            BlockPos pos = virtualRobo.getTarget().asBeePortBlockEntity().getBlockPos();
-            setCustomName(Component.literal("-> [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]"));
+            BeePortBlockEntity port = virtualRobo.getTarget().asBeePortBlockEntity();
+            BlockPos pos = port.getBlockPos();
+            String portName = !port.addressFilter.isBlank() ? port.addressFilter
+                    : "[" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]";
+            setCustomName(Component.literal("-> " + portName));
             setCustomNameVisible(true);
         } else if (virtualRobo.getTarget() != null && virtualRobo.getTarget().asPlayer() != null) {
             setCustomName(Component.literal("-> " + virtualRobo.getTarget().asPlayer().getName().getString()));

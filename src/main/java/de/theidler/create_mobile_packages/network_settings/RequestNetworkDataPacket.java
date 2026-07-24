@@ -43,7 +43,7 @@ public class RequestNetworkDataPacket implements ServerboundPacketPayload {
         if (network == null) {
             CreateMobilePackages.LOGGER.warn("RequestNetworkDataPacket: network {} not found", networkId);
             // Send error packet
-            NetworkDataPacket errorPacket = new NetworkDataPacket(networkId, null, false, "ERROR: Network not found", new ArrayList<>());
+            NetworkDataPacket errorPacket = new NetworkDataPacket(networkId, null, false, "ERROR: Network not found", new ArrayList<>(), false);
             CatnipServices.NETWORK.sendToClient(player, errorPacket);
             return;
         }
@@ -51,6 +51,7 @@ public class RequestNetworkDataPacket implements ServerboundPacketPayload {
         // Extract data directly from network NBT to avoid mixin issues
         String name = "Logistics Network " + networkId.toString().substring(0, 4);
         List<UUID> players = new ArrayList<>();
+        boolean isOwnerMember = false;
 
         try {
             // Try to get extended network data
@@ -58,6 +59,7 @@ public class RequestNetworkDataPacket implements ServerboundPacketPayload {
             if (extendedNetwork != null) {
                 name = extendedNetwork.create_mobile_packages$getName();
                 players = new ArrayList<>(extendedNetwork.create_mobile_packages$getPlayers());
+                isOwnerMember = extendedNetwork.create_mobile_packages$isOwnerMember();
             } else {
                 // Fallback: try to read from NBT
                 CreateMobilePackages.LOGGER.debug("RequestNetworkDataPacket: extendedNetwork is null, trying NBT fallback");
@@ -72,11 +74,14 @@ public class RequestNetworkDataPacket implements ServerboundPacketPayload {
                             nbt -> playerList.add(nbt.getUUID("UUID"))
                     );
                 }
+                if (tag.contains("CMP_IsOwnerMember")) {
+                    isOwnerMember = tag.getBoolean("CMP_IsOwnerMember");
+                }
                 CreateMobilePackages.LOGGER.debug("RequestNetworkDataPacket: Got data from NBT - name: '{}', {} players", name, players.size());
             }
         } catch (Exception e) {
             CreateMobilePackages.LOGGER.warn("RequestNetworkDataPacket: Error extracting network data", e);
-            NetworkDataPacket errorPacket = new NetworkDataPacket(networkId, null, false, "ERROR: " + e.getMessage(), new ArrayList<>());
+            NetworkDataPacket errorPacket = new NetworkDataPacket(networkId, null, false, "ERROR: " + e.getMessage(), new ArrayList<>(), false);
             CatnipServices.NETWORK.sendToClient(player, errorPacket);
             return;
         }
@@ -87,7 +92,8 @@ public class RequestNetworkDataPacket implements ServerboundPacketPayload {
                 network.owner,
                 network.locked,
                 name,
-                players
+                players,
+                isOwnerMember
         );
         CatnipServices.NETWORK.sendToClient(player, responsePacket);
     }

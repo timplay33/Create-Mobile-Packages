@@ -167,7 +167,7 @@ jobs:
                   'color': 3447003,
                   'fields': [{
                       'name': '🔗 Download Links',
-                      'value': '[CurseForge](https://www.curseforge.com/minecraft/mods/create-mobile-packages/files) | [Modrinth](https://modrinth.com/mod/1vXRfEHZ/versions) | [GitHub](https://github.com/timplay33/Create-Mobile-Packages/releases)',
+                      'value': '[CurseForge](https://www.curseforge.com/minecraft/mc-mods/create-mobile-packages/files) | [Modrinth](https://modrinth.com/mod/1vXRfEHZ/versions) | [GitHub](https://github.com/timplay33/Create-Mobile-Packages/releases)',
                       'inline': False,
                   }],
                   'footer': {'text': 'Create: Mobile Packages'},

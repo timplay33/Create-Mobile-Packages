@@ -38,7 +38,7 @@ public enum BeePortComponentProvider implements IBlockComponentProvider, IServer
             if (extendedNetwork == null) return;
             compoundTag.putString("Network", extendedNetwork.create_mobile_packages$getName());
             Player player = blockAccessor.getPlayer();
-            if (extendedNetwork.create_mobile_packages$getPlayers().contains(player.getUUID())) {
+            if (extendedNetwork.create_mobile_packages$isPlayerMember(player.getUUID())) {
                 compoundTag.putBoolean("IsPart", true);
             }
         }

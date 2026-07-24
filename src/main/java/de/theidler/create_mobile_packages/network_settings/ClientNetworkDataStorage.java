@@ -13,8 +13,8 @@ public class ClientNetworkDataStorage {
     private static final Map<UUID, String> errorMessages = new HashMap<>();
     private static int updateCount = 0;
 
-    public static void updateNetworkData(UUID networkId, UUID owner, boolean locked, String name, List<UUID> players) {
-        networks.put(networkId, new NetworkData(owner, locked, name, players));
+    public static void updateNetworkData(UUID networkId, UUID owner, boolean locked, String name, List<UUID> players, boolean isOwnerMember) {
+        networks.put(networkId, new NetworkData(owner, locked, name, players, isOwnerMember));
         errorMessages.remove(networkId); // Clear error if new data arrives
         updateCount++;
     }
@@ -62,12 +62,14 @@ public class ClientNetworkDataStorage {
         public final List<UUID> players;
         public boolean locked;
         public String name;
+        public boolean isOwnerMember;
 
-        public NetworkData(UUID owner, boolean locked, String name, List<UUID> players) {
+        public NetworkData(UUID owner, boolean locked, String name, List<UUID> players, boolean isOwnerMember) {
             this.owner = owner;
             this.locked = locked;
             this.name = name;
             this.players = new ArrayList<>(players);
+            this.isOwnerMember = isOwnerMember;
         }
 
         public void addPlayer(UUID playerId) {

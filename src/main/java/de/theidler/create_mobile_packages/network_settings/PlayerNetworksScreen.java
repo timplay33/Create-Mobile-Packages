@@ -24,6 +24,7 @@ public class PlayerNetworksScreen extends Screen {
     private int guiTop;
     private int windowWidth;
     private int windowHeight;
+    private static final int ROW_HEIGHT = 22;
     private final LerpedFloat scroll = LerpedFloat.linear().startWithValue(0);
     private boolean scrollHandleActive;
     private final List<IconButton> networkButtons = new ArrayList<>();
@@ -68,22 +69,32 @@ public class PlayerNetworksScreen extends Screen {
         addRenderableWidget(doneBtn);
 
         for (UUID networkId : cachedNetworkIds) {
-            IconButton leaveBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
-            leaveBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.leave"));
+            boolean isMember = isMemberOfNetwork(networkId);
 
-            leaveBtn.withCallback(() -> {
-                CatnipServices.NETWORK.sendToServer(new RemovePlayerFromNetworkPackage(getPlayer().getUUID(), networkId));
-                // Clear cache and refetch networks from server
-                ClientNetworkDataStorage.clear();
-                CatnipServices.NETWORK.sendToServer(RequestPlayerNetworksPacket.INSTANCE);
-                lastKnownUpdateCount = ClientNetworkDataStorage.getUpdateCount();
-                this.refreshNetworks();
-            });
+            IconButton actionBtn;
+            if (isMember) {
+                actionBtn = new IconButton(0, 0, AllIcons.I_MTD_CLOSE);
+                actionBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.leave"));
+                actionBtn.withCallback(() -> {
+                    CatnipServices.NETWORK.sendToServer(new RemovePlayerFromNetworkPackage(getPlayer().getUUID(), networkId));
+                    ClientNetworkDataStorage.NetworkData nd = ClientNetworkDataStorage.getNetworkData(networkId);
+                    if (nd != null) nd.removePlayer(getPlayer().getUUID());
+                    lastKnownUpdateCount = -1;
+                });
+            } else {
+                actionBtn = new IconButton(0, 0, AllIcons.I_ADD);
+                actionBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.add_yourself"));
+                actionBtn.withCallback(() -> {
+                    CatnipServices.NETWORK.sendToServer(new AddPlayerToNetworkPackage(getPlayer().getUUID(), networkId));
+                    ClientNetworkDataStorage.NetworkData nd = ClientNetworkDataStorage.getNetworkData(networkId);
+                    if (nd != null) nd.addPlayer(getPlayer().getUUID());
+                    lastKnownUpdateCount = -1;
+                });
+            }
 
-            addRenderableWidget(leaveBtn);
-            networkButtons.add(leaveBtn);
+            addRenderableWidget(actionBtn);
+            networkButtons.add(actionBtn);
 
-            // Add settings button
             IconButton settingsBtn = new IconButton(0, 0, AllIcons.I_CONFIG_OPEN);
             settingsBtn.setToolTip(Component.translatable("tooltip.create_mobile_packages.network.settings"));
             settingsBtn.withCallback(() -> minecraft.setScreen(new NetworkSettingsScreen(this, networkId)));
@@ -152,7 +163,7 @@ public class PlayerNetworksScreen extends Screen {
     }
 
     private int getVisibleRows() {
-        return (windowHeight - 30) / 20;
+        return (windowHeight - 30) / ROW_HEIGHT;
     }
 
     private int getMaxScroll() {
@@ -179,36 +190,64 @@ public class PlayerNetworksScreen extends Screen {
 
         guiGraphics.enableScissor(guiLeft, listTop, guiLeft + windowWidth, listBottom);
 
+        Component iconTooltip = null;
+
         for (int i = 0; i < cachedNetworkIds.size(); i++) {
-            float rowY = listTop + (i + 1 - scrollOffset) * 20;
+            float rowTop = listTop + (i + 1 - scrollOffset) * ROW_HEIGHT;
             UUID networkId = cachedNetworkIds.get(i);
             ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
 
+            int rowCenterY = (int) rowTop + ROW_HEIGHT / 2;
+
             if (i * 2 + 1 < networkButtons.size()) {
-                IconButton leaveBtn = networkButtons.get(i * 2);
+                IconButton actionBtn = networkButtons.get(i * 2);
                 IconButton settingsBtn = networkButtons.get(i * 2 + 1);
 
-                int btnY = (int) rowY - 4;
-                boolean visible = rowY - 4 >= listTop && rowY + 16 <= listBottom;
+                int btnY = rowCenterY - 9;
 
-                leaveBtn.setX(guiLeft + windowWidth - 30);
-                leaveBtn.setY(btnY);
-                leaveBtn.visible = visible;
+                actionBtn.setX(guiLeft + windowWidth - 30);
+                actionBtn.setY(btnY);
+                actionBtn.visible = btnY >= listTop && btnY + 18 <= listBottom;
 
                 settingsBtn.setX(guiLeft + windowWidth - 50);
                 settingsBtn.setY(btnY);
-                settingsBtn.visible = visible;
+                settingsBtn.visible = btnY >= listTop && btnY + 18 <= listBottom;
             }
 
-            if (rowY < listTop || rowY > listBottom) {
+            if (rowTop + ROW_HEIGHT < listTop || rowTop > listBottom) {
                 continue;
             }
 
+            int charBase = rowCenterY - 4;
+            boolean isOwner = networkData != null && getPlayer().getUUID().equals(networkData.owner);
+            boolean isMember = networkData != null && isMemberOfNetwork(cachedNetworkIds.get(i));
+
+            int ownerCX = guiLeft + 8;
+            guiGraphics.drawString(font, "O", ownerCX, charBase, isOwner ? 0x4A2D31 : 0xB5B0B0, false);
+
+            int memberCX = guiLeft + 22;
+            guiGraphics.drawString(font, "M", memberCX, charBase, isMember ? 0x4A2D31 : 0xB5B0B0, false);
+
             String name = networkData != null ? networkData.name : "Loading...";
-            guiGraphics.drawString(font, name, guiLeft + 20, (int) rowY, 0x3D3C48, false);
+            guiGraphics.drawString(font, name, guiLeft + 44, charBase, 0x3D3C48, false);
+
+            int hitTop = rowCenterY - ROW_HEIGHT / 2;
+            int hitBot = rowCenterY + ROW_HEIGHT / 2;
+            boolean hoveringOwner = isOwner && mouseX >= ownerCX - 2 && mouseX < ownerCX + 14 && mouseY >= hitTop && mouseY < hitBot;
+            boolean hoveringMember = isMember && mouseX >= memberCX - 2 && mouseX < memberCX + 14 && mouseY >= hitTop && mouseY < hitBot;
+
+            if (hoveringOwner) {
+                iconTooltip = Component.translatable("tooltip.create_mobile_packages.network.owner_indicator");
+            } else if (hoveringMember) {
+                iconTooltip = Component.translatable("tooltip.create_mobile_packages.network.member_indicator");
+            }
         }
 
         guiGraphics.disableScissor();
+
+        if (iconTooltip != null) {
+            guiGraphics.renderTooltip(font, iconTooltip, mouseX, mouseY);
+        }
 
         renderScrollbar(guiGraphics);
 
@@ -257,8 +296,18 @@ public class PlayerNetworksScreen extends Screen {
     private List<UUID> getNetworks() {
         return ClientNetworkDataStorage.getNetworks().entrySet().stream()
                 .filter(entry -> entry.getValue().players.contains(getPlayer().getUUID()) || getPlayer().getUUID().equals(entry.getValue().owner))
+                .filter(entry -> !"Unnamed Network".equals(entry.getValue().name))
                 .map(java.util.Map.Entry::getKey)
                 .toList();
+    }
+
+    private boolean isMemberOfNetwork(UUID networkId) {
+        ClientNetworkDataStorage.NetworkData networkData = ClientNetworkDataStorage.getNetworkData(networkId);
+        if (networkData == null) return false;
+        UUID playerUUID = getPlayer().getUUID();
+        if (playerUUID.equals(networkData.owner))
+            return networkData.isOwnerMember;
+        return networkData.players.contains(playerUUID);
     }
 
     @Override

@@ -31,10 +31,11 @@ public class RequestPlayerNetworksPacket implements ServerboundPacketPayload {
 
         for (LogisticsNetwork network : Create.LOGISTICS.logisticsNetworks.values()) {
             IExtendedLogisticsNetwork extended = NetworkHelper.getExtendedLogisticsNetwork(network);
-            if (extended != null && extended.create_mobile_packages$getPlayers().contains(playerUuid)) {
+            if (extended != null && (extended.create_mobile_packages$getPlayers().contains(playerUuid) || (network.owner != null && network.owner.equals(playerUuid)))) {
 
                 String name = extended.create_mobile_packages$getName();
                 List<UUID> players = new ArrayList<>(extended.create_mobile_packages$getPlayers());
+                boolean isOwnerMember = extended.create_mobile_packages$isOwnerMember();
 
                 networkIds.add(network.id);
 
@@ -44,7 +45,8 @@ public class RequestPlayerNetworksPacket implements ServerboundPacketPayload {
                         network.owner,
                         network.locked,
                         name,
-                        players
+                        players,
+                        isOwnerMember
                 );
                 CatnipServices.NETWORK.sendToClient(player, packet);
             }

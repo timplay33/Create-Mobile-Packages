@@ -16,7 +16,11 @@ public class CMPIcons implements ScreenElement {
     private static int x = 0, y = -1;
     public static final CMPIcons
             I_RETURN = newRow(),
-            I_DIRECT = next();
+            I_DIRECT = next(),
+            I_ROBO_BEE_AND_PACKAGE = next(),
+            I_PACKAGE = next(),
+            I_ROBO_BEE = next();
+
     private final int iconX;
     private final int iconY;
 

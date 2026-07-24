@@ -29,17 +29,19 @@ public class PlayerTarget implements RoboTarget {
     private final Player player;
     private int eta;
     private final IExtendedLogisticsNetwork network;
+    private final UUID networkId;
     private long lastToastUpdate = 0;
 
     public PlayerTarget(Player player, UUID networkId) {
         this.player = player;
         this.network = NetworkHelper.getExtendedLogisticsNetwork(networkId);
+        this.networkId = networkId;
     }
 
     public static @Nullable PlayerTarget fromAddress(ServerLevel level, String address, UUID networkId) {
         IExtendedLogisticsNetwork network = NetworkHelper.getExtendedLogisticsNetwork(networkId);
         if (network == null) return null;
-        ServerPlayer player = level.getPlayers((p) -> doesAddressMatchPlayer(p, address)).stream().filter(p -> network.create_mobile_packages$getPlayers().contains(p.getUUID())).findFirst().orElse(null);
+        ServerPlayer player = level.getPlayers((p) -> doesAddressMatchPlayer(p, address)).stream().filter(p -> NetworkHelper.getPlayerUUIDs(networkId).contains(p.getUUID())).findFirst().orElse(null);
         if (player == null) return null;
         return new PlayerTarget(player, networkId);
     }
@@ -57,7 +59,7 @@ public class PlayerTarget implements RoboTarget {
 
     @Override
     public boolean isValid(VirtualRobo robo) {
-        return player != null && player.isAlive() && network != null && network.create_mobile_packages$getPlayers().contains(player.getUUID());
+        return player != null && player.isAlive() && network != null && NetworkHelper.getPlayerUUIDs(networkId).contains(player.getUUID());
     }
 
     public void updateEtaToast(VirtualRobo robo) {

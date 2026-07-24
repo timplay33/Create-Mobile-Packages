@@ -59,7 +59,8 @@ public class AddPlayerToNetworkPackage implements ServerboundPacketPayload {
                 network.owner,
                 network.locked,
                 extendedNetwork.create_mobile_packages$getName(),
-                new ArrayList<>(extendedNetwork.create_mobile_packages$getPlayers())
+                new ArrayList<>(extendedNetwork.create_mobile_packages$getPlayers()),
+                extendedNetwork.create_mobile_packages$isOwnerMember()
         );
         CatnipServices.NETWORK.sendToClient(player, responsePacket);
     }
