@@ -351,16 +351,14 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (address.isBlank()) return; // return if the package has no address
 
         Set<UUID> playerUUIDs = NetworkHelper.getPlayerUUIDs(getLogisticsNetworkId());
-        if (playerUUIDs != null) {
-            // Check if the item can be sent to a player.
-            for (Player player : level.players()) {
-                if (!playerUUIDs.contains(player.getUUID())) {
-                    continue; // skip players not in the logistics network
-                }
-                if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(level, player.blockPosition(), this.getBlockPos())) {
-                    sendToPlayer(player, itemStack, slot);
-                    return;
-                }
+        // Check if the item can be sent to a player.
+        for (Player player : level.players()) {
+            if (!playerUUIDs.contains(player.getUUID())) {
+                continue; // skip players not in the logistics network
+            }
+            if (CMPHelper.doesAddressMatchPlayer(player, address) && CMPHelper.isWithinRange(level, player.blockPosition(), this.getBlockPos())) {
+                sendToPlayer(player, itemStack, slot);
+                return;
             }
         }
 
