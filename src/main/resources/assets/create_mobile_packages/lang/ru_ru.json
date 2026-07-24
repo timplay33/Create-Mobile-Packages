@@ -74,5 +74,10 @@
     "config.jade.plugin_create_mobile_packages.bee_port": "Информация о пчелопорте",
     "create_mobile_packages.network.players": "Игроков в сети:",
     "create_mobile_packages.network.owner": "Владелец: %1$s",
-    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Меню корзины"
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Меню корзины",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.all": "Filter: All Items",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.packages": "Filter: Packages Only",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.bees": "Filter: Robo Bees Only",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.description": "Controls what items may be inserted and extracted by hoppers, chutes, funnel, etc.",
+    "tooltip.create_mobile_packages.bee_port.return_mode.description": "Controls whether the bee returns to this port after completing its delivery task."
 }
