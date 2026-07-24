@@ -17,6 +17,7 @@ Create: Mobile Packages - v0.7.7 - 1.21.1 - unreleased
 - NetworkSettingsScreen now shows the network UUID (shortened) at the bottom of the screen
 - Add FilterMode to BeePort, toggle between all items, only packages and only bees may be inserted and exported by
   hoppers, chutes, funnels, etc. (#360)
+- Fix Factory Abstractions incompatibility by updating to 1.6.0 (#359)
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.7.6 - 1.21.1 - 08.05.2026
