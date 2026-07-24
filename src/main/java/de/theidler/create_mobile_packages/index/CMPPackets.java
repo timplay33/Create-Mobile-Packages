@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.index;
 
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.blocks.bee_port.ToggleBeeReturnModePacket;
+import de.theidler.create_mobile_packages.blocks.bee_port.ToggleFilterModePacket;
 import de.theidler.create_mobile_packages.items.mobile_packager.ConfirmEditMenuPacket;
 import de.theidler.create_mobile_packages.items.mobile_packager.OpenEditMenuPacket;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.*;
@@ -39,6 +40,7 @@ public enum CMPPackets implements BasePacketPayload.PacketTypeProvider {
     SYNC_TRASH_ADDRESS(SyncTrashAddressPacket.class, SyncTrashAddressPacket.STREAM_CODEC),
     SAVE_PORTABLE_STOCK_TICKER_ADDRESS(SavePortableStockTickerAddressPacket.class, SavePortableStockTickerAddressPacket.STREAM_CODEC),
     TOGGLE_BEE_RETURN_MODE(ToggleBeeReturnModePacket.class, ToggleBeeReturnModePacket.STREAM_CODEC),
+    TOGGLE_FILTER_MODE(ToggleFilterModePacket.class, ToggleFilterModePacket.STREAM_CODEC),
 
     // Server to Client
     BIG_ITEM_STACK_LIST(GenericStackListPacket.class, GenericStackListPacket.STREAM_CODEC),

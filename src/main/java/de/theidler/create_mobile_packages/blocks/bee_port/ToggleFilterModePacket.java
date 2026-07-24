@@ -10,16 +10,16 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
-public class ToggleBeeReturnModePacket implements ServerboundPacketPayload {
+public class ToggleFilterModePacket implements ServerboundPacketPayload {
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, ToggleBeeReturnModePacket> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<RegistryFriendlyByteBuf, ToggleFilterModePacket> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, packet -> packet.portPos,
-            ToggleBeeReturnModePacket::new
+            ToggleFilterModePacket::new
     );
 
     private final BlockPos portPos;
 
-    public ToggleBeeReturnModePacket(BlockPos portPos) {
+    public ToggleFilterModePacket(BlockPos portPos) {
         this.portPos = portPos;
     }
 
@@ -41,11 +41,11 @@ public class ToggleBeeReturnModePacket implements ServerboundPacketPayload {
             }
         }
 
-        beePort.setBeeReturnModeEnabled(!beePort.setBeeReturnMode());
+        beePort.toggleFilterMode();
     }
 
     @Override
     public PacketTypeProvider getTypeProvider() {
-        return CMPPackets.TOGGLE_BEE_RETURN_MODE;
+        return CMPPackets.TOGGLE_FILTER_MODE;
     }
 }
