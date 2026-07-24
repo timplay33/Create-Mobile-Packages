@@ -15,6 +15,8 @@ Create: Mobile Packages - v0.7.7 - 1.21.1 - unreleased
 - Add `/cmp network rename` admin command to rename networks from console
 - PlayerNetworksScreen now shows join/leave button depending on membership
 - NetworkSettingsScreen now shows the network UUID (shortened) at the bottom of the screen
+- Add FilterMode to BeePort, toggle between all items, only packages and only bees may be inserted and exported by
+  hoppers, chutes, funnels, etc. (#360)
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.7.6 - 1.21.1 - 08.05.2026

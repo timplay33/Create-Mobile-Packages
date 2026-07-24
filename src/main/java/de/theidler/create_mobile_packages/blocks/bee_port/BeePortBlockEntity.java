@@ -61,74 +61,115 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     private static final int ROBOBEE_INVENTORY_STACK_SIZE = 64;
     private UUID placerUUID;
 
-    private final ContainerData data = new SimpleContainerData(3);
+    private final ContainerData data = new SimpleContainerData(4);
     private final ItemStackHandler roboBeeInventory = new ItemStackHandler(1);
     private boolean beeReturnModeEnabled = false;
+
+    private FilterMode filterMode = FilterMode.ALL;
+
     private final IItemHandler handler = new IItemHandler() {
         @Override
         public int getSlots() {
-            return inventory.getSlots() + roboBeeInventory.getSlots();
+            return switch (filterMode) {
+                case ALL -> inventory.getSlots() + roboBeeInventory.getSlots();
+                case PACKAGES_ONLY -> inventory.getSlots();
+                case ROBO_ONLY -> roboBeeInventory.getSlots();
+            };
         }
 
         @Override
         public @NotNull ItemStack getStackInSlot(int slot) {
-            if (slot < inventory.getSlots()) {
-                return inventory.getStackInSlot(slot);
-            } else {
-                return roboBeeInventory.getStackInSlot(slot - inventory.getSlots());
-            }
+            return switch (filterMode) {
+                case ALL -> {
+                    if (slot < inventory.getSlots()) {
+                        yield inventory.getStackInSlot(slot);
+                    } else {
+                        yield roboBeeInventory.getStackInSlot(slot - inventory.getSlots());
+                    }
+                }
+                case PACKAGES_ONLY -> inventory.getStackInSlot(slot);
+                case ROBO_ONLY -> roboBeeInventory.getStackInSlot(slot);
+            };
         }
 
         @Override
         public @NotNull ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            if (stack.getItem() instanceof RoboBeeItem) {
-                if (slot >= inventory.getSlots()) {
-                    return roboBeeInventory.insertItem(slot - inventory.getSlots(), stack, simulate);
-                } else {
-                    return stack; // Reject insertion into defaultInventory
+            return switch (filterMode) {
+                case ALL -> {
+                    if (stack.getItem() instanceof RoboBeeItem) {
+                        if (slot >= inventory.getSlots()) {
+                            yield roboBeeInventory.insertItem(slot - inventory.getSlots(), stack, simulate);
+                        } else {
+                            yield stack;
+                        }
+                    } else {
+                        if (slot < inventory.getSlots()) {
+                            yield inventory.insertItem(slot, stack, simulate);
+                        } else {
+                            yield stack;
+                        }
+                    }
                 }
-            } else {
-                if (slot < inventory.getSlots()) {
-                    return inventory.insertItem(slot, stack, simulate);
-                } else {
-                    return stack; // Reject insertion into roboInventory
+                case PACKAGES_ONLY -> {
+                    if (stack.getItem() instanceof RoboBeeItem) {
+                        yield stack;
+                    } else {
+                        yield inventory.insertItem(slot, stack, simulate);
+                    }
                 }
-            }
+                case ROBO_ONLY -> {
+                    if (stack.getItem() instanceof RoboBeeItem) {
+                        yield roboBeeInventory.insertItem(slot, stack, simulate);
+                    } else {
+                        yield stack;
+                    }
+                }
+            };
         }
 
         @Override
         public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (slot < inventory.getSlots()) {
-                return inventory.extractItem(slot, amount, simulate);
-            } else {
-                return roboBeeInventory.extractItem(slot - inventory.getSlots(), amount, simulate);
-            }
+            return switch (filterMode) {
+                case ALL -> {
+                    if (slot < inventory.getSlots()) {
+                        yield inventory.extractItem(slot, amount, simulate);
+                    } else {
+                        yield roboBeeInventory.extractItem(slot - inventory.getSlots(), amount, simulate);
+                    }
+                }
+                case PACKAGES_ONLY -> inventory.extractItem(slot, amount, simulate);
+                case ROBO_ONLY -> roboBeeInventory.extractItem(slot, amount, simulate);
+            };
         }
 
         @Override
         public int getSlotLimit(int slot) {
-            if (slot < inventory.getSlots()) {
-                return inventory.getSlotLimit(slot);
-            } else {
-                return roboBeeInventory.getSlotLimit(slot - inventory.getSlots());
-            }
+            return switch (filterMode) {
+                case ALL -> {
+                    if (slot < inventory.getSlots()) {
+                        yield inventory.getSlotLimit(slot);
+                    } else {
+                        yield roboBeeInventory.getSlotLimit(slot - inventory.getSlots());
+                    }
+                }
+                case PACKAGES_ONLY -> inventory.getSlotLimit(slot);
+                case ROBO_ONLY -> roboBeeInventory.getSlotLimit(slot);
+            };
         }
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            if (stack.getItem() instanceof RoboBeeItem) {
-                if (slot >= inventory.getSlots()) {
-                    return roboBeeInventory.isItemValid(slot - inventory.getSlots(), stack);
-                } else {
-                    return false;
+            return switch (filterMode) {
+                case ALL -> {
+                    if (stack.getItem() instanceof RoboBeeItem) {
+                        yield slot >= inventory.getSlots() && roboBeeInventory.isItemValid(slot - inventory.getSlots(), stack);
+                    } else {
+                        yield slot < inventory.getSlots() && inventory.isItemValid(slot, stack);
+                    }
                 }
-            } else {
-                if (slot < inventory.getSlots()) {
-                    return inventory.isItemValid(slot, stack);
-                } else {
-                    return false;
-                }
-            }
+                case PACKAGES_ONLY -> !(stack.getItem() instanceof RoboBeeItem) && inventory.isItemValid(slot, stack);
+                case ROBO_ONLY -> (stack.getItem() instanceof RoboBeeItem) && roboBeeInventory.isItemValid(slot, stack);
+            };
         }
     };
     public LogisticallyLinkedBehaviour behaviour;
@@ -214,6 +255,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         if (placerUUID != null) {
             tag.putUUID("PlacerUUID", placerUUID);
         }
+        tag.putInt("FilterMode", filterMode.getId());
     }
 
     @Override
@@ -225,6 +267,9 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         beeReturnModeEnabled = tag.getBoolean("BeeReturnModeEnabled");
         if (tag.contains("PlacerUUID")) {
             placerUUID = tag.getUUID("PlacerUUID");
+        }
+        if (tag.contains("FilterMode")) {
+            filterMode = FilterMode.fromId(tag.getInt("FilterMode"));
         }
     }
 
@@ -246,6 +291,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             this.data.set(0, minEta);
             this.data.set(1, eta.isEmpty() ? 0 : 1);
             this.data.set(2, beeReturnModeEnabled ? 1 : 0);
+            this.data.set(3, filterMode.getId());
         }
     }
 
@@ -622,6 +668,18 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public void setBeeReturnModeEnabled(boolean beeReturnModeEnabled) {
         if (this.beeReturnModeEnabled == beeReturnModeEnabled) return;
         this.beeReturnModeEnabled = beeReturnModeEnabled;
+        if (level != null && !level.isClientSide) {
+            level.blockEntityChanged(worldPosition);
+        }
+        setChanged();
+    }
+
+    public boolean setBeeReturnMode() {
+        return beeReturnModeEnabled;
+    }
+
+    public void toggleFilterMode() {
+        filterMode = FilterMode.fromId((filterMode.getId() + 1) % FilterMode.values().length);
         if (level != null && !level.isClientSide) {
             level.blockEntityChanged(worldPosition);
         }
