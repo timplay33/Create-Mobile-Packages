@@ -9,10 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class PlayerNameCache extends SavedData {
 
@@ -117,6 +114,20 @@ public class PlayerNameCache extends SavedData {
             return address.equals(playerName);
         }
         return address.substring(atIndex + 1).equals(playerName);
+    }
+
+    /**
+     * Builds a UUID → name map for the given player UUIDs.
+     */
+    public Map<UUID, String> buildNamesMap(List<UUID> playerUUIDs) {
+        Map<UUID, String> result = new HashMap<>();
+        for (UUID uuid : playerUUIDs) {
+            String name = playerNamesByUUID.get(uuid);
+            if (name != null) {
+                result.put(uuid, name);
+            }
+        }
+        return result;
     }
 
     /**

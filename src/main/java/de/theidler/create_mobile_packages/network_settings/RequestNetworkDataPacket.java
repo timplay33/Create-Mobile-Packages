@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class RequestNetworkDataPacket implements ServerboundPacketPayload {
@@ -43,7 +44,7 @@ public class RequestNetworkDataPacket implements ServerboundPacketPayload {
         if (network == null) {
             CreateMobilePackages.LOGGER.warn("RequestNetworkDataPacket: network {} not found", networkId);
             // Send error packet
-            NetworkDataPacket errorPacket = new NetworkDataPacket(networkId, null, false, "ERROR: Network not found", new ArrayList<>(), false);
+            NetworkDataPacket errorPacket = new NetworkDataPacket(networkId, null, false, "ERROR: Network not found", new ArrayList<>(), false, Map.of());
             CatnipServices.NETWORK.sendToClient(player, errorPacket);
             return;
         }
@@ -81,19 +82,21 @@ public class RequestNetworkDataPacket implements ServerboundPacketPayload {
             }
         } catch (Exception e) {
             CreateMobilePackages.LOGGER.warn("RequestNetworkDataPacket: Error extracting network data", e);
-            NetworkDataPacket errorPacket = new NetworkDataPacket(networkId, null, false, "ERROR: " + e.getMessage(), new ArrayList<>(), false);
+            NetworkDataPacket errorPacket = new NetworkDataPacket(networkId, null, false, "ERROR: " + e.getMessage(), new ArrayList<>(), false, Map.of());
             CatnipServices.NETWORK.sendToClient(player, errorPacket);
             return;
         }
 
         // Send network data back to client
+        Map<UUID, String> playerNames = NetworkHelper.buildNetworkPlayerNames(player.serverLevel(), players, network.owner);
         NetworkDataPacket responsePacket = new NetworkDataPacket(
                 networkId,
                 network.owner,
                 network.locked,
                 name,
                 players,
-                isOwnerMember
+                isOwnerMember,
+                playerNames
         );
         CatnipServices.NETWORK.sendToClient(player, responsePacket);
     }
