@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.toast.types;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLClientBridge;
 import de.theidler.create_mobile_packages.index.CMPToasts;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
@@ -64,7 +65,10 @@ public class PackageToast extends SimpleToast {
 
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(0, 0, 200);
-            drawItemCount(guiGraphics, item.getCount(),x + (i*spacing)+4, y + 30 );
+            if (!CFLClientBridge.tryRenderPackageResourceAmount(
+                    guiGraphics, item, x + (i * spacing) + 4, y + 30)) {
+                drawItemCount(guiGraphics, item.getCount(), x + (i * spacing) + 4, y + 30);
+            }
             guiGraphics.pose().popPose();
         }
 
