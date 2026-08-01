@@ -2,8 +2,6 @@ package de.theidler.create_mobile_packages.toast.types;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
-import de.theidler.create_mobile_packages.compat.Mods;
-import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLBridge;
 import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLClientBridge;
 import de.theidler.create_mobile_packages.index.CMPToasts;
 import net.minecraft.client.Minecraft;
@@ -87,10 +85,7 @@ public class PackageToast extends SimpleToast {
 
                 guiGraphics.pose().pushPose();
                 guiGraphics.pose().translate(0, 0, 200);
-                if (Mods.FLUIDLOGISTICS.isLoaded()
-                        && CFLBridge.shouldDisplayAsFluidInPackage(item)) {
-                    CFLClientBridge.renderPackageFluidAmount(guiGraphics, item, sx, slotY);
-                } else {
+                if (!CFLClientBridge.tryRenderPackageResourceAmount(guiGraphics, item, sx, slotY)) {
                     drawItemCount(guiGraphics, item.getCount(), sx, slotY);
                 }
                 guiGraphics.pose().popPose();
