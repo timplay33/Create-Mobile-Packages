@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.items.mobile_packager;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLBridge;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.index.CMPPackets;
 import net.minecraft.network.FriendlyByteBuf;
@@ -106,7 +107,7 @@ public class MobilePackagerMenu extends MenuBase<MobilePackager> {
 
         @Override
         public boolean mayPlace(@NotNull ItemStack stack) {
-            return stack.getItem() instanceof PackageItem;
+            return stack.getItem() instanceof PackageItem && !CFLBridge.isFluidPackage(stack);
         }
     }
 }
