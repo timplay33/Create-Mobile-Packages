@@ -63,6 +63,8 @@
     "tooltip.create_mobile_packages.network.add_yourself": "自分を追加",
     "tooltip.create_mobile_packages.network.leave": "ネットワークから退出する",
     "tooltip.create_mobile_packages.network.settings": "ネットワークの設定",
+    "tooltip.create_mobile_packages.network.owner_indicator": "You are the owner of this network",
+    "tooltip.create_mobile_packages.network.member_indicator": "You are a member of this network",
     "item.create_mobile_packages.mobile_packager": "モバイル梱包機",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "移動中にアイテムを梱包します",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "使ったとき",
@@ -72,5 +74,10 @@
     "config.jade.plugin_create_mobile_packages.bee_port": "ビーポートの情報",
     "create_mobile_packages.network.players": "ネットワーク内のプレイヤー：",
     "create_mobile_packages.network.owner": "所有者: %1$s",
-    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu"
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Trash Menu",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.all": "Filter: All Items",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.packages": "Filter: Packages Only",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.bees": "Filter: Robo Bees Only",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.description": "Controls what items may be inserted and extracted by hoppers, chutes, funnel, etc.",
+    "tooltip.create_mobile_packages.bee_port.return_mode.description": "Controls whether the bee returns to this port after completing its delivery task."
 }

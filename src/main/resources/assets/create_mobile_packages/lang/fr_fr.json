@@ -63,6 +63,8 @@
     "tooltip.create_mobile_packages.network.add_yourself": "S'ajouter",
     "tooltip.create_mobile_packages.network.leave": "Quitter le réseau",
     "tooltip.create_mobile_packages.network.settings": "Paramètre réseau",
+    "tooltip.create_mobile_packages.network.owner_indicator": "Vous êtes le propriétaire de ce réseau",
+    "tooltip.create_mobile_packages.network.member_indicator": "Vous êtes membre de ce réseau",
     "item.create_mobile_packages.mobile_packager": "Emballeur portable",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "Emballer des objets à la volée",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "Lorsqu'il est utilisé",
@@ -72,5 +74,10 @@
     "config.jade.plugin_create_mobile_packages.bee_port": "Information du Port Robeille",
     "create_mobile_packages.network.players": "Joueur dans le réseau :",
     "create_mobile_packages.network.owner": "Propriétaire : %1$s",
-    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Menu Poubelle"
+    "item.create_mobile_packages.portable_stock_ticker.trash_menu": "Menu Poubelle",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.all": "Filter: All Items",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.packages": "Filter: Packages Only",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.bees": "Filter: Robo Bees Only",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.description": "Controls what items may be inserted and extracted by hoppers, chutes, funnel, etc.",
+    "tooltip.create_mobile_packages.bee_port.return_mode.description": "Controls whether the bee returns to this port after completing its delivery task."
 }
