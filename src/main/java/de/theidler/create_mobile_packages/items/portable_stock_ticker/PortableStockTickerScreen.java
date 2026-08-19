@@ -22,6 +22,7 @@ import com.simibubi.create.infrastructure.config.AllConfigs;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLBridge;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLClientBridge;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.OpenTrashMenuPacket;
 import net.createmod.catnip.animation.LerpedFloat;
@@ -688,12 +689,15 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         ms.pushPose();
         ms.translate(0, 0, 200);
         if (customCount != 0 || craftable) {
+            boolean renderedCustomAmount = false;
             if (Mods.FLUIDLOGISTICS.isLoaded() && CFLBridge.isVirtualFluid(entry)) {
                 ms.pushPose();
                 ms.translate(1, 1, 0);
-                com.yision.fluidlogistics.render.FluidSlotAmountRenderer.renderInStockKeeper(graphics, customCount);
+                renderedCustomAmount = CFLClientBridge.renderStockKeeperAmount(
+                        graphics, CFLBridge.keyAsItemStack(entry.get()), customCount);
                 ms.popPose();
-            } else {
+            }
+            if (!renderedCustomAmount) {
                 GenericContentExtender.registrationOf(entry.get().key())
                         .clientProvider().guiHandler()
                         .renderDecorations(graphics, entry.get().key(), customCount, 1, 1);
@@ -718,9 +722,14 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                             : displayedItems.get(hoveredSlot.getFirst())
                                     .get(slot);
 
-            ArrayList<Component> lines = new ArrayList<>(GenericContentExtender.registrationOf(entry.get().key())
-                    .clientProvider().guiHandler()
-                    .tooltipBuilder(entry.get().key(), entry.get().amount()));
+            ArrayList<Component> lines = Mods.FLUIDLOGISTICS.isLoaded() && CFLBridge.isVirtualFluid(entry)
+                    ? CFLBridge.getStockKeeperTooltip(entry, recipeHovered, orderHovered,
+                                    minecraft.options.advancedItemTooltips)
+                            .map(ArrayList::new)
+                            .orElseGet(ArrayList::new)
+                    : new ArrayList<>(GenericContentExtender.registrationOf(entry.get().key())
+                            .clientProvider().guiHandler()
+                            .tooltipBuilder(entry.get().key(), entry.get().amount()));
             if (recipeHovered && !lines.isEmpty())
                 lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.getFirst()
                         .copy()));
@@ -893,8 +902,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                                 .get(hoveredSlot.getSecond());
 
         int transfer;
-        boolean isCFLFluid = Mods.FLUIDLOGISTICS.isLoaded() && CFLBridge.isVirtualFluid(entry) && !recipeClicked;
-        if (isCFLFluid) {
+        boolean isCFLFluidEntry = Mods.FLUIDLOGISTICS.isLoaded() && CFLBridge.isVirtualFluid(entry);
+        boolean isCFLFluid = isCFLFluidEntry && !recipeClicked;
+        if (recipeClicked && isCFLFluidEntry) {
+            transfer = CFLBridge.getFluidRecipeStepAmount(entry.get(), hasShiftDown(), hasControlDown());
+        } else if (isCFLFluid) {
             transfer = hasControlDown() ? 1 : hasShiftDown() ? 100 : 1000;
         } else {
             transfer = hasShiftDown() ? GenericContentExtender.registrationOf(entry.get().key())
@@ -923,8 +935,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         int current = existingOrder.get().amount();
 
         if (isCFLFluid) {
-            int newAmount = CFLBridge.adjustFluidRequestAmount(current, !(rmb || orderClicked), hasShiftDown(),
-                    hasControlDown(), 0, Math.max(0, entry.get().amount()));
+            int newAmount = CFLBridge.adjustFluidRequestAmount(entry.get(), current, !(rmb || orderClicked),
+                    hasShiftDown(), hasControlDown(), 0, Math.max(0, entry.get().amount()), 1, orderClicked);
             if (newAmount <= 0) {
                 itemsToOrder.remove(existingOrder);
                 playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
@@ -1098,10 +1110,13 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                                     .get(hoveredSlot.getSecond());
 
             boolean remove = scrollY < 0;
-            boolean isCFLFluidScroll = Mods.FLUIDLOGISTICS.isLoaded() && CFLBridge.isVirtualFluid(entry) && !recipeClicked;
+            boolean isCFLFluidEntry = Mods.FLUIDLOGISTICS.isLoaded() && CFLBridge.isVirtualFluid(entry);
+            boolean isCFLFluidScroll = isCFLFluidEntry && !recipeClicked;
             int steps = Mth.ceil(Math.abs(scrollY));
             int transfer;
-            if (isCFLFluidScroll) {
+            if (recipeClicked && isCFLFluidEntry) {
+                transfer = CFLBridge.getFluidRecipeStepAmount(entry.get(), hasShiftDown(), hasControlDown()) * steps;
+            } else if (isCFLFluidScroll) {
                 transfer = hasControlDown() ? steps : hasShiftDown() ? steps * 100 : steps * 1000;
             } else {
                 transfer = steps * (hasControlDown() ? 10 : 1);
@@ -1137,8 +1152,8 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                         summary.add(stack.get());
                     }
                 }
-                int newAmount = CFLBridge.adjustFluidRequestAmount(current, !remove, hasShiftDown(), hasControlDown(),
-                        0, Math.max(0, summary.getCountOf(entry.get().key())), steps);
+                int newAmount = CFLBridge.adjustFluidRequestAmount(entry.get(), current, !remove, hasShiftDown(),
+                        hasControlDown(), 0, Math.max(0, summary.getCountOf(entry.get().key())), steps, orderClicked);
                 if (newAmount <= 0) {
                     itemsToOrder.remove(existingOrder);
                     playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);

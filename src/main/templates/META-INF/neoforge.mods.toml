@@ -91,3 +91,11 @@ config="create_mobile_packages.mixins.json"
     versionRange="[6.0.7,6.1.0)"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="fluidlogistics"
+    type="optional"
+    reason="Fluid logistics integration uses the package resource API introduced by current FluidLogistic releases"
+    versionRange="[1.2.7,1.3.0)"
+    ordering="AFTER"
+    side="BOTH"
