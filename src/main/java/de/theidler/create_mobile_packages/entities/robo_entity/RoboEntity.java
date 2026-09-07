@@ -100,7 +100,7 @@ public class RoboEntity extends Mob {
             Optional<String> knownPlayerName = cache.matchPlayerNameToAddress(address);
             if (knownPlayerName.isPresent()) {
                 boolean offline = !cache.isPlayerOnline(cache.getPlayerUUID(knownPlayerName.get()));
-                setCustomName(Component.literal("-> " + knownPlayerName.get() + (offline ? " (offline)" : "")));
+                setCustomName(Component.literal("-> @" + knownPlayerName.get() + (offline ? " (offline)" : "")));
             } else if (playerAddress) {
                 // '@' addresses always target a player; the name is just not in the cache (never seen).
                 setCustomName(Component.literal("-> " + address + " (not found)"));

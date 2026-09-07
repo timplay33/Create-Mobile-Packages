@@ -413,7 +413,6 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
         // An address starting with '@' always targets a player, so never route it to a drone port.
         if (address.startsWith("@")) {
             PlayerNameCache cache = PlayerNameCache.get((ServerLevel) level);
-            String playerName = address.substring(1);
             String status;
             Optional<String> knownPlayerName = cache.matchPlayerNameToAddress(address);
             if (knownPlayerName.isEmpty()) {
@@ -425,7 +424,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
             } else {
                 status = "out of range";
             }
-            CreateMobilePackages.LOGGER.warn("Cannot send package to player '{}' from port at {}: {}", playerName, getBlockPos(), status);
+            CreateMobilePackages.LOGGER.warn("Cannot send package to player '{}' from port at {}: {}", address, getBlockPos(), status);
             return;
         }
 
