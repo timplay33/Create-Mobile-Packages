@@ -15,6 +15,7 @@ import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
 import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import de.theidler.create_mobile_packages.robo.BeePortBlockEntityTarget;
+import de.theidler.create_mobile_packages.robo.PlayerNameCache;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
@@ -47,6 +48,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -406,6 +408,25 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                 sendToPlayer(player, itemStack, slot);
                 return;
             }
+        }
+
+        // An address starting with '@' always targets a player, so never route it to a drone port.
+        if (address.startsWith("@")) {
+            PlayerNameCache cache = PlayerNameCache.get((ServerLevel) level);
+            String playerName = address.substring(1);
+            String status;
+            Optional<String> knownPlayerName = cache.matchPlayerNameToAddress(address);
+            if (knownPlayerName.isEmpty()) {
+                status = "not found";
+            } else if (!playerUUIDs.contains(cache.getPlayerUUID(knownPlayerName.get()))) {
+                status = "not in network";
+            } else if (!cache.isPlayerOnline(cache.getPlayerUUID(knownPlayerName.get()))) {
+                status = "offline";
+            } else {
+                status = "out of range";
+            }
+            CreateMobilePackages.LOGGER.warn("Cannot send package to player '{}' from port at {}: {}", playerName, getBlockPos(), status);
+            return;
         }
 
         // Check if the item can be sent to another drone port.

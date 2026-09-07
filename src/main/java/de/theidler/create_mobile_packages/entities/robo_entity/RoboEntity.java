@@ -95,14 +95,17 @@ public class RoboEntity extends Mob {
             setCustomNameVisible(false);
         } else if (virtualRobo.getTargetAddress() != null && !virtualRobo.getTargetAddress().isBlank()) {
             String address = virtualRobo.getTargetAddress();
-            // If the address matches a known player in the cache, show their name instead of the raw address.
-            // An address may also reference a drone port, so only resolve when the cache positively knows the player.
+            boolean playerAddress = address.startsWith("@");
             PlayerNameCache cache = PlayerNameCache.get((ServerLevel) level());
             Optional<String> knownPlayerName = cache.matchPlayerNameToAddress(address);
             if (knownPlayerName.isPresent()) {
                 boolean offline = !cache.isPlayerOnline(cache.getPlayerUUID(knownPlayerName.get()));
                 setCustomName(Component.literal("-> " + knownPlayerName.get() + (offline ? " (offline)" : "")));
+            } else if (playerAddress) {
+                // '@' addresses always target a player; the name is just not in the cache (never seen).
+                setCustomName(Component.literal("-> " + address + " (not found)"));
             } else {
+                // Non-'@' addresses may reference a drone port.
                 setCustomName(Component.literal("-> " + address));
             }
             setCustomNameVisible(true);
