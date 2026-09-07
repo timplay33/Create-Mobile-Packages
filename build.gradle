@@ -213,7 +213,8 @@ dependencies {
     implementation(jarJar("ru.zznty:create_factory_abstractions-${minecraft_version}:${create_factory_abstractions_version}"))
     //runtimeOnly("ru.zznty:create_factory_logistics-${minecraft_version}:${create_factory_abstractions_version}")
     compileOnly("org.jetbrains:annotations:24.0.1")
-    implementation("curse.maven:create-fluidlogistic-1475079:8052709")
+    compileOnly("maven.modrinth:g4AWLVIr:QcUiaW4c")
+    //runtimeOnly("maven.modrinth:g4AWLVIr:QcUiaW4c")
 
     // testing mod compatibilities
     runtimeOnly("tschipp.carryon:carryon-neoforge-1.21.1:2.2.3.3")
