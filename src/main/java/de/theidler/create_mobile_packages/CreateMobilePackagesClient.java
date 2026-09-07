@@ -5,6 +5,7 @@ import de.theidler.create_mobile_packages.entities.render.DroneEntityRenderer;
 import de.theidler.create_mobile_packages.index.CMPEntities;
 import de.theidler.create_mobile_packages.index.ponder.CMPPonderPlugin;
 import de.theidler.create_mobile_packages.network_settings.ClientNetworkDataStorage;
+import de.theidler.create_mobile_packages.robo.ClientPlayerNameCache;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -35,6 +36,7 @@ public class CreateMobilePackagesClient {
     public static void onLevelLeave(EntityLeaveLevelEvent event) {
         if (event.getEntity().level().isClientSide && event.getEntity() == net.minecraft.client.Minecraft.getInstance().player) {
             ClientNetworkDataStorage.clear();
+            ClientPlayerNameCache.clear();
         }
     }
 

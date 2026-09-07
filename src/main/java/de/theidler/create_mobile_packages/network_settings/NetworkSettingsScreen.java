@@ -5,6 +5,7 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import de.theidler.create_mobile_packages.index.CMPGuiTextures;
+import de.theidler.create_mobile_packages.robo.ClientPlayerNameCache;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.Minecraft;
@@ -468,10 +469,13 @@ public class NetworkSettingsScreen extends Screen {
 
     public String getPlayerName(UUID uuid) {
         if (uuid == null) return "";
-        if (minecraft == null || minecraft.level == null) return "";
-        Player player = minecraft.level.getPlayerByUUID(uuid);
-        if (player == null) return "";
-        return player.getName().getString();
+        if (minecraft != null && minecraft.level != null) {
+            Player player = minecraft.level.getPlayerByUUID(uuid);
+            if (player != null) return player.getName().getString();
+        }
+        String cached = ClientPlayerNameCache.getPlayerName(uuid);
+        if (cached != null) return cached;
+        return "";
     }
 
     @Override
