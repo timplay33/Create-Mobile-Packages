@@ -5,6 +5,7 @@ import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.index.CMPItems;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
+import de.theidler.create_mobile_packages.robo.PlayerNameCache;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 import java.util.UUID;
 
 public class RoboEntity extends Mob {
@@ -92,7 +94,17 @@ public class RoboEntity extends Mob {
             setCustomName(null);
             setCustomNameVisible(false);
         } else if (virtualRobo.getTargetAddress() != null && !virtualRobo.getTargetAddress().isBlank()) {
-            setCustomName(Component.literal("-> " + virtualRobo.getTargetAddress()));
+            String address = virtualRobo.getTargetAddress();
+            // If the address matches a known player in the cache, show their name instead of the raw address.
+            // An address may also reference a drone port, so only resolve when the cache positively knows the player.
+            PlayerNameCache cache = PlayerNameCache.get((ServerLevel) level());
+            Optional<String> knownPlayerName = cache.matchPlayerNameToAddress(address);
+            if (knownPlayerName.isPresent()) {
+                boolean offline = !cache.isPlayerOnline(cache.getPlayerUUID(knownPlayerName.get()));
+                setCustomName(Component.literal("-> " + knownPlayerName.get() + (offline ? " (offline)" : "")));
+            } else {
+                setCustomName(Component.literal("-> " + address));
+            }
             setCustomNameVisible(true);
         } else if (virtualRobo.getTarget() != null && virtualRobo.getTarget().asBeePortBlockEntity() != null) {
             BeePortBlockEntity port = virtualRobo.getTarget().asBeePortBlockEntity();
