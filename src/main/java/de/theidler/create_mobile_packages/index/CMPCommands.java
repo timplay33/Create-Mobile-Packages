@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.simibubi.create.Create;
 import de.theidler.create_mobile_packages.IExtendedLogisticsNetwork;
 import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
+import de.theidler.create_mobile_packages.robo.PlayerNameCache;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.toast.RemoveAllToastsOnClientPacket;
 import de.theidler.create_mobile_packages.toast.ShowToastOnClientPacket;
@@ -152,8 +153,18 @@ public class CMPCommands {
             boolean isOwnerMember = extendedNetwork.create_mobile_packages$isOwnerMember();
             int playerCount = extendedNetwork.create_mobile_packages$getPlayers().size() + (isOwnerMember && logisticsNetwork.owner != null ? 1 : 0);
             boolean isLocked = logisticsNetwork.locked;
-            Player owner = logisticsNetwork.owner != null ? level.getPlayerByUUID(logisticsNetwork.owner) : null;
-            String ownerName = owner != null ? owner.getName().getString() : "Unknown";
+            String ownerName;
+            if (logisticsNetwork.owner != null) {
+                Player owner = level.getPlayerByUUID(logisticsNetwork.owner);
+                if (owner != null) {
+                    ownerName = owner.getName().getString();
+                } else {
+                    String cachedName = PlayerNameCache.get(level).getPlayerName(logisticsNetwork.owner);
+                    ownerName = cachedName != null ? cachedName : "Unknown";
+                }
+            } else {
+                ownerName = "Unknown";
+            }
 
             String shortId = networkId.toString().substring(0, 8);
             output.append("\n▸ ").append(name)
