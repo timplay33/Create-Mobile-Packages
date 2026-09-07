@@ -4,7 +4,6 @@ import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.foundation.blockEntity.ItemHandlerContainer;
 import com.simibubi.create.foundation.utility.CreateLang;
-import de.theidler.create_mobile_packages.compat.Mods;
 import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLBridge;
 import de.theidler.create_mobile_packages.index.CMPMenuTypes;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.PortableStockTickerMenu;
@@ -98,7 +97,11 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
                 return new RecipeTransferErrorTooltip(CreateLang.translate("gui.stock_keeper.already_ordering_recipe")
                         .component());
 
-        if (Mods.FLUIDLOGISTICS.isLoaded() && hasFluidIngredients(recipeSlots)) {
+        if (CFLBridge.isPresent() && hasFluidIngredients(recipeSlots)) {
+            if (!CFLBridge.isAvailable()) {
+                return new RecipeTransferErrorTooltip(CreateLang.translate("gui.stock_keeper.not_in_stock")
+                        .component());
+            }
             return transferFluidRecipe(screen, recipe, recipeSlots, player, maxTransfer, doTransfer);
         }
 
@@ -224,7 +227,10 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
         ingredientStack.setAmount(0);
 
         if (outputTarget.customRecipeData()) {
-            CFLBridge.setCustomRecipeData(cbis, outputTarget.outputCount(), outputTarget.transferLimit(), requirements);
+            if (!CFLBridge.setCraftingData(cbis, outputTarget.outputCount(), outputTarget.transferLimit(), requirements)) {
+                return new RecipeTransferErrorTooltip(CreateLang.translate("gui.stock_keeper.not_in_stock")
+                        .component());
+            }
         }
 
         screen.recipesToOrder.add(ingredientStack);
@@ -268,8 +274,8 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
 
         slotView.getIngredients(NeoForgeTypes.FLUID_STACK).forEach(fluid -> {
             if (!fluid.isEmpty()) {
-                GenericStack virtualTank = CFLBridge.toVirtualFluidStack(fluid, Math.max(1, fluid.getAmount()));
-                candidates.add(new BigItemStack(CFLBridge.keyAsItemStack(virtualTank), Math.max(1, fluid.getAmount())));
+                CFLBridge.createFluidKey(fluid).ifPresent(key -> candidates.add(
+                        new BigItemStack(key.stack(), Math.max(1, fluid.getAmount()))));
             }
         });
 
@@ -324,9 +330,10 @@ public class DroneControllerTransferHandler implements IUniversalRecipeTransferH
                     .findFirst();
             if (fluidOutput.isPresent()) {
                 FluidStack fluid = fluidOutput.get();
-                GenericStack virtualTank = CFLBridge.toVirtualFluidStack(fluid, Math.max(1, fluid.getAmount()));
-                return new OutputTarget(CFLBridge.keyAsItemStack(virtualTank), Math.max(1, fluid.getAmount()),
-                        CFLBridge.getFluidPerPackage(), true);
+                return CFLBridge.createFluidKey(fluid)
+                        .map(key -> new OutputTarget(key.stack(), Math.max(1, fluid.getAmount()),
+                                key.transferLimit(), true))
+                        .orElse(null);
             }
         }
 
