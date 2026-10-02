@@ -6,6 +6,7 @@ Create: Mobile Packages - v0.7.8 - 1.21.1 - unreleased
 
 - Update FluidLogistic compat to version 1.2.9 (#367)
 - Add PlayerNameCache, to show player names of offline players (#366)
+- Update Translations (#344)
 
 ------------------------------------------------------
 Create: Mobile Packages - v0.7.7 - 1.21.1 - 24.07.2026
