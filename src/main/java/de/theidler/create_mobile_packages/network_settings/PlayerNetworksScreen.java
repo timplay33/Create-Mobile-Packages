@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.network_settings;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
@@ -312,6 +313,8 @@ public class PlayerNetworksScreen extends Screen {
 
     @Override
     public void renderBackground(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Do nothing - don't render the blur background
+        // Reset GUI GL state without rendering the heavy blur background.
+        RenderSystem.enableBlend();
+        RenderSystem.disableDepthTest();
     }
 }

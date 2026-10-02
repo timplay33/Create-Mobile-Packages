@@ -127,6 +127,13 @@ public class VirtualRobo {
             return;
         }
 
+        // An address starting with '@' always targets a player, so never resolve it to a drone port.
+        boolean playerAddress = targetAddress != null && targetAddress.startsWith("@");
+        if (playerAddress) {
+            target = null;
+            return;
+        }
+
         // if no player found, try finding a BeePortBlockEntity within the network
         BeePortBlockEntity targetBlockEntity = CMPHelper.getClosestBeePort(serverLevel, targetAddress, BlockPos.containing(currentPos), this, logisticsNetworkId);
         if (targetBlockEntity != null) {

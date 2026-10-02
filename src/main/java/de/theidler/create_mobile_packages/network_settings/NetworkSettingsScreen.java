@@ -1,10 +1,12 @@
 package de.theidler.create_mobile_packages.network_settings;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import de.theidler.create_mobile_packages.index.CMPGuiTextures;
+import de.theidler.create_mobile_packages.robo.ClientPlayerNameCache;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.Minecraft;
@@ -358,7 +360,7 @@ public class NetworkSettingsScreen extends Screen {
         int footerY = guiTop + headerH + bgCount * bgH;
         int contentBottom = footerY;
 
-        guiGraphics.enableScissor(guiLeft, contentTop, Integer.MAX_VALUE, contentBottom);
+        guiGraphics.enableScissor(guiLeft, contentTop, guiLeft + windowWidth, contentBottom);
 
         int scrollRowOffset = (int) (scrollOffset * 20);
 
@@ -397,13 +399,14 @@ public class NetworkSettingsScreen extends Screen {
         boolean nameBoxFocused = nameBox != null && nameBox.isFocused();
         if (nameBox != null)
             nameBox.visible = false;
+
+        guiGraphics.disableScissor();
+
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         if (nameBox != null)
             nameBox.visible = nameBoxFocused;
         if (doneBtn != null)
             doneBtn.visible = true;
-
-        guiGraphics.disableScissor();
 
         renderScrollbar(guiGraphics);
 
@@ -468,14 +471,19 @@ public class NetworkSettingsScreen extends Screen {
 
     public String getPlayerName(UUID uuid) {
         if (uuid == null) return "";
-        if (minecraft == null || minecraft.level == null) return "";
-        Player player = minecraft.level.getPlayerByUUID(uuid);
-        if (player == null) return "";
-        return player.getName().getString();
+        if (minecraft != null && minecraft.level != null) {
+            Player player = minecraft.level.getPlayerByUUID(uuid);
+            if (player != null) return player.getName().getString();
+        }
+        String cached = ClientPlayerNameCache.getPlayerName(uuid);
+        if (cached != null) return cached;
+        return "";
     }
 
     @Override
     public void renderBackground(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Do nothing - don't render the blur background
+        // Reset GUI GL state without rendering the heavy blur background.
+        RenderSystem.enableBlend();
+        RenderSystem.disableDepthTest();
     }
 }

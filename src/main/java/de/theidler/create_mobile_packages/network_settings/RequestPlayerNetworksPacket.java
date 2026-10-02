@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class RequestPlayerNetworksPacket implements ServerboundPacketPayload {
@@ -40,13 +41,15 @@ public class RequestPlayerNetworksPacket implements ServerboundPacketPayload {
                 networkIds.add(network.id);
 
                 // Send data for this network
+                Map<UUID, String> playerNames = NetworkHelper.buildNetworkPlayerNames(player.serverLevel(), players, network.owner);
                 NetworkDataPacket packet = new NetworkDataPacket(
                         network.id,
                         network.owner,
                         network.locked,
                         name,
                         players,
-                        isOwnerMember
+                        isOwnerMember,
+                        playerNames
                 );
                 CatnipServices.NETWORK.sendToClient(player, packet);
             }
