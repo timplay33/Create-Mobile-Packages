@@ -13,6 +13,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class SetNetworkNamePackage implements ServerboundPacketPayload {
@@ -50,13 +52,16 @@ public class SetNetworkNamePackage implements ServerboundPacketPayload {
         Create.LOGISTICS.markDirty();
 
         // Send updated network data back to client
+        List<UUID> updatedPlayers = new ArrayList<>(extendedNetwork.create_mobile_packages$getPlayers());
+        Map<UUID, String> playerNames = NetworkHelper.buildNetworkPlayerNames(player.serverLevel(), updatedPlayers, logisticsNetwork.owner);
         NetworkDataPacket responsePacket = new NetworkDataPacket(
                 networkId,
                 logisticsNetwork.owner,
                 logisticsNetwork.locked,
                 extendedNetwork.create_mobile_packages$getName(),
-                new ArrayList<>(extendedNetwork.create_mobile_packages$getPlayers()),
-                extendedNetwork.create_mobile_packages$isOwnerMember()
+                updatedPlayers,
+                extendedNetwork.create_mobile_packages$isOwnerMember(),
+                playerNames
         );
         CatnipServices.NETWORK.sendToClient(player, responsePacket);
     }

@@ -15,6 +15,7 @@ import de.theidler.create_mobile_packages.index.config.CMPConfigs;
 import de.theidler.create_mobile_packages.items.robo_bee.RoboBeeItem;
 import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import de.theidler.create_mobile_packages.robo.BeePortBlockEntityTarget;
+import de.theidler.create_mobile_packages.robo.PlayerNameCache;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import de.theidler.create_mobile_packages.robo.VirtualRobo;
 import net.minecraft.core.BlockPos;
@@ -46,7 +47,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -175,6 +179,7 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
     public LogisticallyLinkedBehaviour behaviour;
     private int tickCounter = 0; // Counter to track ticks for periodic processing.
     private int roboSendCooldown = 0; // Flag to indicate if an item was sent this time.
+    private final Map<String, String> lastUndeliverableStatus = new HashMap<>();
 
     /**
      * Constructor for the BeePortBlockEntity.
@@ -406,6 +411,28 @@ public class BeePortBlockEntity extends PackagePortBlockEntity {
                 sendToPlayer(player, itemStack, slot);
                 return;
             }
+        }
+
+        // An address starting with '@' always targets a player, so never route it to a drone port.
+        if (address.startsWith("@")) {
+            PlayerNameCache cache = PlayerNameCache.get((ServerLevel) level);
+            String status;
+            Optional<String> knownPlayerName = cache.matchPlayerNameToAddress(address);
+            if (knownPlayerName.isEmpty()) {
+                status = "not found";
+            } else if (!playerUUIDs.contains(cache.getPlayerUUID(knownPlayerName.get()))) {
+                status = "not in network";
+            } else if (!cache.isPlayerOnline(cache.getPlayerUUID(knownPlayerName.get()))) {
+                status = "offline";
+            } else {
+                status = "out of range";
+            }
+            // Only log when the situation for this address changes to avoid log spam.
+            String prevStatus = lastUndeliverableStatus.put(address, status);
+            if (!status.equals(prevStatus)) {
+                CreateMobilePackages.LOGGER.trace("Cannot send package to player '{}' from port at {}: {}", address, getBlockPos(), status);
+            }
+            return;
         }
 
         // Check if the item can be sent to another drone port.
