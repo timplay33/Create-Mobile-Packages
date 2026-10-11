@@ -63,8 +63,8 @@
     "tooltip.create_mobile_packages.network.add_yourself": "添加你自己",
     "tooltip.create_mobile_packages.network.leave": "离开网络",
     "tooltip.create_mobile_packages.network.settings": "网络设置",
-    "tooltip.create_mobile_packages.network.owner_indicator": "You are the owner of this network",
-    "tooltip.create_mobile_packages.network.member_indicator": "You are a member of this network",
+    "tooltip.create_mobile_packages.network.owner_indicator": "你是此网络的所有者",
+    "tooltip.create_mobile_packages.network.member_indicator": "你是此网络的用户",
     "item.create_mobile_packages.mobile_packager": "手持式打包工具",
     "item.create_mobile_packages.mobile_packager.tooltip.summary": "随时随地，打包物品",
     "item.create_mobile_packages.mobile_packager.tooltip.condition1": "使用时",
@@ -75,9 +75,9 @@
     "create_mobile_packages.network.players": "网络中的玩家：",
     "create_mobile_packages.network.owner": "所有者：%1$s",
     "item.create_mobile_packages.portable_stock_ticker.trash_menu": "垃圾桶菜单",
-    "tooltip.create_mobile_packages.bee_port.filter_mode.all": "Filter: All Items",
-    "tooltip.create_mobile_packages.bee_port.filter_mode.packages": "Filter: Packages Only",
-    "tooltip.create_mobile_packages.bee_port.filter_mode.bees": "Filter: Robo Bees Only",
-    "tooltip.create_mobile_packages.bee_port.filter_mode.description": "Controls what items may be inserted and extracted by hoppers, chutes, funnel, etc.",
-    "tooltip.create_mobile_packages.bee_port.return_mode.description": "Controls whether the bee returns to this port after completing its delivery task."
+    "tooltip.create_mobile_packages.bee_port.filter_mode.all": "过滤器：所有物品",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.packages": "过滤器：包裹",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.bees": "过滤器：运输蜂",
+    "tooltip.create_mobile_packages.bee_port.filter_mode.description": "控制哪些物品可以通过漏斗、溜槽等元件放入和提取物品。",
+    "tooltip.create_mobile_packages.bee_port.return_mode.description": "控制运输蜂在完成运输任务后是否返回该停泊港。"
 }
