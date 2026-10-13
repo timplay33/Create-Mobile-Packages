@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages.compat.jade;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
+import net.minecraft.world.level.block.Block;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
@@ -17,5 +18,6 @@ public class JadePlugin implements IWailaPlugin {
     @Override
     public void registerClient(IWailaClientRegistration registration) {
         registration.registerBlockComponent(BeePortComponentProvider.INSTANCE, BeePortBlock.class);
+        registration.registerBlockComponent(LogisticallyLinkedComponentProvider.INSTANCE, Block.class);
     }
 }
