@@ -108,6 +108,9 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     public boolean moveToTopNextTick;
     private List<Rect2i> extraAreas = Collections.emptyList();
     private List<GenericStack> lastSeenStacks = null;
+    private List<GenericStack> lastSeenStacksRef;
+    private List<ItemStack> cachedFiltersSource;
+    private List<FilterItemStack> cachedFilters;
     private GenericInventorySummary cachedSummary = null;
     private final ThreadLocal<Integer> orderForStackCallCount = ThreadLocal.withInitial(() -> 0);
 
@@ -167,7 +170,10 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        if (!Objects.equals(ClientScreenStorage.stacks, lastSeenStacks)) {
+        // Compare by reference: lastSeenStacks is sorted in place, so equals() against the
+        // unsorted server list never matches. receiveChunk() assigns a new list per update.
+        if (ClientScreenStorage.stacks != lastSeenStacksRef || lastSeenStacks == null) {
+            lastSeenStacksRef = ClientScreenStorage.stacks;
             lastSeenStacks = ClientScreenStorage.stacks == null
                     ? new ArrayList<>()
                     : new ArrayList<>(ClientScreenStorage.stacks);
@@ -208,12 +214,18 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     private List<List<BigGenericStack>> convertToCategoryList(List<GenericStack> stacks) {
         List<List<BigGenericStack>> output = new ArrayList<>();
-        List<FilterItemStack> filters = new ArrayList<>();
-
-        for (ItemStack filter : menu.portableStockTicker.categories) {
-            output.add(new ArrayList<>());
-            filters.add(filter.isEmpty() ? null : FilterItemStack.of(filter));
+        // Parse category filters once; the categories list is only ever replaced, not mutated
+        List<ItemStack> categoryStacks = menu.portableStockTicker.categories;
+        if (cachedFilters == null || cachedFiltersSource != categoryStacks) {
+            cachedFilters = new ArrayList<>();
+            for (ItemStack filter : categoryStacks)
+                cachedFilters.add(filter.isEmpty() ? null : FilterItemStack.of(filter));
+            cachedFiltersSource = categoryStacks;
         }
+        List<FilterItemStack> filters = cachedFilters;
+
+        for (int i = 0; i < filters.size(); i++)
+            output.add(new ArrayList<>());
 
         List<BigGenericStack> unsorted = new ArrayList<>();
         output.add(unsorted);
