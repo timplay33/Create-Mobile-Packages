@@ -29,6 +29,6 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     private void cmp$addNetworkSettingsButton(CallbackInfo ci) {
         if (blockEntity == null || blockEntity.behaviour == null) return;
         String name = ClientNetworkDataStorage.getVisibleName(blockEntity.behaviour.freqId);
-        addRenderableWidget(createNetworkSettingsButton(getGuiLeft() - 22, getGuiTop() - 10, blockEntity.behaviour.freqId, name));
+        addRenderableWidget(createNetworkSettingsButton(getGuiLeft() - 22, getGuiTop() + 10, blockEntity.behaviour.freqId, name));
     }
 }
