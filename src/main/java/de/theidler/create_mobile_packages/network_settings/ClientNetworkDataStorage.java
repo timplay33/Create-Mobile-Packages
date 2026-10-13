@@ -1,8 +1,12 @@
 package de.theidler.create_mobile_packages.network_settings;
 
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -29,6 +33,27 @@ public class ClientNetworkDataStorage {
 
     public static Map<UUID, NetworkData> getNetworks() {
         return networks;
+    }
+
+    public static boolean isMember(NetworkData data, UUID playerId) {
+        if (data == null || playerId == null) return false;
+        return playerId.equals(data.owner) || data.players.contains(playerId);
+    }
+
+    public static @Nullable String getVisibleName(UUID networkId) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft == null || minecraft.player == null) return null;
+        NetworkData data = getNetworkData(networkId);
+        if (!isMember(data, minecraft.player.getUUID())) return null;
+        return data.name;
+    }
+
+    public static void appendNetworkName(List<Component> tooltip, UUID networkId) {
+        if (networkId == null) return;
+        String name = getVisibleName(networkId);
+        if (name == null || name.isBlank()) return;
+        tooltip.add(Component.translatable("tooltip.create_mobile_packages.network.name", name)
+                .withStyle(ChatFormatting.GOLD));
     }
 
     public static void setErrorMessage(UUID networkId, String errorMessage) {

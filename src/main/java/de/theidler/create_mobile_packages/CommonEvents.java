@@ -2,6 +2,7 @@ package de.theidler.create_mobile_packages;
 
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.entities.robo_entity.RoboEntity;
+import de.theidler.create_mobile_packages.network_settings.RequestPlayerNetworksPacket;
 import de.theidler.create_mobile_packages.robo.PlayerNameCache;
 import de.theidler.create_mobile_packages.robo.RoboManager;
 import net.minecraft.server.level.ServerLevel;
@@ -49,6 +50,7 @@ public class CommonEvents {
         if (player instanceof ServerPlayer serverPlayer) {
             PlayerNameCache.get(serverPlayer.serverLevel())
                     .addPlayerName(serverPlayer.getUUID(), serverPlayer.getGameProfile().getName());
+            RequestPlayerNetworksPacket.sendPlayerNetworks(serverPlayer);
         }
     }
 
