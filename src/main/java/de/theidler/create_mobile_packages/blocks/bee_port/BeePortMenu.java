@@ -134,4 +134,11 @@ public class BeePortMenu extends PackagePortMenu {
         }
         return false;
     }
+
+    public FilterMode getFilterMode() {
+        if (data != null) {
+            return FilterMode.fromId(data.get(3));
+        }
+        return FilterMode.ALL;
+    }
 }

@@ -12,8 +12,8 @@ A Minecraft mod that adds support for delivering Create Mod Packages directly to
 
 ### 1.21.1 NeoForge
 
-- NeoForge 21.1.206 or newer
-- Create 6.0.9 or newer
+- NeoForge 21.1.219 or newer
+- Create 6.0.10 or newer
 
 ### 1.20.1 Forge (no longer supported)
 - Forge 47.3.33 or newer
@@ -40,6 +40,8 @@ The hub for your logistics network.
 - **Send & Receive**: Automates package delivery to addresses (players or other ports).
 - **Requirement**: Requires a **Robo Bee** item in its internal inventory to send packages.
 - **Return Mode**: Toggle to have Robo Bees return to this port after delivering to a player.
+- **Filter Mode**: Toggle between all items, only packages, only bees can be exported and imported by hoppers, chutes,
+  funnels, etc.
 - **Automation**: By default, it pulls packages from adjacent inventories. When powered by **Redstone**, it pushes items
   to adjacent inventories.
 

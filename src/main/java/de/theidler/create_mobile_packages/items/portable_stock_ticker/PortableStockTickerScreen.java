@@ -10,6 +10,7 @@ import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
+import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -20,6 +21,8 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import de.theidler.create_mobile_packages.CreateMobilePackages;
 import de.theidler.create_mobile_packages.compat.Mods;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLBridge;
+import de.theidler.create_mobile_packages.compat.fluidlogistics.CFLClientBridge;
 import de.theidler.create_mobile_packages.compat.jei.CMPJEI;
 import de.theidler.create_mobile_packages.items.portable_stock_ticker.trash_menu.OpenTrashMenuPacket;
 import net.createmod.catnip.animation.LerpedFloat;
@@ -43,6 +46,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
@@ -104,6 +108,9 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     public boolean moveToTopNextTick;
     private List<Rect2i> extraAreas = Collections.emptyList();
     private List<GenericStack> lastSeenStacks = null;
+    private List<GenericStack> lastSeenStacksRef;
+    private List<ItemStack> cachedFiltersSource;
+    private List<FilterItemStack> cachedFilters;
     private GenericInventorySummary cachedSummary = null;
     private final ThreadLocal<Integer> orderForStackCallCount = ThreadLocal.withInitial(() -> 0);
 
@@ -163,7 +170,10 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         else
             successTicks = 0;
 
-        if (!Objects.equals(ClientScreenStorage.stacks, lastSeenStacks)) {
+        // Compare by reference: lastSeenStacks is sorted in place, so equals() against the
+        // unsorted server list never matches. receiveChunk() assigns a new list per update.
+        if (ClientScreenStorage.stacks != lastSeenStacksRef || lastSeenStacks == null) {
+            lastSeenStacksRef = ClientScreenStorage.stacks;
             lastSeenStacks = ClientScreenStorage.stacks == null
                     ? new ArrayList<>()
                     : new ArrayList<>(ClientScreenStorage.stacks);
@@ -204,12 +214,18 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     private List<List<BigGenericStack>> convertToCategoryList(List<GenericStack> stacks) {
         List<List<BigGenericStack>> output = new ArrayList<>();
-        List<FilterItemStack> filters = new ArrayList<>();
-
-        for (ItemStack filter : menu.portableStockTicker.categories) {
-            output.add(new ArrayList<>());
-            filters.add(filter.isEmpty() ? null : FilterItemStack.of(filter));
+        // Parse category filters once; the categories list is only ever replaced, not mutated
+        List<ItemStack> categoryStacks = menu.portableStockTicker.categories;
+        if (cachedFilters == null || cachedFiltersSource != categoryStacks) {
+            cachedFilters = new ArrayList<>();
+            for (ItemStack filter : categoryStacks)
+                cachedFilters.add(filter.isEmpty() ? null : FilterItemStack.of(filter));
+            cachedFiltersSource = categoryStacks;
         }
+        List<FilterItemStack> filters = cachedFilters;
+
+        for (int i = 0; i < filters.size(); i++)
+            output.add(new ArrayList<>());
 
         List<BigGenericStack> unsorted = new ArrayList<>();
         output.add(unsorted);
@@ -400,7 +416,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (addressBox.getValue()
                 .isBlank() && !addressBox.isFocused()) {
             pGuiGraphics.drawString(Minecraft.getInstance().font,
-                    CreateLang.translate("gui.stock_keeper.package_adress")
+                    CreateLang.translate("gui.stock_keeper.package_address")
                             .style(ChatFormatting.ITALIC)
                             .component(),
                     addressBox.getX(), addressBox.getY(), 0xff_CDBCA8, false);
@@ -684,10 +700,18 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         ms.pushPose();
         ms.translate(0, 0, 200);
-        if (customCount != 0 || craftable)
-            GenericContentExtender.registrationOf(entry.get().key())
-                    .clientProvider().guiHandler()
-                    .renderDecorations(graphics, entry.get().key(), customCount, 1, 1);
+        if (customCount != 0 || craftable) {
+            ms.pushPose();
+            ms.translate(1, 1, 0);
+            boolean renderedResourceAmount = CFLClientBridge.tryRenderStockKeeperAmount(
+                    graphics, entry.asStack().stack, customCount);
+            ms.popPose();
+            if (!renderedResourceAmount) {
+                GenericContentExtender.registrationOf(entry.get().key())
+                        .clientProvider().guiHandler()
+                        .renderDecorations(graphics, entry.get().key(), customCount, 1, 1);
+            }
+        }
 
         ms.popPose();
     }
@@ -707,12 +731,16 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                             : displayedItems.get(hoveredSlot.getFirst())
                                     .get(slot);
 
-            ArrayList<Component> lines = new ArrayList<>(GenericContentExtender.registrationOf(entry.get().key())
-                    .clientProvider().guiHandler()
-                    .tooltipBuilder(entry.get().key(), entry.get().amount()));
-            if (recipeHovered && !lines.isEmpty())
-                lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.getFirst()
-                        .copy()));
+            ArrayList<Component> lines = new ArrayList<>(CFLClientBridge.tooltipLines(
+                    entry.asStack().stack, entry.get().amount(), recipeHovered, orderHovered));
+            if (lines.isEmpty()) {
+                lines.addAll(GenericContentExtender.registrationOf(entry.get().key())
+                        .clientProvider().guiHandler()
+                        .tooltipBuilder(entry.get().key(), entry.get().amount()));
+                if (recipeHovered && !lines.isEmpty())
+                    lines.set(0, CreateLang.translateDirect("gui.stock_keeper.craft", lines.getFirst()
+                            .copy()));
+            }
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
         }
 
@@ -770,7 +798,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         if (ClientScreenStorage.stacks != null) {
             ClientScreenStorage.stacks.forEach(stack -> {
                 if (stack.amount() > MAX_REPORTED_STACK_AMOUNT) {
-                    cachedSummary.add(stack.withAmount(MAX_REPORTED_STACK_AMOUNT));
+                    if (CFLBridge.isPackageResource(stack)) {
+                        cachedSummary.add(stack);
+                    } else {
+                        cachedSummary.add(stack.withAmount(MAX_REPORTED_STACK_AMOUNT));
+                    }
                 } else {
                     cachedSummary.add(stack);
                 }
@@ -877,9 +909,15 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                         : displayedItems.get(hoveredSlot.getFirst())
                                 .get(hoveredSlot.getSecond());
 
-        int transfer = hasShiftDown() ? GenericContentExtender.registrationOf(entry.get().key())
-                .clientProvider().guiHandler().stackSize(entry.get().key())
-                : hasControlDown() ? 10 : 1;
+        int transfer;
+        boolean isPackageResource = CFLBridge.isPackageResource(entry) && !recipeClicked;
+        if (isPackageResource) {
+            transfer = hasControlDown() ? 1 : hasShiftDown() ? 100 : 1000;
+        } else {
+            transfer = hasShiftDown() ? GenericContentExtender.registrationOf(entry.get().key())
+                    .provider().stackSize(entry.get().key())
+                    : hasControlDown() ? 10 : 1;
+        }
 
         if (recipeClicked && entry instanceof CraftableGenericStack cbis) {
             if (rmb && cbis.get().amount() == 0) {
@@ -901,6 +939,20 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
         int current = existingOrder.get().amount();
 
+        if (isPackageResource) {
+            int newAmount = CFLBridge.adjustAmount(entry.asStack().stack, current, !(rmb || orderClicked),
+                    hasShiftDown(), hasControlDown(), 0, Math.max(0, entry.get().amount()), 1,
+                    orderClicked ? CFLBridge.StockInteraction.ORDER : CFLBridge.StockInteraction.INVENTORY);
+            if (newAmount <= 0) {
+                itemsToOrder.remove(existingOrder);
+                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
+                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+            } else {
+                existingOrder.setAmount(newAmount);
+            }
+            return true;
+        }
+
         if (rmb || orderClicked) {
             existingOrder.setAmount(current - transfer);
             if (existingOrder.get().amount() <= 0) {
@@ -917,7 +969,117 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
 
     public void requestCraftable(CraftableGenericStack cbis, int requestedDifference) {
         orderForStackCallCount.set(0);
+        Optional<CFLBridge.CraftingData> craftingData = CFLBridge.getCraftingData(cbis.asStack());
+        if (craftingData.isPresent()) {
+            requestCustomFluidCraftable(cbis, requestedDifference, craftingData.orElseThrow());
+            return;
+        }
         RecipeRequestHelper.requestCraftable(this, cbis, requestedDifference);
+    }
+
+    private void requestCustomFluidCraftable(CraftableGenericStack cbis, int requestedDifference,
+            CFLBridge.CraftingData craftingData) {
+        int outputCount = craftingData.outputCount();
+        List<BigItemStack> requirements = craftingData.requirements();
+        if (outputCount <= 0)
+            return;
+
+        int currentAmount = cbis.get().amount();
+        boolean remove = requestedDifference < 0;
+        if (remove)
+            requestedDifference = Math.max(-currentAmount, requestedDifference);
+        if (requestedDifference == 0)
+            return;
+
+        int requestedSets = Mth.ceil(Math.abs(requestedDifference) / (float) outputCount);
+        int sets;
+        if (remove) {
+            sets = Math.min(requestedSets, currentAmount / outputCount);
+        } else {
+            if (!canFitCustomRequirements(requirements))
+                return;
+            sets = Math.min(requestedSets, getCustomCraftableSets(requirements));
+        }
+        if (sets <= 0)
+            return;
+
+        int amountDelta = sets * outputCount;
+        cbis.setAmount(currentAmount + (remove ? -amountDelta : amountDelta));
+
+        for (BigItemStack req : requirements) {
+            GenericStack reqGeneric = GenericStack.wrap(req.stack);
+            BigGenericStack orderEntry = orderForStack(reqGeneric.withAmount(0));
+            int delta = req.count * sets;
+            if (remove) {
+                if (orderEntry == null)
+                    continue;
+                orderEntry.setAmount(orderEntry.get().amount() - delta);
+                if (orderEntry.get().amount() <= 0) {
+                    itemsToOrder.remove(orderEntry);
+                    playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
+                    playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+                }
+                continue;
+            }
+
+            if (orderEntry == null) {
+                itemsToOrder.add(orderEntry = BigGenericStack.of(reqGeneric.withAmount(0)));
+                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.2f);
+                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 0.8f);
+            }
+            orderEntry.setAmount(orderEntry.get().amount() + delta);
+        }
+
+        if (cbis.get().amount() <= 0)
+            recipesToOrder.remove(cbis);
+    }
+
+    private boolean canFitCustomRequirements(List<BigItemStack> requirements) {
+        int types = itemsToOrder.size();
+        List<ItemStack> newTypes = new ArrayList<>();
+        for (BigItemStack req : requirements) {
+            if (hasCustomOrder(req.stack) || hasMatchingStack(newTypes, req.stack))
+                continue;
+            newTypes.add(req.stack);
+            if (++types > cols)
+                return false;
+        }
+        return true;
+    }
+
+    private int getCustomCraftableSets(List<BigItemStack> requirements) {
+        GenericInventorySummary summary = stockSnapshot();
+        int sets = Integer.MAX_VALUE;
+        for (BigItemStack req : requirements) {
+            int available = summary.getCountOf(GenericStack.wrap(req.stack).key()) - getCustomOrderCount(req.stack);
+            sets = Math.min(sets, available / req.count);
+        }
+        return sets == Integer.MAX_VALUE ? 0 : Math.max(0, sets);
+    }
+
+    private int getCustomOrderCount(ItemStack target) {
+        int total = 0;
+        for (BigGenericStack order : itemsToOrder) {
+            if (ItemStack.isSameItemSameComponents(order.asStack().stack, target))
+                total += order.get().amount();
+        }
+        return total;
+    }
+
+    private boolean hasCustomOrder(ItemStack target) {
+        for (BigGenericStack order : itemsToOrder) {
+            if (ItemStack.isSameItemSameComponents(order.asStack().stack, target))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean hasMatchingStack(List<ItemStack> stacks, ItemStack target) {
+        for (ItemStack stack : stacks) {
+            if (ItemStack.isSameItemSameComponents(stack, target))
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -955,7 +1117,14 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
                                     .get(hoveredSlot.getSecond());
 
             boolean remove = scrollY < 0;
-            int transfer = Mth.ceil(Math.abs(scrollY)) * (hasControlDown() ? 10 : 1);
+            boolean isPackageResourceScroll = CFLBridge.isPackageResource(entry) && !recipeClicked;
+            int steps = Mth.ceil(Math.abs(scrollY));
+            int transfer;
+            if (isPackageResourceScroll) {
+                transfer = hasControlDown() ? steps : hasShiftDown() ? steps * 100 : steps * 1000;
+            } else {
+                transfer = steps * (hasControlDown() ? 10 : 1);
+            }
 
             if (recipeClicked && entry instanceof CraftableGenericStack cbis) {
                 requestCraftable(cbis, remove ? -transfer : transfer);
@@ -979,6 +1148,28 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             }
 
             int current = existingOrder != null ? existingOrder.get().amount() : 0;
+
+            if (isPackageResourceScroll) {
+                GenericInventorySummary summary = GenericInventorySummary.empty();
+                for (List<BigGenericStack> stackList : displayedItems) {
+                    for (BigGenericStack stack : stackList) {
+                        summary.add(stack.get());
+                    }
+                }
+                int newAmount = CFLBridge.adjustAmount(entry.asStack().stack, current, !remove, hasShiftDown(),
+                        hasControlDown(), 0, Math.max(0, summary.getCountOf(entry.get().key())), steps,
+                        orderClicked ? CFLBridge.StockInteraction.ORDER : CFLBridge.StockInteraction.INVENTORY);
+                if (newAmount <= 0) {
+                    itemsToOrder.remove(existingOrder);
+                    playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
+                    playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+                } else {
+                    existingOrder.setAmount(newAmount);
+                    if (newAmount != current && current != 0)
+                        playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
+                }
+                return true;
+            }
 
             if (remove) {
                 existingOrder.setAmount(current - transfer);
@@ -1154,13 +1345,11 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
     private void syncRecipeViewers() {
         if (searchBox == null)
             return;
-        boolean syncEnabled = AllConfigs.client().syncJeiSearch.get();
-        if (!syncEnabled)
+        StockKeeperRequestScreen.SearchSyncMode syncEnabled = AllConfigs.client().syncRecipeViewerSearch.get();
+        if (syncEnabled == StockKeeperRequestScreen.SearchSyncMode.NONE)
             return;
 
         String text = searchBox.getValue();
-        if (text == null)
-            text = "";
 
         // Sync with JEI if loaded
         if (Mods.JEI.isLoaded() && CMPJEI.runtime != null) {
@@ -1210,7 +1399,7 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
         return extraAreas;
     }
 
-    public Optional<Pair<ItemStack, Rect2i>> getHoveredIngredient(int mouseX, int mouseY) {
+    public Optional<Pair<Object, Rect2i>> getHoveredIngredient(int mouseX, int mouseY) {
         Couple<Integer> hoveredSlot = getHoveredSlot(mouseX, mouseY);
 
         if (hoveredSlot != noneHovered) {
@@ -1239,7 +1428,14 @@ public class PortableStockTickerScreen extends AbstractSimiContainerScreen<Porta
             }
 
             Rect2i bounds = new Rect2i(x, y, 18, 18);
-            return Optional.of(Pair.of(entry.asStack().stack.copy(), bounds));
+            Object ingredient = entry.asStack().stack.copy();
+            if (CFLBridge.isFluidResource(entry)) {
+                FluidStack fluid = CFLBridge.fluidOf(entry);
+                if (!fluid.isEmpty()) {
+                    ingredient = fluid.copy();
+                }
+            }
+            return Optional.of(Pair.of(ingredient, bounds));
         }
 
         return Optional.empty();

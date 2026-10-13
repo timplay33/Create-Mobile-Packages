@@ -22,7 +22,11 @@ public class OpenPortableStockTicker implements ServerboundPacketPayload {
     public void handle(ServerPlayer player) {
 
         ItemStack stack = PortableStockTicker.find(player.getInventory());
-        if (stack == null || !(stack.getItem() instanceof PortableStockTicker)) return;
+        if (stack == null || !(stack.getItem() instanceof PortableStockTicker pst)) return;
+
+        pst.previouslyUsedAddress = pst.loadAddressFromStack(stack);
+        pst.categories = pst.loadCategoriesFromStack(stack);
+        pst.hiddenCategoriesByPlayer = pst.getHiddenCategoriesByPlayerFromStack(stack);
 
         if (!isTuned(stack)) {
             player.displayClientMessage(Component.translatable("item.create_mobile_packages.portable_stock_ticker.not_linked"), true);

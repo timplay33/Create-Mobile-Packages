@@ -16,7 +16,8 @@ public enum Mods {
     JEI,
     CURIOS,
     JADE,
-    EMI;
+    EMI,
+    FLUIDLOGISTICS;
 
     // from com/simibubi/create/compat/Mods.java
 

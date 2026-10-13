@@ -1,4 +1,84 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.7.8 - 1.21.1 - 05.10.2026
+------------------------------------------------------
+
+### Changes
+
+- Update FluidLogistic compat to version 1.2.9 (#367)
+- Add PlayerNameCache, to show player names of offline players (#366)
+- Update Translations (#344)
+
+------------------------------------------------------
+Create: Mobile Packages - v0.7.7 - 1.21.1 - 24.07.2026
+------------------------------------------------------
+
+### Changes
+
+- BeePort name is shown instead of coordinates if posible (#345)
+- fix Portable Stock Ticker loses categories after restart (hotkey) (#348, #174)
+- Fix discord Curseforge link in ci
+- Fix BeePortBlockEntity.onChunkUnloaded() synchronously loading a chunk (#350)
+- Fix Owners are now members of a network by default (#346)
+- Fix Playernetworks Screen now showing network connection status: Member / Owner (#346)
+- Fix NetworkSettingsScreen scrollbar not working (#328)
+- Fix Lock / Unlock button not updating (#331)
+- Add `/cmp network rename` admin command to rename networks from console
+- PlayerNetworksScreen now shows join/leave button depending on membership
+- NetworkSettingsScreen now shows the network UUID (shortened) at the bottom of the screen
+- Add FilterMode to BeePort, toggle between all items, only packages and only bees may be inserted and exported by
+  hoppers, chutes, funnels, etc. (#360)
+- Fix Factory Abstractions incompatibility by updating to 1.6.0 (#359)
+
+------------------------------------------------------
+Create: Mobile Packages - v0.7.6 - 1.21.1 - 08.05.2026
+------------------------------------------------------
+
+### Changes
+
+- Update Toast design (#338)
+- Fix address bar text key (#339)
+- Fix item count on Toast for fluids with FluidLogistic (#342)
+- Add discord release notification workflow to CI pipeline
+
+------------------------------------------------------
+Create: Mobile Packages - v0.7.5 - 1.21.1 - 07.05.2026
+------------------------------------------------------
+
+### Changes
+
+- Added support for FluidLogistic (#336, #333)
+- Changed CI pipeline to include the Changelog in the release description
+
+------------------------------------------------------
+Create: Mobile Packages - v0.7.4 - 1.21.1 - 22.04.2026
+------------------------------------------------------
+
+### Changes
+- Fix support for Create 6.0.10 (#324, #323)
+
+------------------------------------------------------
+Create: Mobile Packages - v0.7.3 - 1.21.1 - 20.04.2026
+------------------------------------------------------
+
+### Changes
+- Fix bees not being able to return when bee port is not aligned properly on the world grid (enter / exit loop) (#317, #318)
+
+------------------------------------------------------
+Create: Mobile Packages - v0.7.2 - 1.21.1 - 19.04.2026
+------------------------------------------------------
+
+### Changes
+- Add support for Sable & Create Aeronautics (#315, #313)
+
+------------------------------------------------------
+Create: Mobile Packages - v0.7.1 - 1.21.1 - 19.04.2026
+------------------------------------------------------
+
+### Changes
+- Update Translations (#310)
+- allow for custom Toast positioning (#311, #312)
+
+------------------------------------------------------
 Create: Mobile Packages - v0.7.0 - 1.21.1 - 17.03.2026
 ------------------------------------------------------
 

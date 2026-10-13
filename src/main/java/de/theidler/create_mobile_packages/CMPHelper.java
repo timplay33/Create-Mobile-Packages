@@ -1,6 +1,7 @@
 package de.theidler.create_mobile_packages;
 
 import com.simibubi.create.content.logistics.box.PackageItem;
+import de.theidler.create_mobile_packages.compat.sable.SableCompat;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import de.theidler.create_mobile_packages.blocks.bee_port.DronePortTracker;
 import de.theidler.create_mobile_packages.index.config.CMPConfigs;
@@ -35,11 +36,13 @@ public class CMPHelper {
         return tag;
     }
 
-    public static boolean isWithinRange(BlockPos targetPos, BlockPos originPos) {
+    public static boolean isWithinRange(Level level, BlockPos targetPos, BlockPos originPos) {
         int maxDistance = CMPConfigs.server().beeMaxDistance.get();
         if (targetPos == null || originPos == null) return false;
         if (maxDistance == -1) return true;
-        return targetPos.distSqr(originPos) <= maxDistance * maxDistance;
+        Vec3 projectedTarget = projectOutOfSubLevel(level, Vec3.atCenterOf(targetPos));
+        Vec3 projectedOrigin = projectOutOfSubLevel(level, Vec3.atCenterOf(originPos));
+        return projectedTarget.distanceToSqr(projectedOrigin) <= maxDistance * maxDistance;
     }
 
     /**
@@ -62,12 +65,15 @@ public class CMPHelper {
                 allBEs.addAll(tracker.getAll());
             }
             allBEs.removeIf(BlockEntity::isRemoved);
-            allBEs.removeIf(dpbe -> !isWithinRange(dpbe.getBlockPos(), origin));
+            allBEs.removeIf(dpbe -> !isWithinRange(level, dpbe.getBlockPos(), origin));
             if (address != null && !address.isEmpty()) {
                 allBEs.removeIf(dpbe -> !PackageItem.matchAddress(address, dpbe.addressFilter));
             }
             allBEs.removeIf(dpbe -> !dpbe.canAcceptEntity(entity, (entity != null && !entity.getItemStack().isEmpty())));
-            return allBEs.stream().min(Comparator.comparingDouble(a -> a.getBlockPos().distSqr(origin))).orElse(null);
+            Vec3 projectedOrigin = projectOutOfSubLevel(level, Vec3.atCenterOf(origin));
+            return allBEs.stream()
+                    .min(Comparator.comparingDouble(a -> getGlobalCenter(level, a.getBlockPos()).distanceToSqr(projectedOrigin)))
+                    .orElse(null);
         }
         return null;
     }
@@ -101,5 +107,16 @@ public class CMPHelper {
             return bpbe;
         }
         return null;
+    }
+
+    public static Vec3 getGlobalCenter(@Nullable Level level, BlockPos pos) {
+        return projectOutOfSubLevel(level, Vec3.atCenterOf(pos));
+    }
+
+    public static Vec3 projectOutOfSubLevel(@Nullable Level level, Vec3 pos) {
+        if (level == null || pos == null) {
+            return pos;
+        }
+        return SableCompat.projectOutOfSubLevel(level, pos);
     }
 }

@@ -6,7 +6,6 @@ import de.theidler.create_mobile_packages.network_settings.NetworkHelper;
 import net.createmod.catnip.net.base.ServerboundPacketPayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,16 +14,13 @@ public class ToggleBeeReturnModePacket implements ServerboundPacketPayload {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ToggleBeeReturnModePacket> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, packet -> packet.portPos,
-            ByteBufCodecs.BOOL, packet -> packet.returnModeEnabled,
             ToggleBeeReturnModePacket::new
     );
 
     private final BlockPos portPos;
-    private final boolean returnModeEnabled;
 
-    public ToggleBeeReturnModePacket(BlockPos portPos, boolean returnModeEnabled) {
+    public ToggleBeeReturnModePacket(BlockPos portPos) {
         this.portPos = portPos;
-        this.returnModeEnabled = returnModeEnabled;
     }
 
     @Override
@@ -45,7 +41,7 @@ public class ToggleBeeReturnModePacket implements ServerboundPacketPayload {
             }
         }
 
-        beePort.setBeeReturnModeEnabled(returnModeEnabled);
+        beePort.setBeeReturnModeEnabled(!beePort.setBeeReturnMode());
     }
 
     @Override

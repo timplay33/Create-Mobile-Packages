@@ -48,7 +48,7 @@ public class VirtualRobo {
         this.speed = CMPConfigs.server().beeSpeed.get();
         this.itemStack = itemStack;
         setTargetFromItemStack(itemStack);
-        this.currentPos = spawnPos.getCenter().subtract(0, 0.5, 0);
+        this.currentPos = CMPHelper.projectOutOfSubLevel(level, spawnPos.getCenter()).subtract(0, 0.5, 0);
         this.behaviorController = new RoboBeeBehaviorController();
     }
 
@@ -124,6 +124,13 @@ public class VirtualRobo {
         // try finding a Player first
         target = PlayerTarget.fromAddress(serverLevel, targetAddress, logisticsNetworkId);
         if (target != null && target.isValid(this)) {
+            return;
+        }
+
+        // An address starting with '@' always targets a player, so never resolve it to a drone port.
+        boolean playerAddress = targetAddress != null && targetAddress.startsWith("@");
+        if (playerAddress) {
+            target = null;
             return;
         }
 
