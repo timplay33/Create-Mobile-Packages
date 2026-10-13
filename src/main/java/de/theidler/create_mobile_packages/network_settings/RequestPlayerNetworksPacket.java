@@ -25,6 +25,10 @@ public class RequestPlayerNetworksPacket implements ServerboundPacketPayload {
 
     @Override
     public void handle(ServerPlayer player) {
+        sendPlayerNetworks(player);
+    }
+
+    public static void sendPlayerNetworks(ServerPlayer player) {
         if (player == null) return;
 
         UUID playerUuid = player.getUUID();
