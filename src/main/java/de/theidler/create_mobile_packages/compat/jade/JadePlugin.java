@@ -1,5 +1,6 @@
 package de.theidler.create_mobile_packages.compat.jade;
 
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlock;
 import de.theidler.create_mobile_packages.blocks.bee_port.BeePortBlockEntity;
 import net.minecraft.world.level.block.Block;
@@ -19,5 +20,6 @@ public class JadePlugin implements IWailaPlugin {
     public void registerClient(IWailaClientRegistration registration) {
         registration.registerBlockComponent(BeePortComponentProvider.INSTANCE, BeePortBlock.class);
         registration.registerBlockComponent(LogisticallyLinkedComponentProvider.INSTANCE, Block.class);
+        registration.registerBlockComponent(FactoryPanelComponentProvider.INSTANCE, FactoryPanelBlock.class);
     }
 }
