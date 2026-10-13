@@ -27,7 +27,7 @@ public class BeePortScreen extends PackagePortScreen {
     protected void init() {
         super.init();
         int buttonX = getGuiLeft() - 22;
-        int buttonY = getGuiTop() - 10;
+        int buttonY = getGuiTop() + 10;
 
         LogisticallyLinkedBehaviour lo = (LogisticallyLinkedBehaviour) menu.contentHolder.getAllBehaviours().stream().filter(b -> b instanceof LogisticallyLinkedBehaviour).findFirst().orElse(null);
         if (lo == null) return;

@@ -29,6 +29,6 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
         UUID networkId = behaviour == null ? null : behaviour.network;
         if (networkId == null) return;
         String name = ClientNetworkDataStorage.getVisibleName(networkId);
-        addRenderableWidget(createNetworkSettingsButton(guiLeft - 22, guiTop - 10, networkId, name));
+        addRenderableWidget(createNetworkSettingsButton(guiLeft - 22, guiTop + 10, networkId, name));
     }
 }

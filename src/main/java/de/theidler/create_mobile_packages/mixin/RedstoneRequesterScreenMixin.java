@@ -27,6 +27,6 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
         if (menu == null || menu.contentHolder == null || menu.contentHolder.behaviour == null) return;
         UUID freqId = menu.contentHolder.behaviour.freqId;
         String name = ClientNetworkDataStorage.getVisibleName(freqId);
-        addRenderableWidget(createNetworkSettingsButton(getGuiLeft() - 22, getGuiTop() - 10, freqId, name));
+        addRenderableWidget(createNetworkSettingsButton(getGuiLeft() - 22, getGuiTop() + 10, freqId, name));
     }
 }
