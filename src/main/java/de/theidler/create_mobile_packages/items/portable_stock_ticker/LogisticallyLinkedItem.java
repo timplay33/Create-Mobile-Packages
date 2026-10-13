@@ -3,6 +3,7 @@ package de.theidler.create_mobile_packages.items.portable_stock_ticker;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
+import de.theidler.create_mobile_packages.network_settings.ClientNetworkDataStorage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -63,6 +64,8 @@ public class LogisticallyLinkedItem extends Item {
 		CreateLang.translate("logistically_linked.tooltip_clear")
 			.style(ChatFormatting.GRAY)
 			.addTo(tooltipComponents);
+
+		ClientNetworkDataStorage.appendNetworkName(tooltipComponents, tag.getUUID("Freq"));
 	}
 
 	@Override
