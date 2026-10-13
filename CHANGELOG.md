@@ -1,4 +1,16 @@
 ------------------------------------------------------
+Create: Mobile Packages - v0.7.9 - 1.21.1 - unreleased
+------------------------------------------------------
+
+### Changes
+
+- Show the logistics network name to network owners/members on Stock Ticker, Redstone Requester, Stock Link and Factory
+  Gauge Jade tooltips
+- Add a network settings button to the Stock Ticker, Redstone Requester and Factory Gauge screens
+- Show the logistics network name in the tooltip of logistically linked items and the Portable Stock Ticker
+- Sync network data automatically when a player joins the server
+
+------------------------------------------------------
 Create: Mobile Packages - v0.7.8 - 1.21.1 - 05.10.2026
 ------------------------------------------------------
 
